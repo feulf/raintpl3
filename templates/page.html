@@ -62,7 +62,7 @@
 			<h3>Simple loop example</h3>
 			<tt>
 			<ul>
-			{loop="week"}
+			{loop="$week"}
 				<li>{$key} = {$value}</li>
 			{/loop}
 			</ul>
@@ -74,7 +74,7 @@
 			<tt>
 			<ul>
 				<li>ID _ Name _ Color</li>
-				{loop="user"}
+				{loop="$user"}
 					<li class="color{$counter%2+1}">{$key}) - {$value.name|strtoupper} - {$value.color}</li>
 				{/loop}
 			</ul>

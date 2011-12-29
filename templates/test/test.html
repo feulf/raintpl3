@@ -25,7 +25,7 @@
 	<h2>Loop</h2>
 	Simple Loop
 	<ul>
-		{loop="week"}
+		{loop="$week"}
 		<li>
 			{$key} {$value}
 		</li>
@@ -41,9 +41,9 @@
 
 	Simple Nested Loop
 	<ul>
-		{loop="table"}
+		{loop="$table"}
 		<li>
-			{loop="value"}
+			{loop="$value"}
 			{$value}, 
 			{/loop}
 		</li>

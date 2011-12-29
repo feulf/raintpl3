@@ -13,7 +13,7 @@
 </header>
 
 <nav>
-	{loop="menu"}
+	{loop="$menu"}
 		<a href="{$value.link}" {if="$value.selected"}class="selected"{/if}>{$value.name}</a> &nbsp
 	{/loop}
 </nav>
