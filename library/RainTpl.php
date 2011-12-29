@@ -263,7 +263,7 @@ class RainTpl{
 					$var = $matches['variable'];
 				else
 					//replace the variable in the loop
-					$var = self::var_replace( '$' . $matches['variable'], $loop_level-1, $escape = false );
+					$var = self::var_replace($matches['variable'], $loop_level-1, $escape = false );
 
 
 				//loop variables
