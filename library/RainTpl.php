@@ -28,7 +28,7 @@ class RainTpl{
 						$registered_tags	= array(),
 						$auto_escape		= true,
 						$tags = array(
-										'loop'			=> array( '({loop.*?})'		, '/{loop="\${0,1}(?<variable>[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/' ),
+										'loop'			=> array( '({loop.*?})'		, '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/' ),
 										'loop_close'	=> array( '({\/loop})'		, '/{\/loop}/' ),
 										'if'			=> array( '({if.*?})'		, '/{if="([^"]*)"}/' ),
 										'elseif'		=> array( '({elseif.*?})'	, '/{elseif="([^"]*)"}/' ),
