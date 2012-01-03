@@ -80,7 +80,7 @@ class RainTpl{
 		if( is_array( $variable ) )
 			$this->var += $variable;
 		else
-			$this->$var[ $variable ] = $value;
+			$this->var[ $variable ] = $value;
 	}
 
 	
