@@ -148,7 +148,7 @@ class RainTpl{
 			if( !self::$php_enabled )
 				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
 
-			//xml re-substitution
+			// xml re-substitution
 			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){ 
 																		return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 																  }, $code ); 
@@ -167,13 +167,16 @@ class RainTpl{
 			if( !is_writable( self::$cache_dir ) )
 				throw new RainTpl_Exception ('Cache directory ' . self::$cache_dir . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
-			//write compiled file
+			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
 
 			// release the file lock
-			return flock($fp, LOCK_UN);
+			flock($fp, LOCK_UN);
 
 		}
+
+		// close the file
+		fclose( $fp );
 
 	}
 
