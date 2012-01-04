@@ -457,7 +457,7 @@ class RainTpl{
 			$html = str_replace( array('$value','$key','$counter'), array('$value'.$loop_level,'$key'.$loop_level,'$counter'.$loop_level), $html );
 		
 		// if it is a variable
-		if( preg_match_all('/(\$[a-z_A-Z][\.a-zA-Z_0-9]*)/', $html, $matches ) ){
+		if( preg_match_all('/(\$[a-z_A-Z][\.\[\]\"\'a-zA-Z_0-9]*)/', $html, $matches ) ){
 
 			// substitute . and [] with [" "]
 			for( $i=0;$i<count($matches[1]);$i++ ){
