@@ -39,6 +39,7 @@ class RainTpl{
 										'ignore'		=> array( '({ignore})'		, '/{ignore}/' ),
 										'ignore_close'	=> array( '({\/ignore})'	, '/{\/ignore}/' ),
 										'include'		=> array( '({include.*?})'	, '/{include="([^"]*)"}/' ),
+										'function'		=> array( '({function.*?})'	, '/{function="([a-zA-Z][a-zA-Z_0-9]*)(\(.*\)){0,1}"}/' ),
 										'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
 										'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
 									 );
@@ -353,6 +354,23 @@ class RainTpl{
 
 				// close if code
 				$parsed_code .=   '<?php } ?>';
+
+			}
+
+			// function
+			elseif( preg_match( $tag_match['function'], $html, $matches ) ) {
+
+				// get function
+				$function = $matches[1];
+
+				// var replace
+				if( isset($matches[2]) )
+					$parsed_function = $function . self::var_replace( $matches[2], $loop_level, $escape = false, $echo = false );
+				else
+					$parsed_function = $function . "()";
+
+				// function 
+				$parsed_code .=   "<?php echo $parsed_function; ?>";
 
 			}
 
