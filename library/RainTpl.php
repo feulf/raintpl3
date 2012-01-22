@@ -16,6 +16,7 @@ class RainTpl{
 
 	// configuration
 	protected static	$config_check_sum	= null,
+                        $charset            = "UTF-8",
 						$debug				= false,
 						$tpl_dir			= "templates/",
 						$cache_dir			= "cache/",
@@ -498,7 +499,8 @@ class RainTpl{
 				
 				// escape character
 				if( self::$auto_escape && $escape )
-					$html = "htmlspecialchars( $html )";
+					//$html = "htmlspecialchars( $html )";
+                    $html = "htmlspecialchars( $html, ENT_COMPAT, '".self::$charset."', false )";
 			
 				// if is an assignment it doesn't add echo
 				if( $echo )
