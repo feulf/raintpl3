@@ -192,7 +192,7 @@ class RainTpl{
 
 		//path replace (src of img, background and href of link)
 		if( self::$path_replace )
-			$code = self::path_replace( $code, $template_basedir );
+			$code = static::path_replace( $code, $template_basedir );
 
 		// set tags
 		foreach( self::$tags as $tag => $tag_array ){
@@ -430,7 +430,7 @@ class RainTpl{
 	 * @param string $html
 	 * @return string html sostituito
 	 */
-	protected function path_replace( $html, $template_basedir ){
+	protected static function path_replace( $html, $template_basedir ){
 
 		// get the template base directory
 		$template_directory = self::$base_url . self::$tpl_dir . $template_basedir;
