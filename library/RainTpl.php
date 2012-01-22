@@ -319,7 +319,7 @@ class RainTpl{
 				$condition = $matches[ 1 ];
 
 				//variable substitution into condition (no delimiter into the condition)
-				$parsed_condition = self::var_replace( $condition, $loop_level );
+				$parsed_condition = self::var_replace( $condition, $loop_level, $escape = false );
 
 				//if code
 				$parsed_code .=   "<?php if( $parsed_condition ){ ?>";
@@ -336,7 +336,7 @@ class RainTpl{
 				$condition = $matches[ 1 ];
 
 				//variable substitution into condition (no delimiter into the condition)
-				$parsed_condition = self::var_replace( $condition, $loop_level );
+				$parsed_condition = self::var_replace( $condition, $loop_level, $escape = false );
 
 				//elseif code
 				$parsed_code .=   "<?php }elseif( $parsed_condition ){ ?>";
