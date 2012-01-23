@@ -6,7 +6,7 @@
  *  Realized by Federico Ulfo & maintained by the Rain Team
  *  Distributed under GNU/LGPL 3 License
  *
- *  @version 3.0 Alpha
+ *  @version 3.0 Alpha milestone: https://github.com/rainphp/raintpl3/issues/milestones?with_issues=no
  */
 
 class RainTpl{
