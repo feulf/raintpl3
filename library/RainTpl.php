@@ -15,7 +15,7 @@ class RainTpl{
 	public				$var				= array();
 
 	// configuration
-	protected static	$config_check_sum	= null,
+	protected static	$config_check_sum	= array(),
                         $charset            = "UTF-8",
 						$debug				= false,
 						$tpl_dir			= "templates/",
@@ -66,7 +66,7 @@ class RainTpl{
 				self::configure( $key, $value );
 		else if( property_exists( __CLASS__, $setting ) ){
 			self::$$setting = $value;
-			self::$config_check_sum .= $value; // take trace of all config
+			self::$config_check_sum[$key] = $value; // take trace of all config
 		}
 	}
 
@@ -111,7 +111,7 @@ class RainTpl{
 		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
 		$template_directory			= self::$tpl_dir . $template_basedir;
 		$template_filepath			= $template_directory . $template_name . '.' . self::$tpl_ext;
-		$parsed_template_filepath	= self::$cache_dir . $template_name . "." . md5( $template_directory . self::$config_check_sum ) . '.rtpl.php';
+		$parsed_template_filepath	= self::$cache_dir . $template_name . "." . md5( $template_directory . implode( self::$config_check_sum ) ) . '.rtpl.php';
 
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
@@ -151,9 +151,9 @@ class RainTpl{
 				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
 
 			// xml re-substitution
-			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){ 
-																		return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
-																  }, $code ); 
+			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
+                                                                        return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
+																  }, $code );
 
 			$parsed_code = self::_compileTemplate( $code, $template_basedir, $template_filepath );
 			$parsed_code = "<?php if(!class_exists('RainTpl')){exit;}?>" . $parsed_code;
@@ -201,7 +201,7 @@ class RainTpl{
 			$tag_split[$tag] = $split;
 			$tag_match[$tag] = $match;
 		}
-		
+
 		$keys = array_keys( self::$registered_tags );
 		$tag_split += array_merge( $tag_split, $keys );
 
@@ -389,7 +389,7 @@ class RainTpl{
 				$parsed_code .= "<?php echo " . self::con_replace( $matches[1], $loop_level ) . "; ?>";
 			}
 
-			// template info
+			// registered tags
 			else{
 
 				$found = false;
@@ -456,10 +456,10 @@ class RainTpl{
 			$sub = array_merge( $sub , array( '<link$1href=@$2://$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
 		}
 
-		if( in_array( "a", self::$path_replace_list ) ){
-			$exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-			$sub = array_merge( $sub , array( '<a$1href=@$2://$3@', '<a$1href="' . self::$base_url . '$2"', '<a$1href="$2"' ) );
-		}
+        if( in_array( "a", self::$path_replace_list ) ){
+            $exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
+            $sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . self::$base_url . '$2"', '<a$1href="$2"' ) );
+        }
 
 		if( in_array( "input", self::$path_replace_list ) ){
 			$exp = array_merge( $exp , array( '/<input(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<input(.*?)src=(?:")([^"]+?)#(?:")/i', '/<input(.*?)src="(.*?)"/', '/<input(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
