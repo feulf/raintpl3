@@ -66,7 +66,7 @@ class RainTpl{
 				self::configure( $key, $value );
 		else if( property_exists( __CLASS__, $setting ) ){
 			self::$$setting = $value;
-			self::$config_check_sum[$key] = $value; // take trace of all config
+			self::$config_check_sum[$setting] = $value; // take trace of all config
 		}
 	}
 
