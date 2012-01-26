@@ -27,7 +27,7 @@ class RainTpl{
 						$path_replace		= true,
 						$path_replace_list	= array( 'a', 'img', 'link', 'script', 'input' ),
 						$registered_tags	= array(),
-						$auto_escape		= true,
+						$auto_escape		= false,
 						$tags = array(
 										'loop'			=> array( '({loop.*?})'		, '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/' ),
 										'loop_close'	=> array( '({\/loop})'		, '/{\/loop}/' ),
