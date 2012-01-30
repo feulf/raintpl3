@@ -248,7 +248,7 @@ class RainTpl{
 				$include_var = self::var_replace( $matches[ 1 ], $loop_level );
 
 				//dynamic include
-				$parsed_code .= '<?php $tpl = new '.__CLASS__.';' .
+				$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
 							 '$tpl_dir_temp = self::$tpl_dir;' .
 							 '$tpl->assign( $this->var );' .
 							 ( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
