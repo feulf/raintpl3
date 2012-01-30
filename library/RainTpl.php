@@ -48,7 +48,7 @@ class RainTpl{
 	/**
 	 * Draw the template
 	 */
-	function draw( $template_file_path, $to_string = false ){
+	public function draw( $template_file_path, $to_string = false ){
 		extract( $this->var );
 		ob_start();
 		require_once self::_check_template( $template_file_path );
@@ -60,7 +60,7 @@ class RainTpl{
 	/**
 	 * Configure the template
 	 */
-	static function configure( $setting, $value = null ){
+	public static function configure( $setting, $value = null ){
 		if( is_array( $setting ) )
 			foreach( $setting as $key => $value )
 				self::configure( $key, $value );
@@ -78,7 +78,7 @@ class RainTpl{
 	 * @param mixed $variable_name Name of template variable or associative array name/value
 	 * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
 	 */
-	function assign( $variable, $value = null ){
+	public function assign( $variable, $value = null ){
 		if( is_array( $variable ) )
 			$this->var += $variable;
 		else
@@ -90,7 +90,7 @@ class RainTpl{
 	 * Clean the expired files from cache
 	 * @param type $expire_time Set the expiration time
 	 */
-	static function clean( $expire_time = 2592000 ){
+	public static function clean( $expire_time = 2592000 ){
 		$files = glob( self::$cache_dir . "*.rtpl.php" );
 		$time = time();
 		foreach( $files as $file )
@@ -99,13 +99,13 @@ class RainTpl{
 	}
 
 
-	static function register_tag( $tag, $parse, $function ){
+	public static function register_tag( $tag, $parse, $function ){
 		self::$registered_tags[ $tag ] = array( "parse" => $parse, "function" => $function );
 	}
 
 
 
-	static protected function _check_template( $template ){
+	protected static function _check_template( $template ){
 		// set filename
 		$template_name				= basename( $template );
 		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
@@ -132,7 +132,7 @@ class RainTpl{
 	 * Compile the file
 	 */
 
-	static function compileFile( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath ){
+	public static function compileFile( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath ){
 
 		// open the template
 		$fp = fopen( $template_filepath, "r" );
@@ -189,7 +189,7 @@ class RainTpl{
 	 * @access protected
 	 */
 
-	static function _compileTemplate( $code, $template_basedir, $template_filepath ){
+	protected static function _compileTemplate( $code, $template_basedir, $template_filepath ){
 
 		//path replace (src of img, background and href of link)
 		if( self::$path_replace )
@@ -248,7 +248,7 @@ class RainTpl{
 				$include_var = self::var_replace( $matches[ 1 ], $loop_level );
 
 				//dynamic include
-				$parsed_code .= '<?php $tpl = new '.get_class($this).';' .
+				$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
 							 '$tpl_dir_temp = self::$tpl_dir;' .
 							 '$tpl->assign( $this->var );' .
 							 ( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
@@ -472,7 +472,7 @@ class RainTpl{
 
 
 
-	static protected function var_replace( $html, $loop_level = NULL, $escape = true, $echo = false ){
+	protected static function var_replace( $html, $loop_level = NULL, $escape = true, $echo = false ){
 		
 		// change variable name if loop level
 		if( $loop_level )
@@ -514,13 +514,13 @@ class RainTpl{
 		
 	}
 
-	static protected function con_replace( $html ){
+	protected static function con_replace( $html ){
 		$html = self::modifier_replace( $html );
 		return $html;
 		
 	}
 
-	static protected function modifier_replace( $html ){
+	protected static function modifier_replace( $html ){
 
 		if( $pos = strrpos( $html, "|" ) ){
 			
