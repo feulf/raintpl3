@@ -64,7 +64,7 @@ class RainTpl{
 		if( is_array( $setting ) )
 			foreach( $setting as $key => $value )
 				self::configure( $key, $value );
-		else if( property_exists( __CLASS__, $setting ) ){
+		else if( property_exists( get_called_class(), $setting ) ){
 			self::$$setting = $value;
 			self::$config_check_sum[$setting] = $value; // take trace of all config
 		}
