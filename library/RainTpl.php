@@ -500,7 +500,7 @@ class RainTpl{
             if( ( is_string( $plugin['hooks'] ) && $hook == $plugin['hooks'] ) OR ( is_array($plugin['hooks']) && in_array( $hook, $plugin['hooks'] ) ) ){
 
                 require_once static::$conf['plugins_dir'] . $plugin_name . ".raintpl.php";
-                return call_user_func( $plugin_name, $parameters, static::$conf );
+                return call_user_func( $plugin_name . "_" . $hook, $parameters, static::$conf );
 
             }
 

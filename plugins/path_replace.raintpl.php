@@ -19,7 +19,7 @@
 	 * @param string $html
 	 * @return string html sostituito
 	 */
-	function path_replace( $parameters, $conf ){
+	function path_replace_before_parse( $parameters, $conf ){
 
         // set variables
         $html = $parameters['code'];
