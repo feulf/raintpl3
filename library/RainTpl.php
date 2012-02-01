@@ -48,10 +48,10 @@ class RainTpl{
 	/**
 	 * Draw the template
 	 */
-	function draw( $template_file_path, $to_string = false ){
+	public function draw( $template_file_path, $to_string = false ){
 		extract( $this->var );
 		ob_start();
-		require_once self::_check_template( $template_file_path );
+		require_once $this->_check_template( $template_file_path );
 		if( $to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
 
@@ -60,13 +60,13 @@ class RainTpl{
 	/**
 	 * Configure the template
 	 */
-	static function configure( $setting, $value = null ){
+	public static function configure( $setting, $value = null ){
 		if( is_array( $setting ) )
 			foreach( $setting as $key => $value )
-				self::configure( $key, $value );
+				static::configure( $key, $value );
 		else if( property_exists( __CLASS__, $setting ) ){
-			self::$$setting = $value;
-			self::$config_check_sum[$setting] = $value; // take trace of all config
+			static::$$setting = $value;
+			static::$config_check_sum[$setting] = $value; // take trace of all config
 		}
 	}
 
@@ -78,7 +78,7 @@ class RainTpl{
 	 * @param mixed $variable_name Name of template variable or associative array name/value
 	 * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
 	 */
-	function assign( $variable, $value = null ){
+	public function assign( $variable, $value = null ){
 		if( is_array( $variable ) )
 			$this->var += $variable;
 		else
@@ -90,8 +90,8 @@ class RainTpl{
 	 * Clean the expired files from cache
 	 * @param type $expire_time Set the expiration time
 	 */
-	static function clean( $expire_time = 2592000 ){
-		$files = glob( self::$cache_dir . "*.rtpl.php" );
+	public static function clean( $expire_time = 2592000 ){
+		$files = glob( static::$cache_dir . "*.rtpl.php" );
 		$time = time();
 		foreach( $files as $file )
 			if( $time - filemtime($file) > $expired_time )
@@ -99,19 +99,19 @@ class RainTpl{
 	}
 
 
-	static function register_tag( $tag, $parse, $function ){
-		self::$registered_tags[ $tag ] = array( "parse" => $parse, "function" => $function );
+	public static function register_tag( $tag, $parse, $function ){
+		static::$registered_tags[ $tag ] = array( "parse" => $parse, "function" => $function );
 	}
 
 
 
-	static protected function _check_template( $template ){
+	protected function _check_template( $template ){
 		// set filename
 		$template_name				= basename( $template );
 		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
-		$template_directory			= self::$tpl_dir . $template_basedir;
-		$template_filepath			= $template_directory . $template_name . '.' . self::$tpl_ext;
-		$parsed_template_filepath	= self::$cache_dir . $template_name . "." . md5( $template_directory . implode( self::$config_check_sum ) ) . '.rtpl.php';
+		$template_directory			= static::$tpl_dir . $template_basedir;
+		$template_filepath			= $template_directory . $template_name . '.' . static::$tpl_ext;
+		$parsed_template_filepath	= static::$cache_dir . $template_name . "." . md5( $template_directory . implode( static::$config_check_sum ) ) . '.rtpl.php';
 
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
@@ -120,8 +120,8 @@ class RainTpl{
 		}
 
 		// Compile the template if the original has been updated
-		if( self::$debug  ||  !file_exists( $parsed_template_filepath )  ||  ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ) ) )
-			self::compileFile( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath );
+		if( static::$debug  ||  !file_exists( $parsed_template_filepath )  ||  ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ) ) )
+			$this->_compile_file( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath );
 		
 		return $parsed_template_filepath;
 	}
@@ -132,7 +132,7 @@ class RainTpl{
 	 * Compile the file
 	 */
 
-	static function compileFile( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath ){
+	protected function _compile_file( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath ){
 
 		// open the template
 		$fp = fopen( $template_filepath, "r" );
@@ -147,7 +147,7 @@ class RainTpl{
 			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
 			
 			// disable php tag
-			if( !self::$php_enabled )
+			if( !static::$php_enabled )
 				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
 
 			// xml re-substitution
@@ -155,19 +155,19 @@ class RainTpl{
                                                                         return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 																  }, $code );
 
-			$parsed_code = self::_compileTemplate( $code, $template_basedir, $template_filepath );
+			$parsed_code = $this->_compile_template( $code, $template_basedir, $template_filepath );
 			$parsed_code = "<?php if(!class_exists('RainTpl')){exit;}?>" . $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
 			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
 
 			// create directories
-			if( !is_dir( self::$cache_dir ) )
-				mkdir( self::$cache_dir, 0755, true );
+			if( !is_dir( static::$cache_dir ) )
+				mkdir( static::$cache_dir, 0755, true );
 
 			// check if the cache is writable
-			if( !is_writable( self::$cache_dir ) )
-				throw new RainTpl_Exception ('Cache directory ' . self::$cache_dir . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+			if( !is_writable( static::$cache_dir ) )
+				throw new RainTpl_Exception ('Cache directory ' . static::$cache_dir . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
@@ -189,20 +189,20 @@ class RainTpl{
 	 * @access protected
 	 */
 
-	static function _compileTemplate( $code, $template_basedir, $template_filepath ){
+	protected function _compile_template( $code, $template_basedir, $template_filepath ){
 
 		//path replace (src of img, background and href of link)
-		if( self::$path_replace )
-			$code = static::path_replace( $code, $template_basedir );
+		if( static::$path_replace )
+			$code = $this->_path_replace( $code, $template_basedir );
 
 		// set tags
-		foreach( self::$tags as $tag => $tag_array ){
+		foreach( static::$tags as $tag => $tag_array ){
 			list( $split, $match ) = $tag_array;
 			$tag_split[$tag] = $split;
 			$tag_match[$tag] = $match;
 		}
 
-		$keys = array_keys( self::$registered_tags );
+		$keys = array_keys( static::$registered_tags );
 		$tag_split += array_merge( $tag_split, $keys );
 
 
@@ -245,11 +245,11 @@ class RainTpl{
 			elseif( preg_match( $tag_match['include'], $html, $matches ) ){
 
 				//variables substitution
-				$include_var = self::var_replace( $matches[ 1 ], $loop_level );
+				$include_var = $this->_var_replace( $matches[ 1 ], $loop_level );
 
 				//dynamic include
 				$parsed_code .= '<?php $tpl = new '.get_class($this).';' .
-							 '$tpl_dir_temp = self::$tpl_dir;' .
+							 '$tpl_dir_temp = static::$tpl_dir;' .
 							 '$tpl->assign( $this->var );' .
 							 ( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
 							 '$tpl->draw( dirname("'.$include_var.'") . ( substr("'.$include_var.'",-1,1) != "/" ? "/" : "" ) . basename("'.$include_var.'") );'.
@@ -268,7 +268,7 @@ class RainTpl{
 					$var = $matches['variable'];
 				else
 					//replace the variable in the loop
-					$var = self::var_replace($matches['variable'], $loop_level-1, $escape = false );
+					$var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = false );
 
 
 				//loop variables
@@ -319,7 +319,7 @@ class RainTpl{
 				$condition = $matches[ 1 ];
 
 				//variable substitution into condition (no delimiter into the condition)
-				$parsed_condition = self::var_replace( $condition, $loop_level, $escape = false );
+				$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = false );
 
 				//if code
 				$parsed_code .=   "<?php if( $parsed_condition ){ ?>";
@@ -336,7 +336,7 @@ class RainTpl{
 				$condition = $matches[ 1 ];
 
 				//variable substitution into condition (no delimiter into the condition)
-				$parsed_condition = self::var_replace( $condition, $loop_level, $escape = false );
+				$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = false );
 
 				//elseif code
 				$parsed_code .=   "<?php }elseif( $parsed_condition ){ ?>";
@@ -369,7 +369,7 @@ class RainTpl{
 
 				// var replace
 				if( isset($matches[2]) )
-					$parsed_function = $function . self::var_replace( $matches[2], $loop_level, $escape = false, $echo = false );
+					$parsed_function = $function . $this->_var_replace( $matches[2], $loop_level, $escape = false, $echo = false );
 				else
 					$parsed_function = $function . "()";
 
@@ -381,22 +381,22 @@ class RainTpl{
 			//variables
 			elseif( preg_match( $tag_match['variable'], $html, $matches ) ){
 				//variables substitution (es. {$title})
-				$parsed_code .= "<?php " . self::var_replace( $matches[1], $loop_level, $escape = true, $echo = true ) . "; ?>";
+				$parsed_code .= "<?php " . $this->_var_replace( $matches[1], $loop_level, $escape = true, $echo = true ) . "; ?>";
 			}
 			
 			//constants
 			elseif( preg_match( $tag_match['constant'], $html, $matches ) ){
-				$parsed_code .= "<?php echo " . self::con_replace( $matches[1], $loop_level ) . "; ?>";
+				$parsed_code .= "<?php echo " . $this->_con_replace( $matches[1], $loop_level ) . "; ?>";
 			}
 
 			// registered tags
 			else{
 
 				$found = false;
-				foreach( self::$registered_tags as $tags => $array ){
+				foreach( static::$registered_tags as $tags => $array ){
 					if( preg_match( "/{$array['parse']}/", $html, $matches ) ){
 						$found = true;
-						$parsed_code .= "<?php echo call_user_func( self::\$registered_tags['$tags']['function'], array('".$matches[1]."') ); ?>";
+						$parsed_code .= "<?php echo call_user_func( static::\$registered_tags['$tags']['function'], array('".$matches[1]."') ); ?>";
 					}
 				}
 
@@ -431,37 +431,37 @@ class RainTpl{
 	 * @param string $html
 	 * @return string html sostituito
 	 */
-	protected static function path_replace( $html, $template_basedir ){
+	protected function _path_replace( $html, $template_basedir ){
 
 		// get the template base directory
-		$template_directory = self::$base_url . self::$tpl_dir . $template_basedir;
+		$template_directory = static::$base_url . static::$tpl_dir . $template_basedir;
 		
 		// reduce the path
 		$path = preg_replace('/\w+\/\.\.\//', '', $template_directory );
 
 		$exp = $sub = array();
 
-		if( in_array( "img", self::$path_replace_list ) ){
+		if( in_array( "img", static::$path_replace_list ) ){
 			$exp = array( '/<img(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<img(.*?)src=(?:")([^"]+?)#(?:")/i', '/<img(.*?)src="(.*?)"/', '/<img(.*?)src=(?:\@)([^"]+?)(?:\@)/i' );
 			$sub = array( '<img$1src=@$2://$3@', '<img$1src=@$2@', '<img$1src="' . $path . '$2"', '<img$1src="$2"' );
 		}
 
-		if( in_array( "script", self::$path_replace_list ) ){
+		if( in_array( "script", static::$path_replace_list ) ){
 			$exp = array_merge( $exp , array( '/<script(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<script(.*?)src=(?:")([^"]+?)#(?:")/i', '/<script(.*?)src="(.*?)"/', '/<script(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
 			$sub = array_merge( $sub , array( '<script$1src=@$2://$3@', '<script$1src=@$2@', '<script$1src="' . $path . '$2"', '<script$1src="$2"' ) );
 		}
 
-		if( in_array( "link", self::$path_replace_list ) ){
+		if( in_array( "link", static::$path_replace_list ) ){
 			$exp = array_merge( $exp , array( '/<link(.*?)href=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<link(.*?)href=(?:")([^"]+?)#(?:")/i', '/<link(.*?)href="(.*?)"/', '/<link(.*?)href=(?:\@)([^"]+?)(?:\@)/i' ) );
 			$sub = array_merge( $sub , array( '<link$1href=@$2://$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
 		}
 
-        if( in_array( "a", self::$path_replace_list ) ){
+        if( in_array( "a", static::$path_replace_list ) ){
             $exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-            $sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . self::$base_url . '$2"', '<a$1href="$2"' ) );
+            $sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . static::$base_url . '$2"', '<a$1href="$2"' ) );
         }
 
-		if( in_array( "input", self::$path_replace_list ) ){
+		if( in_array( "input", static::$path_replace_list ) ){
 			$exp = array_merge( $exp , array( '/<input(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<input(.*?)src=(?:")([^"]+?)#(?:")/i', '/<input(.*?)src="(.*?)"/', '/<input(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
 			$sub = array_merge( $sub , array( '<input$1src=@$2://$3@', '<input$1src=@$2@', '<input$1src="' . $path . '$2"', '<input$1src="$2"' ) );
 		}
@@ -472,7 +472,7 @@ class RainTpl{
 
 
 
-	static protected function var_replace( $html, $loop_level = NULL, $escape = true, $echo = false ){
+	protected function _var_replace( $html, $loop_level = NULL, $escape = true, $echo = false ){
 		
 		// change variable name if loop level
 		if( $loop_level )
@@ -492,15 +492,15 @@ class RainTpl{
 			}
 
 			// update modifier
-			$html = self::modifier_replace( $html );
+			$html = $this->_modifier_replace( $html );
 			
 			// if is not init
 			if( !preg_match( '/\$.*=.*/', $rep ) ){
 				
 				// escape character
-				if( self::$auto_escape && $escape )
+				if( static::$auto_escape && $escape )
 					//$html = "htmlspecialchars( $html )";
-                    $html = "htmlspecialchars( $html, ENT_COMPAT, '".self::$charset."', false )";
+                    $html = "htmlspecialchars( $html, ENT_COMPAT, '".static::$charset."', false )";
 			
 				// if is an assignment it doesn't add echo
 				if( $echo )
@@ -514,13 +514,13 @@ class RainTpl{
 		
 	}
 
-	static protected function con_replace( $html ){
-		$html = self::modifier_replace( $html );
+	protected function _con_replace( $html ){
+		$html = $this->_modifier_replace( $html );
 		return $html;
 		
 	}
 
-	static protected function modifier_replace( $html ){
+	protected function _modifier_replace( $html ){
 
 		if( $pos = strrpos( $html, "|" ) ){
 			
@@ -528,7 +528,7 @@ class RainTpl{
 			$function = $explode[0];
 			$params = isset( $explode[1] ) ? "," . $explode[1] : null;
 
-			$html = $function . "(" . self::modifier_replace( substr( $html, 0, $pos ) ) . "$params)";
+			$html = $function . "(" . $this->_modifier_replace( substr( $html, 0, $pos ) ) . "$params)";
 		}
 		
 		return $html;
