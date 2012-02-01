@@ -514,10 +514,8 @@ class RainTpl{
 		
 	}
 
-	protected static function con_replace( $html ){
-		$html = static::modifier_replace( $html );
-		return $html;
-		
+	protected static function con_replace( $html ){		
+		return static::modifier_replace( $html );		
 	}
 
 	protected static function modifier_replace( $html ){
