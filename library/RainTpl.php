@@ -421,7 +421,7 @@ class RainTpl{
 		}
 
         // after_parse
-        //$parsed_code = $this->parse_hook( 'after_parse', array( 'code'=>$parsed_code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
+        $parsed_code = $this->parse_hook( 'after_parse', array( 'code'=>$parsed_code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
 
 		return $parsed_code;
 
