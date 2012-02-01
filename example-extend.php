@@ -4,7 +4,7 @@
 	include "library/RainTpl.php";
 	// extend RainTPL to prevent change of charset
 	class MyRainTPL extends RainTPL{
-		// Not a good example, but can`t imagine a right better now.
+		// This example is just a proof of concept, as there are better ones.
 		protected static $charset = "UTF-8";
 		public static function configure( $setting, $value = null ){
 			if(isset($setting) && $setting === 'charset') return;
