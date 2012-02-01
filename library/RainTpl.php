@@ -486,7 +486,6 @@ class RainTpl{
 				
 				$rep = preg_replace( '/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]', $matches[1][$i] );
 				$rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*)/', '["$1"]', $rep );
-
 				$html = str_replace( $matches[0][$i], $rep, $html );
 
 			}
