@@ -197,7 +197,7 @@ class RainTpl{
 	protected function _compile_template( $code, $template_basedir, $template_filepath ){
 
 		// before parse
-        $code = $this->parse_hook( "before_parse", array( 'code'=>$code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
+        $code = $this->parse_hook( 'before_parse', array( 'code'=>$code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
 
 		// set tags
 		foreach( static::$conf['tags'] as $tag => $tag_array ){
@@ -421,7 +421,7 @@ class RainTpl{
 		}
 
         // after_parse
-        $parsed_code = $this->parse_hook( "after_parse", array( 'code'=>$parsed_code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
+        //$parsed_code = $this->parse_hook( 'after_parse', array( 'code'=>$parsed_code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
 
 		return $parsed_code;
 
@@ -504,6 +504,13 @@ class RainTpl{
 
             }
 
+        }
+
+        switch( $hook ){
+            case 'before_parse':
+                return $parameters['code'];
+            case 'after_parse':
+                return $parameters['code'];
         }
 
     }
