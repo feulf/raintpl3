@@ -1,5 +1,7 @@
 <?php
 
+namespace Rain;
+
 /**
  *  RainTPL
  *  --------
@@ -9,7 +11,7 @@
  *  @version 3.0 Alpha milestone: https://github.com/rainphp/raintpl3/issues/milestones?with_issues=no
  */
 
-class RainTpl{
+class Tpl{
 
 	// variables
 	public				$var = array();
@@ -73,6 +75,7 @@ class RainTpl{
 			static::$conf[$setting] = $value;
 			static::$conf['checksum'][$setting] = $value; // take trace of all config
 		}
+        
 	}
 
 
@@ -127,7 +130,6 @@ class RainTpl{
 		// Compile the template if the original has been updated
 		if( static::$conf['debug']  ||  !file_exists( $parsed_template_filepath )  ||  ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ) ) )
 			$this->_compile_file( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath );
-		
 		return $parsed_template_filepath;
 	}
 
@@ -161,7 +163,7 @@ class RainTpl{
 																  }, $code );
 
 			$parsed_code = $this->_compile_template( $code, $template_basedir, $template_filepath );
-			$parsed_code = "<?php if(!class_exists('RainTpl')){exit;}?>" . $parsed_code;
+			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
 			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
@@ -517,10 +519,12 @@ class RainTpl{
 
 }
 
+
 /**
  * Basic Rain tpl exception.
  */
-class RainTpl_Exception extends Exception{
+class RainTpl_Exception extends \Exception{
+    
 	/**
 	 * Path of template file with error.
 	 */
@@ -618,3 +622,5 @@ class RainTpl_SyntaxException extends RainTpl_Exception{
 		return $this;
 	}
 }
+
+// -- end
