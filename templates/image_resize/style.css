@@ -1,18 +1,28 @@
-/* CSS Document */
+*{margin:0;padding:0}
+body{font-family:Helvetica;font-size:14px;color:#333;}
+a{color:#333;text-decoration:none}
+a:hover{color:#393;text-decoration:underline}
+h1{color:#393;font-size:24px;font-weight:normal;}
+h2{color:#369;font-size:20px;font-weight:normal;}
+h3{color:#333;font-size:17px;font-weight:normal;}
 
-body{ margin:0px; color:#333; font: 13px Helvetica; background:#eee;}
-a{ color: #333; }
-a:hover{ color: #999; }
-img{border:0px;}
+#msg{color:#666;background:#efc;border-top:5px solid #ac0;padding:10px;}
+#msg span{color:#ac0}
+#msg a:hover{color:#ac0}
 
-#logo{width:100%;height:80px;background:url('img/top.gif') repeat-x #666;}
-#content{ height: 100%;padding:20px; }
-#footer{background: url('img/bottom.gif') repeat-x;color:#ccff00; padding:15px; text-align:center;}
-#footer a{color:#ccff00;}
+section, header, nav, footer {width:900px;margin:0 auto;}
+header {height:100px;margin-top:50px}
+nav a{margin-right:30px}
+section{margin-top:50px;}
 
-.layout{background:#fff;border: 1px solid #ccc; padding:20px;margin-bottom:30px;}
-code{ display:block;font:12px monospace; background: #e9ffe9;padding: 15px; border: solid 1px #ccddcc; margin-bottom:10px;}
-tt{ display:block; font:12px monospace; background: #f6fdfd; padding: 15px; border: solid 1px #ccdddd; margin-bottom:0 0 10px 0; }
+footer{font-size:11px;clear:both;}
+footer a{margin-right:10px}
 
-.color1{background:#eeeeff;}
-.color2{background:#ddddee;}
+#slogan{background:red;float:left;clear:both;height:300px;width:900px;background:red;list-style:none;padding:0px;margin:0px;overflow:auto;}
+#slogan li{float:left;clear:both;padding:0px;margin:0px;background:red;float:left;clear:both;height:300px;width:900px;background:red;list-style:none;overflow:auto;}
+.block_separator{float:left;margin:30px;}
+.block{float:left;width:170px;margin:80px 0 30px}
+.block div{font-size:14px;color:#777;margin:0 0 10px 10px}
+
+.left{float:left;}
+.right{float:right;}
