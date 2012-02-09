@@ -9,11 +9,12 @@
 	// conf
 	$config = array( 
 					"base_url"	=> null, 
-					"tpl_dir"	=> "templates/raintpl2/",
+					"tpl_dir"	=> "templates/image_resize/",
 					"cache_dir"	=> "cache/",
 					"debug"		=> true,
 				   );
 	Tpl::configure( $config );
+    Tpl::register_plugin( 'image_resize', array( 'quality'=>100, 'crop' => true ) );
 
 	global $global_variable;
 	$global_variable = "I'm Global";
