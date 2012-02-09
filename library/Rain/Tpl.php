@@ -46,7 +46,9 @@ class Tpl{
                                                                         'function'		=> array( '({function.*?})'	, '/{function="([a-zA-Z][a-zA-Z_0-9]*)(\(.*\)){0,1}"}/' ),
                                                                         'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
                                                                         'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
-                                                                    )
+                                                                    ),
+                                        'plugins_dir'       => 'plugins/',
+                                        'plugins'           => array( 'path_replace'  => array( 'tags' => array( 'a', 'img', 'link', 'script', 'input' ) ) )
                         );
 
 
@@ -110,6 +112,10 @@ class Tpl{
 		static::$conf['registered_tags'][ $tag ] = array( "parse" => $parse, "function" => $function );
 	}
 
+    public static function register_plugin( $plugin, $conf = array() ){
+        static::$conf['plugins'][ $plugin ] = $conf;
+    }
+
 
 
 	protected function _check_template( $template ){
@@ -118,7 +124,7 @@ class Tpl{
 		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
 		$template_directory			= static::$conf['tpl_dir'] . $template_basedir;
 		$template_filepath			= $template_directory . $template_name . '.' . static::$conf['tpl_ext'];
-		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . implode( static::$conf['checksum'] ) ) . '.rtpl.php';
+		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . serialize( static::$conf['checksum'] ) ) . '.rtpl.php';
 
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
@@ -198,9 +204,10 @@ class Tpl{
 
 	protected function _compile_template( $code, $template_basedir, $template_filepath ){
 
-		//path replace (src of img, background and href of link)
-		if( static::$conf['path_replace'] )
-			$code = $this->_path_replace( $code, $template_basedir );
+        $this->_register_plugins();
+
+		// Execute plugins, before_parse
+        $code = $this->_parse_hook( 'before_parse', array( 'code'=>$code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
 
 		// set tags
 		foreach( static::$conf['tags'] as $tag => $tag_array ){
@@ -423,57 +430,10 @@ class Tpl{
 			throw $e->setTemplateFile($template_filepath);
 		}
 
+        // Execute plugins, after_parse
+        $parsed_code = $this->_parse_hook( 'after_parse', array( 'code'=>$parsed_code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
+
 		return $parsed_code;
-
-	}
-
-
-
-	/**
-	 * replace the path of image src, link href and a href.
-	 * url => template_dir/url
-	 * url# => url
-	 * http://url => http://url
-	 *
-	 * @param string $html
-	 * @return string html sostituito
-	 */
-	protected function _path_replace( $html, $template_basedir ){
-
-		// get the template base directory
-		$template_directory = static::$conf['base_url'] . static::$conf['tpl_dir'] . $template_basedir;
-		
-		// reduce the path
-		$path = preg_replace('/\w+\/\.\.\//', '', $template_directory );
-
-		$exp = $sub = array();
-
-		if( in_array( "img", static::$conf['path_replace_list'] ) ){
-			$exp = array( '/<img(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<img(.*?)src=(?:")([^"]+?)#(?:")/i', '/<img(.*?)src="(.*?)"/', '/<img(.*?)src=(?:\@)([^"]+?)(?:\@)/i' );
-			$sub = array( '<img$1src=@$2://$3@', '<img$1src=@$2@', '<img$1src="' . $path . '$2"', '<img$1src="$2"' );
-		}
-
-		if( in_array( "script", static::$conf['path_replace_list'] ) ){
-			$exp = array_merge( $exp , array( '/<script(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<script(.*?)src=(?:")([^"]+?)#(?:")/i', '/<script(.*?)src="(.*?)"/', '/<script(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<script$1src=@$2://$3@', '<script$1src=@$2@', '<script$1src="' . $path . '$2"', '<script$1src="$2"' ) );
-		}
-
-		if( in_array( "link", static::$conf['path_replace_list'] ) ){
-			$exp = array_merge( $exp , array( '/<link(.*?)href=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<link(.*?)href=(?:")([^"]+?)#(?:")/i', '/<link(.*?)href="(.*?)"/', '/<link(.*?)href=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<link$1href=@$2://$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
-		}
-
-        if( in_array( "a", static::$conf['path_replace_list'] ) ){
-            $exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-            $sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . static::$conf['base_url'] . '$2"', '<a$1href="$2"' ) );
-        }
-
-		if( in_array( "input", static::$conf['path_replace_list'] ) ){
-			$exp = array_merge( $exp , array( '/<input(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<input(.*?)src=(?:")([^"]+?)#(?:")/i', '/<input(.*?)src="(.*?)"/', '/<input(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<input$1src=@$2://$3@', '<input$1src=@$2@', '<input$1src="' . $path . '$2"', '<input$1src="$2"' ) );
-		}
-
-		return preg_replace( $exp, $sub, $html );
 
 	}
 
@@ -540,6 +500,46 @@ class Tpl{
 		return $html;
 	
 	}
+
+
+    protected function _register_plugins(){
+
+        $hooks = array( 'before_parse', 'after_parse' );
+
+        foreach( static::$conf['plugins'] as $plugin_name => $plugin ){
+            require_once static::$conf['plugins_dir'] . $plugin_name . ".php";
+            static::$conf['plugins'][$plugin_name]['hooks'] = array();
+            foreach( $hooks as $hook ){
+                if( function_exists( $plugin_name . "_" . $hook ) )
+                    static::$conf['plugins'][$plugin_name]['hooks'][] = $hook;
+            }
+        }
+
+    }
+
+    protected function _parse_hook( $hook, $parameters ){
+
+        foreach( static::$conf['plugins'] as $plugin_name => $plugin ){
+
+            // if the selected hook is here
+            if( ( is_string( $plugin['hooks'] ) && $hook == $plugin['hooks'] ) OR ( is_array($plugin['hooks']) && in_array( $hook, $plugin['hooks'] ) ) ){
+
+                require_once static::$conf['plugins_dir'] . $plugin_name . ".php";
+                return call_user_func( $plugin_name . "_" . $hook, $parameters, static::$conf );
+
+            }
+
+        }
+
+        switch( $hook ){
+            case 'before_parse':
+                return $parameters['code'];
+            case 'after_parse':
+                return $parameters['code'];
+        }
+
+    }
+
 
 }
 
