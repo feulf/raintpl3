@@ -1,7 +1,10 @@
 <?php
 
+    // namespace
+    use Rain\Tpl;
+
 	// include
-	include "library/RainTpl.php";
+	include "library/Rain/Tpl.php";
 
 	// conf
 	$config = array( 
@@ -12,7 +15,7 @@
 				   );
 
 	//use Rain;
-	RainTpl::configure( $config );
+	Tpl::configure( $config );
 
 	global $global_variable;
 	$global_variable = "I'm Global";
@@ -43,12 +46,12 @@
 		return "Translate: <b>$value</b>";
 	};
 	// add a function
-	RainTpl::register_tag( "({@.*?@})", "{@(.*?)@}", $test );
+	Tpl::register_tag( "({@.*?@})", "{@(.*?)@}", $test );
 
 
 
 	// draw
-	$tpl = new RainTpl;
+	$tpl = new Tpl;
 	$tpl->assign( $var );
 	echo $tpl->draw( "page" );
 
