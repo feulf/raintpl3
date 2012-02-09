@@ -1,14 +1,20 @@
 <?php
 
+    // namespace
+    use Rain\Tpl;
+
 	// include
-	include "library/RainTpl.php";
+	include "library/Rain/Tpl.php";
 	
 	// configure
-	RainTpl::configure( "base_url", null );
-	RainTpl::configure( "tpl_dir", "templates/" );
-	RainTpl::configure( "cache_dir", "cache/" );
-	RainTpl::configure( "debug", true );
-	RainTpl::configure( "auto_escape", true );
+	$config = array(
+					"base_url"      => null,
+					"tpl_dir"       => "templates/",
+					"cache_dir"     => "cache/",
+					"debug"         => true,
+                    "auto_escape"   => true
+				   );
+	Tpl::configure( $config );
 
 
 	// set variables
@@ -31,7 +37,7 @@
 				);
 
 	// add a function
-	RainTpl::register_tag(	"({@.*?@})", // preg split
+	Tpl::register_tag(	"({@.*?@})", // preg split
 						"{@(.*?)@}", // preg match
 						function( $params ){ // function called by the tag
 												$value = $params[0];
@@ -40,7 +46,7 @@
 					 );
 
 	// draw
-	$tpl = new RainTpl;
+	$tpl = new Tpl;
 	$tpl->assign( $var );
 	echo $tpl->draw( "bootstrap/hero" );
 
