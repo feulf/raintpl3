@@ -66,7 +66,7 @@ class Tpl{
 		if( is_array( $setting ) )
 			foreach( $setting as $key => $value )
 				static::configure( $key, $value );
-		else if( property_exists( __CLASS__, $setting ) ){
+		else if( property_exists( get_called_class(), $setting ) ){
 			static::$$setting = $value;
 			static::$config_check_sum[$setting] = $value; // take trace of all config
 		}
@@ -125,7 +125,8 @@ class Tpl{
 		// Compile the template if the original has been updated
 		if( static::$debug  ||  !file_exists( $parsed_template_filepath )  ||  ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ) ) )
 			$this->_compile_file( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath );
-		return $parsed_template_filepath;
+
+        return $parsed_template_filepath;
 	}
 
 
@@ -250,7 +251,7 @@ class Tpl{
 				$include_var = $this->_var_replace( $matches[ 1 ], $loop_level );
 
 				//dynamic include
-				$parsed_code .= '<?php $tpl = new '.get_class($this).';' .
+				$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
 							 '$tpl_dir_temp = static::$tpl_dir;' .
 							 '$tpl->assign( $this->var );' .
 							 ( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
@@ -488,7 +489,6 @@ class Tpl{
 				
 				$rep = preg_replace( '/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]', $matches[1][$i] );
 				$rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*)/', '["$1"]', $rep );
-
 				$html = str_replace( $matches[0][$i], $rep, $html );
 
 			}
