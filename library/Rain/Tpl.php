@@ -56,7 +56,7 @@ class Tpl{
 	public function draw( $template_file_path, $to_string = false ){
 		extract( $this->var );
 		ob_start();
-		require_once $this->_check_template( $template_file_path );
+		require $this->_check_template( $template_file_path );
 		if( $to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
 
