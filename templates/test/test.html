@@ -11,7 +11,6 @@
 	<h1>Test Rain Tpl {$version}</h1>
 	<hr>
 
-
 	<h2>Variables</h2>
 	Variable: {$variable} <br><br>
 	Init Variable {$v = 10} <br><br>
@@ -72,8 +71,10 @@
 	Malicious content: {$bad_text} <br><br>
 
 	<h2>Custom tag</h2>
-	Malicious content: {@message to translate@} <br><br>
+	{@message to translate@} <br><br>
 
+	<h2>Custom tag 2</h2>
+	{%message to translate|english%} <br><br>
 
 </body>
 </html>
