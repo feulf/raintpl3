@@ -500,9 +500,9 @@ class Tpl{
 			// update modifier
 			$html = $this->_modifier_replace( $html );
 			
-			// if is not init
-			if( !preg_match( '/\$.*=.*/', $rep ) ){
-				
+			// if does not initialize a value, e.g. {$a = 1}
+			if( !preg_match( '/\$.*=.*/', $html ) ){
+
 				// escape character
 				if( static::$conf['auto_escape'] && $escape )
 					//$html = "htmlspecialchars( $html )";
