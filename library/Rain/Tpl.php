@@ -408,9 +408,9 @@ class Tpl{
 
 				$found = false;
 				foreach( static::$conf['registered_tags'] as $tags => $array ){
-					if( preg_match( "/{$array['parse']}/", $html, $matches ) ){
+					if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
 						$found = true;
-						$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], array('".$matches[1]."') ); ?>";
+						$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".var_export($matches,1)." ); ?>";
 					}
 				}
 
