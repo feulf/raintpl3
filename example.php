@@ -39,12 +39,12 @@
 
 				);
 	
-	$test = function( $params ){
+	function test( $params ){
 		$value = $params[0];
 		return "Translate: <b>$value</b>";
 	};
 	// add a function
-	Tpl::register_tag( "({@.*?@})", "{@(.*?)@}", $test );
+	Tpl::register_tag( "({@.*?@})", "{@(.*?)@}", "test" );
 
 
 
