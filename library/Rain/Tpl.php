@@ -53,26 +53,12 @@ class Tpl{
 	/**
 	 * Draw the template
 	 */
-	public function draw( $_template_file_path, $_to_string = false ){
+	public function draw( $template_file_path, $to_string = false ){
 		extract( $this->var );
 		ob_start();
-		require_once $this->_check_template( $_template_file_path );
-		if( $_to_string ) return ob_get_clean(); else echo ob_get_clean();
+		require_once $this->_check_template( $template_file_path );
+		if( $to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
-
-
-
-
-    	/**
-	 * Draw the template
-	 */
-	public function draw_string( $_string, $_to_string = false ){
-		extract( $this->var );
-		ob_start();
-		require_once $this->_check_string( $_string );
-		if( $_to_string ) return ob_get_clean(); else echo ob_get_clean();
-	}
-
 
 
 
@@ -149,25 +135,6 @@ class Tpl{
 
 
 
-
-	protected function _check_string( $string ){
-
-        // set filename
-        $template_name              = md5( $string . implode( static::$conf['checksum'] ) );
-		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . '.s.rtpl.php';
-        $template_filepath          = '';
-        $template_basedir			= '';
-
-
-		// Compile the template if the original has been updated
-		if( static::$conf['debug']  ||  !file_exists( $parsed_template_filepath ) )
-			$this->_compile_string( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $string );
-
-        return $parsed_template_filepath;
-	}
-
-
-
 	/**
 	 * Compile the file
 	 */
@@ -195,7 +162,7 @@ class Tpl{
                                                                         return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 																  }, $code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = false, $template_basedir, $template_filepath );
+			$parsed_code = $this->_compile_template( $code, $template_basedir, $template_filepath );
 			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
@@ -225,64 +192,11 @@ class Tpl{
 
 
 	/**
-	 * Compile the file
-	 */
-
-	protected function _compile_string(  $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $code ){
-
-		// open the template
-		$fp = fopen( $parsed_template_filepath, "w" );
-
-		// lock the file
-		if( flock( $fp, LOCK_SH ) ){
-
-			// xml substitution
-			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
-
-			// disable php tag
-			if( !static::$conf['php_enabled'] )
-				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
-
-			// xml re-substitution
-			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
-                                                                        return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
-																  }, $code );
-
-			$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir, $template_filepath );
-			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
-
-			// fix the php-eating-newline-after-closing-tag-problem
-			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
-
-			// create directories
-			if( !is_dir( static::$conf['cache_dir'] ) )
-				mkdir( static::$conf['cache_dir'], 0755, true );
-
-			// check if the cache is writable
-			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
-
-			// write compiled file
-			fwrite( $fp, $parsed_code );
-
-			// release the file lock
-			flock($fp, LOCK_UN);
-
-		}
-
-		// close the file
-		fclose( $fp );
-
-	}
-
-
-
-	/**
 	 * Compile template
 	 * @access protected
 	 */
 
-	protected function _compile_template( $code, $is_string, $template_basedir, $template_filepath ){
+	protected function _compile_template( $code, $template_basedir, $template_filepath ){
 
 		//path replace (src of img, background and href of link)
 		if( static::$conf['path_replace'] )
@@ -499,33 +413,15 @@ class Tpl{
 
 		}
 
+		if( $open_if > 0 ) {
+			$e = new RainTpl_SyntaxException('Error! You need to close an {if} tag in ' . $template_filepath . ' template');
+			throw $e->setTemplateFile($template_filepath);
+		}
 
-        if( $is_string ){
-            if( $open_if > 0 ) {
-
-                $trace=debug_backtrace();
-                $caller=array_shift($trace);
-
-                $e = new RainTpl_SyntaxException( "Error! You need to close an {if} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
-                throw $e->setTemplateFile($template_filepath);
-            }
-
-            if( $loop_level > 0 ) {
-                $e = new RainTpl_SyntaxException( "Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
-                throw $e->setTemplateFile($template_filepath);
-            }
-        }
-        else{
-            if( $open_if > 0 ) {
-                $e = new RainTpl_SyntaxException( "Error! You need to close an {if} tag in $template_filepath template");
-                throw $e->setTemplateFile($template_filepath);
-            }
-
-            if( $loop_level > 0 ) {
-                $e = new RainTpl_SyntaxException( "Error! You need to close the {loop} tag in $template_filepath template" );
-                throw $e->setTemplateFile($template_filepath);
-            }
-        }
+		if( $loop_level > 0 ) {
+			$e = new RainTpl_SyntaxException('Error! You need to close the {loop} tag in ' . $template_filepath . ' template');
+			throw $e->setTemplateFile($template_filepath);
+		}
 
 		return $parsed_code;
 
