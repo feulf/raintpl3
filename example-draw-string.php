@@ -14,7 +14,7 @@
 					"base_url"      => null,
 					"tpl_dir"       => "templates/test/",
 					"cache_dir"     => "cache/",
-					"debug"         => true,
+					"debug"         => false,
                     "auto_escape"   => true
 				   );
 
