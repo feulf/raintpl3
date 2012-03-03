@@ -1,11 +1,14 @@
 <?php
 
+	memory_usage_start();
+	timer_start();
+
     // namespace
     use Rain\Tpl;
 
 	// include
 	include "library/Rain/Tpl.php";
-	
+
 	// config
 	$config = array(
 					"base_url"      => null,
@@ -18,51 +21,93 @@
 	Tpl::configure( $config );
 
 
-	// set variables
-	$var = array(
-					"variable"	=> "Hello World!",
-					"version"	=> "3.0 Alpha",
-					"menu"		=> array(
-											array("name" => "Home", "link" => "index.php", "selected" => true ),
-											array("name" => "FAQ", "link" => "index.php/FAQ/", "selected" => null ),
-											array("name" => "Documentation", "link" => "index.php/doc/", "selected" => null )
-										),
-					"week"		=> array( "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ),
-					"user"		=> (object) array("name"=>"Rain", "citizen" => "Earth", "race" => "Human" ),
-					"numbers"	=> array( 3, 2, 1 ),
-					"bad_text"	=> 'Hey this is a malicious XSS <script>alert(1);</script>',
-					"table"		=> array( array( "Apple", "1996" ), array( "PC", "1997" ) ),
-					"title"		=> "Rain TPL 3 - Easy and Fast template engine", 
-					"copyright" => "Copyright 2006 - 2012 Rain TPL<br>Project By Rain Team",
-
-				);
-
-	// add a tag
-	Tpl::register_tag(	"({@.*?@})", // preg split
-						"{@(.*?)@}", // preg match
-						function( $params ){ // function called by the tag
-												$value = $params[1][0];
-												return "Translate: <b>$value</b>";
-										   } 
-					 );
-
-
-	// add a tag
-	Tpl::register_tag(	"({%.*?%})", // preg split
-						"{%(.*?)(?:\|(.*?))%}", // preg match
-						function( $params ){ // function called by the tag
-												$value = $params[1][0];
-                                                $value2 = $params[2][0];
-
-												return "Translate: <b>$value</b> in <b>$value2</b>";
-										   }
-					 );
-
+	$var['title'] = 'Federico';
 
 	// draw
 	$tpl = new Tpl;
 	$tpl->assign( $var );
-	echo $tpl->draw_string( 'Hello {$title} how are you?' );
+	$tpl->draw_string( 'Hello {$title} how are you?' );
 
-        
-?>
+	echo "<br>---------<br>";
+	echo memory_usage();
+	echo "<br>";
+	echo timer();
+
+
+// -- end
+
+
+
+
+
+//-------------------------------------------------------------
+//
+//	BENCHMARK/DEBUG FUNCTIONS
+//
+//-------------------------------------------------------------
+
+
+	/**
+	 * Useful for debug, print the variable $mixed and die
+	 */
+	function dump( $mixed, $exit = 1 ){
+		echo "<pre>dump \n---------------------- \n\n" . print_r( $mixed, true ) . "\n----------------------<pre>";
+		if( $exit ) exit;
+	}
+
+
+
+	/**
+	 * Save the memory used at this point
+	 */
+	function memory_usage_start( $memName = "execution_time" ){
+		return $GLOBALS['memoryCounter'][$memName] = memory_get_usage();
+	}
+
+
+
+	/**
+	 * Get the memory used
+	 */
+	function memory_usage( $memName = "execution_time", $byte_format = true ){
+		$totMem = memory_get_usage() - $GLOBALS['memoryCounter'][ $memName ];
+		return $byte_format ? byte_format($totMem) : $totMem;
+	}
+
+
+//-------------------------------------------------------------
+//
+//					 TIME FUNCTIONS
+//
+//-------------------------------------------------------------
+
+	/**
+	 * Start the timer
+	 */
+	function timer_start( $timeName = "execution_time" ){
+		$stimer = explode( ' ', microtime( ) );
+		$GLOBALS['timeCounter'][$timeName] = $stimer[ 1 ] + $stimer[ 0 ];
+	}
+
+	/**
+	 * Get the time passed
+	 */
+	function timer( $timeName = "execution_time", $precision = 10 ){
+	   $etimer = explode( ' ', microtime( ) );
+	   $timeElapsed = $etimer[ 1 ] + $etimer[ 0 ] - $GLOBALS['timeCounter'][ $timeName ];
+	   return substr( $timeElapsed, 0, $precision );
+	}
+
+
+	/**
+	 * Convert byte to more readable format, like "1 KB" instead of "1024".
+	 * cut_zero, remove the 0 after comma ex:  10,00 => 10	  14,30 => 14,3
+	 */
+	function byte_format( $size ){
+		if( $size > 0 ){
+			$unim = array("B","KB","MB","GB","TB","PB");
+			for( $i=0; $size >= 1024; $i++ )
+				$size = $size / 1024;
+			return number_format($size,$i?2:0, ',', '.' )." ".$unim[$i];
+		}
+	}
