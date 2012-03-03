@@ -63,6 +63,19 @@ class Tpl{
 
 
 	/**
+	 * Draw the template, get string as input
+	 */
+	public function draw_string( $string, $to_string = false ){
+		extract( $this->var );
+		ob_start();
+		 $this->_check_string( $string );
+		 require_once "global://template";
+		return ob_get_clean();
+	}
+
+
+
+	/**
 	 * Configure the template
 	 */
 	public static function configure( $setting, $value = null ){
@@ -134,6 +147,24 @@ class Tpl{
 	}
 
 
+	protected function _check_string( $string ){
+
+        // set filename
+        $template_name              = md5( $string . implode( static::$conf['checksum'] ) );
+		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . '.s.rtpl.php';
+        $template_filepath          = '';
+        $template_basedir			= '';
+
+
+		// Compile the template if the original has been updated
+		if( static::$conf['debug']  ||  !file_exists( $parsed_template_filepath ) )
+			$this->_compile_string( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $string );
+
+        return $parsed_template_filepath;
+	}
+
+
+
 
 	/**
 	 * Compile the file
@@ -178,6 +209,61 @@ class Tpl{
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
+
+			// release the file lock
+			flock($fp, LOCK_UN);
+
+		}
+
+		// close the file
+		fclose( $fp );
+
+	}
+
+
+
+
+
+	/**
+	 * Compile the file
+	 */
+
+	protected function _compile_string(  $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $code ){
+
+		// open the template
+		$fp = fopen( $parsed_template_filepath, "w" );
+
+		// lock the file
+		if( flock( $fp, LOCK_SH ) ){
+
+			// xml substitution
+			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
+
+			// disable php tag
+			if( !static::$conf['php_enabled'] )
+				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
+
+			// xml re-substitution
+			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
+                                                                        return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
+																  }, $code );
+
+			$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir, $template_filepath );
+			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
+
+			// fix the php-eating-newline-after-closing-tag-problem
+			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
+
+			// create directories
+			if( !is_dir( static::$conf['cache_dir'] ) )
+				mkdir( static::$conf['cache_dir'], 0755, true );
+
+			// check if the cache is writable
+			if( !is_writable( static::$conf['cache_dir'] ) )
+				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+
+			// write compiled file
+			fwrite( $fp, $parsed_code );
 
 			// release the file lock
 			flock($fp, LOCK_UN);
@@ -646,5 +732,56 @@ class RainTpl_SyntaxException extends RainTpl_Exception{
 		return $this;
 	}
 }
+
+
+class GlobalStream {
+    private $pos;
+    private $stream;
+    public function stream_open($path, $mode, $options, &$opened_path) {
+        $url = parse_url($path);
+        $this->stream = &$GLOBALS[$url["host"]];
+        $this->pos = 0;
+        if (!is_string($this->stream)) return false;
+        return true;
+    }
+    public function stream_read($count) {
+        $p=&$this->pos;
+        $ret = substr($this->stream, $this->pos, $count);
+        $this->pos += strlen($ret);
+        return $ret;
+    }
+    public function stream_write($data){
+        $l=strlen($data);
+        $this->stream =
+            substr($this->stream, 0, $this->pos) .
+            $data .
+            substr($this->stream, $this->pos += $l);
+        return $l;
+    }
+    public function stream_tell() {
+        return $this->pos;
+    }
+    public function stream_eof() {
+        return $this->pos >= strlen($this->stream);
+    }
+    public function stream_seek($offset, $whence) {
+        $l=strlen($this->stream);
+        switch ($whence) {
+            case SEEK_SET: $newPos = $offset; break;
+            case SEEK_CUR: $newPos = $this->pos + $offset; break;
+            case SEEK_END: $newPos = $l + $offset; break;
+            default: return false;
+        }
+        $ret = ($newPos >=0 && $newPos <=$l);
+        if ($ret) $this->pos=$newPos;
+        return $ret;
+    }
+}
+
+	stream_wrapper_register('global', 'Rain\GlobalStream')
+		or die('Failed to register protocol global://');
+
+$template="";
+
 
 // -- end
