@@ -68,9 +68,9 @@ class Tpl{
 	public function draw_string( $string, $to_string = false ){
 		extract( $this->var );
 		ob_start();
-		 $this->_check_string( $string );
+		 $this->_compile_string( $string );
 		 require_once "global://template";
-		return ob_get_clean();
+		if( $to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
 
 
@@ -147,21 +147,6 @@ class Tpl{
 	}
 
 
-	protected function _check_string( $string ){
-
-        // set filename
-        $template_name              = md5( $string . implode( static::$conf['checksum'] ) );
-		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . '.s.rtpl.php';
-        $template_filepath          = '';
-        $template_basedir			= '';
-
-
-		// Compile the template if the original has been updated
-		if( static::$conf['debug']  ||  !file_exists( $parsed_template_filepath ) )
-			$this->_compile_string( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $string );
-
-        return $parsed_template_filepath;
-	}
 
 
 
@@ -228,50 +213,29 @@ class Tpl{
 	 * Compile the file
 	 */
 
-	protected function _compile_string(  $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $code ){
+	protected function _compile_string( $string ){
 
-		// open the template
-		$fp = fopen( $parsed_template_filepath, "w" );
+		// xml substitution
+		$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $string );
 
-		// lock the file
-		if( flock( $fp, LOCK_SH ) ){
+		// disable php tag
+		if( !static::$conf['php_enabled'] )
+			$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
 
-			// xml substitution
-			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
+		// xml re-substitution
+		$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
+																	return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
+																}, $code );
 
-			// disable php tag
-			if( !static::$conf['php_enabled'] )
-				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
+		$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir = self::$conf['tpl_dir'], $template_filepath = '');
+		$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
-			// xml re-substitution
-			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
-                                                                        return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
-																  }, $code );
+		// fix the php-eating-newline-after-closing-tag-problem
+		$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir, $template_filepath );
-			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
-
-			// fix the php-eating-newline-after-closing-tag-problem
-			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
-
-			// create directories
-			if( !is_dir( static::$conf['cache_dir'] ) )
-				mkdir( static::$conf['cache_dir'], 0755, true );
-
-			// check if the cache is writable
-			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
-
-			// write compiled file
-			fwrite( $fp, $parsed_code );
-
-			// release the file lock
-			flock($fp, LOCK_UN);
-
-		}
-
-		// close the file
-		fclose( $fp );
+		// write compiled file
+		global $template;
+		$template = $parsed_code;
 
 	}
 
@@ -776,6 +740,9 @@ class GlobalStream {
         if ($ret) $this->pos=$newPos;
         return $ret;
     }
+
+	function stream_stat(){}
+	function url_stat(){}
 }
 
 	stream_wrapper_register('global', 'Rain\GlobalStream')

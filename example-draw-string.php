@@ -18,7 +18,7 @@
 	Tpl::configure( $config );
 
 
-	$var['name'] = 'Federico';
+	$var['title'] = 'Federico';
 
 	// draw
 	$tpl = new Tpl;
