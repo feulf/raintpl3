@@ -68,8 +68,8 @@ class Tpl{
 	public function draw_string( $string, $to_string = false ){
 		extract( $this->var );
 		ob_start();
-		 $this->_compile_string( $string );
-		 require_once "global://template";
+		 $parsed_code = $this->_compile_string( $string );
+		 eval( '?>' . $parsed_code );
 		if( $to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
 
@@ -218,9 +218,8 @@ class Tpl{
 		// xml substitution
 		$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $string );
 
-		// disable php tag
-		if( !static::$conf['php_enabled'] )
-			$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
+		// replace PHP
+		$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
 
 		// xml re-substitution
 		$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
@@ -228,14 +227,14 @@ class Tpl{
 																}, $code );
 
 		$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir = self::$conf['tpl_dir'], $template_filepath = '');
-		$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
 		// fix the php-eating-newline-after-closing-tag-problem
 		$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
 
 		// write compiled file
-		global $template;
-		$template = $parsed_code;
+		//global $template;
+		//$template = $parsed_code;
+		return $parsed_code;
 
 	}
 
