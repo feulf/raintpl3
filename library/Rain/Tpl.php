@@ -56,7 +56,7 @@ class Tpl{
 	public function draw( $_template_file_path, $_to_string = false ){
 		extract( $this->var );
 		ob_start();
-		require_once $this->_check_template( $_template_file_path );
+		require $this->_check_template( $_template_file_path );
 		if( $_to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
 
@@ -69,7 +69,7 @@ class Tpl{
 	public function draw_string( $_string, $_to_string = false ){
 		extract( $this->var );
 		ob_start();
-		require_once $this->_check_string( $_string );
+		require $this->_check_string( $_string );
 		if( $_to_string ) return ob_get_clean(); else echo ob_get_clean();
 	}
 
