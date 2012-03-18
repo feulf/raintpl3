@@ -59,6 +59,12 @@
 					 );
 
 
+	class Test{
+		static public function method( $variable ){
+			echo "Hi I am a static method, and this is the parameter passed to me: $variable!";
+		}
+	}
+
 	// draw
 	$tpl = new Tpl;
 	$tpl->assign( $var );
