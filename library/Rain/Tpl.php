@@ -234,7 +234,12 @@ class Tpl{
 	protected function _compile_template( $code, $template_basedir, $template_filepath ){
 
 		// Execute plugins, before_parse
-		$context = $this->get_plugins()->create_context(array( 'code'=>$code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ));
+		$context = $this->get_plugins()->create_context(array(
+			'code' => $code,
+			'template_basedir' => $template_basedir,
+			'template_filepath' => $template_filepath,
+			'conf' => static::$conf,
+		));
 		$this->get_plugins()->run('before_parse', $context);
 		$code = $context->code;
 
