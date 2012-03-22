@@ -24,12 +24,9 @@ class Tpl{
                                         'debug'             => false,
                                         'tpl_dir'           => 'templates/',
                                         'cache_dir'         => 'cache/',
-                                        'base_url'          => null,
                                         'tpl_ext'           => 'html',
                                         'php_enabled'       => false,
                                         'template_syntax'	=> 'Rain',
-                                        'path_replace'      => true,
-                                        'path_replace_list' => array( 'a', 'img', 'link', 'script', 'input' ),
                                         'registered_tags'	=> array(),
                                         'auto_escape'		=> false,
                                         'tags'              => array(
@@ -48,8 +45,6 @@ class Tpl{
                                                                         'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
                                                                         'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
                                                                     ),
-                                        'plugins_dir'       => 'plugins/',
-                                        'plugins'           => array( 'path_replace'  => array( 'tags' => array( 'a', 'img', 'link', 'script', 'input' ) ) )
                         );
 
 
