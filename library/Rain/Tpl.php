@@ -20,17 +20,17 @@ class Tpl{
 	protected static    $conf = array(
                                         'checksum'          => array(),
                                         'charset'           => 'UTF-8',
-                                        'debug'             => false,
+                                        'debug'             => FALSE,
                                         'tpl_dir'           => 'templates/',
                                         'cache_dir'         => 'cache/',
                                         'base_url'          => null,
                                         'tpl_ext'           => 'html',
-                                        'php_enabled'       => false,
+                                        'php_enabled'       => FALSE,
                                         'template_syntax'	=> 'Rain',
-                                        'path_replace'      => true,
+                                        'path_replace'      => TRUE,
                                         'path_replace_list' => array( 'a', 'img', 'link', 'script', 'input' ),
                                         'registered_tags'	=> array(),
-                                        'auto_escape'		=> false,
+                                        'auto_escape'		=> FALSE,
                                         'tags'              => array(
                                                                         'loop'			=> array( '({loop.*?})'		, '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/' ),
                                                                         'loop_close'	=> array( '({\/loop})'		, '/{\/loop}/' ),
@@ -46,14 +46,26 @@ class Tpl{
                                                                         'function'		=> array( '({function.*?})'	, '/{function="([a-zA-Z][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/' ),
                                                                         'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
                                                                         'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
-                                                                    )
+                                                                    ),
+										'sandbox'			=> true,
+										'black_list'		=> array('exec','shell_exec','pcntl_exec','passthru','proc_open', 'system','posix_kill','posix_setsid','pcntl_fork','posix_uname','php_uname',
+																	 'phpinfo','popen','file_get_contents','file_put_contents','rmdir','mkdir','unlink','highlight_contents','symlink','apache_child_terminate',
+																	 'apache_setenv','define_syslog_variables','escapeshellarg','escapeshellcmd','eval','fp','fput','ftp_connect','ftp_exec','ftp_get',
+																	 'ftp_login','ftp_nb_fput','ftp_put','ftp_raw','ftp_rawlist','highlight_file','ini_alter','ini_get_all','ini_restore','inject_code',
+																	 'mysql_pconnect','openlog','passthru','php_uname','phpAds_remoteInfo','phpAds_XmlRpc','phpAds_xmlrpcDecode','phpAds_xmlrpcEncode',
+																	 'posix_getpwuid','posix_kill','posix_mkfifo','posix_setpgid','posix_setsid','posix_setuid','posix_uname','proc_close','proc_get_status',
+																	 'proc_nice','proc_open','proc_terminate','syslog','xmlrpc_entity_decode'
+															   ),
                         );
+
+	protected			$template_info = array();
+
 
 
 	/**
 	 * Draw the template
 	 */
-	public function draw( $_template_file_path, $_to_string = false ){
+	public function draw( $_template_file_path, $_to_string = FALSE ){
 		extract( $this->var );
 		ob_start();
 		require $this->_check_template( $_template_file_path );
@@ -179,13 +191,16 @@ class Tpl{
 
 		// lock the file
 		if( flock( $fp, LOCK_SH ) ){
+
+			// save the filepath in the info
+			$this->template_info['template_filepath'] = $template_filepath;
 			
 			// read the file			
-			$code = fread($fp, filesize( $template_filepath ) );
-			
+			$this->template_info['code'] = $code = fread($fp, filesize( $template_filepath ) );
+
 			// xml substitution
 			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
-			
+
 			// disable php tag
 			if( !static::$conf['php_enabled'] )
 				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
@@ -203,11 +218,11 @@ class Tpl{
 
 			// create directories
 			if( !is_dir( static::$conf['cache_dir'] ) )
-				mkdir( static::$conf['cache_dir'], 0755, true );
+				mkdir( static::$conf['cache_dir'], 0755, TRUE );
 
 			// check if the cache is writable
 			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to FALSE. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
@@ -353,16 +368,14 @@ class Tpl{
 	 		//loop
 			elseif( preg_match( $tag_match['loop'], $html, $matches ) ){
 
-	 			//increase the loop counter
+	 			// increase the loop counter
 	 			$loop_level++;
 
-				// check if is a function
-				if( preg_match( "/.*\(.*\)/", $matches['variable'] ) )
-					$var = $matches['variable'];
-				else
-					//replace the variable in the loop
-					$var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = false );
+				//replace the variable in the loop
+				$var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = FALSE );
 
+				// check black list
+				$this->_black_list( $var );
 
 				//loop variables
 				$counter = "\$counter$loop_level";       // count iteration
@@ -411,8 +424,11 @@ class Tpl{
 				//condition attribute
 				$condition = $matches[ 1 ];
 
+				// check black list
+				$this->_black_list( $condition );
+
 				//variable substitution into condition (no delimiter into the condition)
-				$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = false );
+				$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
 
 				//if code
 				$parsed_code .=   "<?php if( $parsed_condition ){ ?>";
@@ -428,8 +444,11 @@ class Tpl{
 				//condition attribute
 				$condition = $matches[ 1 ];
 
+				// check black list
+				$this->_black_list( $condition );
+
 				//variable substitution into condition (no delimiter into the condition)
-				$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = false );
+				$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
 
 				//elseif code
 				$parsed_code .=   "<?php }elseif( $parsed_condition ){ ?>";
@@ -462,9 +481,12 @@ class Tpl{
 
 				// var replace
 				if( isset($matches[2]) )
-					$parsed_function = $function . $this->_var_replace( $matches[2], $loop_level, $escape = false, $echo = false );
+					$parsed_function = $function . $this->_var_replace( $matches[2], $loop_level, $escape = FALSE, $echo = FALSE );
 				else
 					$parsed_function = $function . "()";
+
+				// check black list
+				$this->_black_list( $parsed_function );
 
 				// function 
 				$parsed_code .=   "<?php echo $parsed_function; ?>";
@@ -474,7 +496,7 @@ class Tpl{
 			//variables
 			elseif( preg_match( $tag_match['variable'], $html, $matches ) ){
 				//variables substitution (es. {$title})
-				$parsed_code .= "<?php " . $this->_var_replace( $matches[1], $loop_level, $escape = true, $echo = true ) . "; ?>";
+				$parsed_code .= "<?php " . $this->_var_replace( $matches[1], $loop_level, $escape = TRUE, $echo = TRUE ) . "; ?>";
 			}
 			
 			//constants
@@ -485,10 +507,10 @@ class Tpl{
 			// registered tags
 			else{
 
-				$found = false;
+				$found = FALSE;
 				foreach( static::$conf['registered_tags'] as $tags => $array ){
 					if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
-						$found = true;
+						$found = TRUE;
 						$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".var_export($matches,1)." ); ?>";
 					}
 				}
@@ -583,7 +605,7 @@ class Tpl{
 
 
 
-	protected function _var_replace( $html, $loop_level = NULL, $escape = true, $echo = false ){
+	protected function _var_replace( $html, $loop_level = NULL, $escape = TRUE, $echo = FALSE ){
 		
 		// change variable name if loop level
 		if( $loop_level )
@@ -610,7 +632,7 @@ class Tpl{
 				// escape character
 				if( static::$conf['auto_escape'] && $escape )
 					//$html = "htmlspecialchars( $html )";
-                    $html = "htmlspecialchars( $html, ENT_COMPAT, '".static::$conf['charset']."', false )";
+                    $html = "htmlspecialchars( $html, ENT_COMPAT, '".static::$conf['charset']."', FALSE )";
 			
 				// if is an assignment it doesn't add echo
 				if( $echo )
@@ -633,16 +655,51 @@ class Tpl{
 	protected function _modifier_replace( $html ){
 
 		if( $pos = strrpos( $html, "|" ) ){
-			
+
+			// check black list
+			$this->_black_list( $html );
+
 			$explode = explode( ":", substr( $html, $pos+1 ) );
 			$function = $explode[0];
 			$params = isset( $explode[1] ) ? "," . $explode[1] : null;
 
 			$html = $function . "(" . $this->_modifier_replace( substr( $html, 0, $pos ) ) . "$params)";
+
 		}
 		
 		return $html;
 	
+	}
+
+	protected function _black_list( $html ){
+
+		if( !self::$conf['sandbox'] || !self::$conf['black_list'] )
+			return true;
+
+		if( empty( self::$conf['black_list_preg'] ) )
+			self::$conf['black_list_preg'] = '#[\W\s]*' . implode( '[\W\s]*|[\W\s]*', self::$conf['black_list'] ) . '[\W\s]*#';
+
+		// check if the function is in the black list (or not in white list)
+		if( preg_match( self::$conf['black_list_preg'], $html, $match ) ){
+
+			// find the line of the error
+			$line = 0;
+			$rows = explode( "\n", $this->template_info['code'] );
+			while( !strpos( $rows[$line], $html ) && $line+1 < count($rows) )
+				$line++;
+
+			// stop the execution of the script
+			$e = new RainTpl_SyntaxException('Syntax '.$match[0].' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line '.$line );
+			throw $e->setTemplateFile( $this->template_info['template_filepath'] )
+				->setTag( $match[0] )
+				->setTemplateLine($line);
+
+			return false;
+		}
+
+
+		
+
 	}
 
 }

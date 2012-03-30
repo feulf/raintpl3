@@ -65,16 +65,18 @@
 
 	$string = file_get_contents( "templates/test/test.html");
 
+
+	class Test{
+		static public function method( $variable ){
+			echo "Hi I am a static method, and this is the parameter passed to me: $variable!";
+		}
+	}
+
+
 	// draw
 	$tpl = new Tpl;
 	$tpl->assign( $var );
 	echo $tpl->draw_string( $string );
-
-	echo "<br>---------<br>";
-	echo memory_usage();
-	echo "<br>";
-	echo timer();
-
 
 // -- end
 
@@ -88,6 +90,10 @@
 //
 //-------------------------------------------------------------
 
+	echo "<br>---------<br>";
+	echo memory_usage();
+	echo "<br>";
+	echo timer();
 
 	/**
 	 * Useful for debug, print the variable $mixed and die
