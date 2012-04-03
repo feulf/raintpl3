@@ -43,6 +43,7 @@ class PluginContainer
 	 *
 	 * @param string $name
 	 * @param IPlugin $plugin
+	 * @return PluginContainer
 	 */
 	public function set_plugin($name, IPlugin $plugin) {
 		$this->remove_plugin($name);
@@ -55,13 +56,14 @@ class PluginContainer
 			}
 			$callable = array($plugin, $method);
 			if (!is_callable($callable)) {
-				throw new InvalidArgumentException(sprintf(
+				throw new \InvalidArgumentException(sprintf(
 					'Wrong callcable suplied by %s for "%s" hook ',
 					get_class($plugin), $hook
 				));
 			}
 			$this->hooks[$hook][] = $callable;
 		}
+		return $this;
 	}
 
 	public function remove_plugin($name) {
@@ -87,15 +89,17 @@ class PluginContainer
 	 *
 	 * @param string $hook_name
 	 * @param \ArrayAccess $context
+	 * @return PluginContainer
 	 */
 	public function run($hook_name, \ArrayAccess $context ){
 		if (!isset($this->hooks[$hook_name])) {
-			return;
+			return $this;
 		}
 		$context['_hook_name'] = $hook_name;
 		foreach( $this->hooks[$hook_name] as $callable ){
 			call_user_func($callable, $context);
 		}
+		return $this;
 	}
 
 	/**
