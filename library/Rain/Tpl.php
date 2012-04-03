@@ -18,6 +18,13 @@ class Tpl{
 	// variables
 	public				$var				= array();
 
+	/**
+	 * Plugin container
+	 *
+	 * @var \Rain\Tpl\PluginContainer
+	 */
+	protected static    $plugins = null;
+
 	// configuration
 	protected static    $conf = array(
                                         'checksum'          => array(),
@@ -112,10 +119,10 @@ class Tpl{
 	/**
 	 * Registers a plugin globally.
 	 *
-	 * @param Rain_Tpl_IPlugin $plugin
+	 * @param \Rain\Tpl\IPlugin $plugin
 	 * @param string $name name can be used to distinguish plugins of same class.
 	 */
-	public static function register_plugin(Rain_Tpl_IPlugin $plugin, $name = ''){
+	public static function register_plugin(\Rain\Tpl\IPlugin $plugin, $name = ''){
 		if ('' === $name) {
 			$name = \get_class($plugin);
 		}
