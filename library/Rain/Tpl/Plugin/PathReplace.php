@@ -1,7 +1,7 @@
 <?php
 namespace Rain\Tpl\Plugin;
 
-require_once 'Rain/Tpl/Plugin.php';
+require_once __DIR__ . '/../Plugin.php';
 
 class PathReplace extends \Rain\Tpl\Plugin
 {
@@ -21,8 +21,8 @@ class PathReplace extends \Rain\Tpl\Plugin
 
 		// set variables
 		$html = $context->code;
-		$template_basedir = $parameters['template_basedir'];
-		$tags = $conf['plugins']['path_replace']['tags'];
+		$template_basedir = $context->template_basedir;
+		$tags = $this->tags;
 
 
 		// get the template base directory
