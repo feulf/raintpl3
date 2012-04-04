@@ -1,7 +1,7 @@
 <?php
 namespace Rain\Tpl;
 
-require_once 'Rain/Tpl/IPlugin.php';
+require_once __DIR__ . '/IPlugin.php';
 
 /**
  * Basic plugin implementation.

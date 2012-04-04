@@ -1,8 +1,8 @@
 <?php
 
 namespace Rain;
-require_once 'Rain/Tpl/PluginContainer.php';
-require_once 'Rain/Tpl/Plugin.php';
+require_once 'Tpl/PluginContainer.php';
+require_once 'Tpl/Plugin.php';
 
 /**
  *  RainTPL
