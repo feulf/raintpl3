@@ -1,6 +1,8 @@
 <?php
 
 namespace Rain;
+require_once 'Rain/Tpl/PluginContainer.php';
+require_once 'Rain/Tpl/Plugin.php';
 
 /**
  *  RainTPL
@@ -16,6 +18,13 @@ class Tpl{
 	// variables
 	public				$var				= array();
 
+	/**
+	 * Plugin container
+	 *
+	 * @var \Rain\Tpl\PluginContainer
+	 */
+	protected static    $plugins = null;
+
 	// configuration
 	protected static    $conf = array(
                                         'checksum'          => array(),
@@ -23,12 +32,9 @@ class Tpl{
                                         'debug'             => false,
                                         'tpl_dir'           => 'templates/',
                                         'cache_dir'         => 'cache/',
-                                        'base_url'          => null,
                                         'tpl_ext'           => 'html',
                                         'php_enabled'       => false,
                                         'template_syntax'	=> 'Rain',
-                                        'path_replace'      => true,
-                                        'path_replace_list' => array( 'a', 'img', 'link', 'script', 'input' ),
                                         'registered_tags'	=> array(),
                                         'auto_escape'		=> false,
                                         'tags'              => array(
@@ -47,8 +53,6 @@ class Tpl{
                                                                         'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
                                                                         'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
                                                                     ),
-                                        'plugins_dir'       => 'plugins/',
-                                        'plugins'           => array( 'path_replace'  => array( 'tags' => array( 'a', 'img', 'link', 'script', 'input' ) ) )
                         );
 
 
@@ -112,11 +116,39 @@ class Tpl{
 		static::$conf['registered_tags'][ $tag ] = array( "parse" => $parse, "function" => $function );
 	}
 
-    public static function register_plugin( $plugin, $conf = array() ){
-        static::$conf['plugins'][ $plugin ] = $conf;
+	/**
+	 * Registers a plugin globally.
+	 *
+	 * @param \Rain\Tpl\IPlugin $plugin
+	 * @param string $name name can be used to distinguish plugins of same class.
+	 */
+	public static function register_plugin(\Rain\Tpl\IPlugin $plugin, $name = ''){
+		if ('' === $name) {
+			$name = \get_class($plugin);
+		}
+		static::get_plugins()->add_plugin($name, $plugin);
     }
 
+	/**
+	 * Removes registered plugin from stack.
+	 *
+	 * @param string $name
+	 */
+	public static function remove_plugin($name){
+		static::get_plugins()->remove_plugin($name);
+    }
 
+	/**
+	 * Returns plugin container.
+	 *
+	 * @return \Rain\Tpl\PluginContainer
+	 */
+	protected static function get_plugins() {
+		if (is_null(static::$plugins)) {
+			static::$plugins = new \Rain\Tpl\PluginContainer();
+		}
+		return static::$plugins;
+	}
 
 	protected function _check_template( $template ){
 		// set filename
@@ -204,10 +236,15 @@ class Tpl{
 
 	protected function _compile_template( $code, $template_basedir, $template_filepath ){
 
-        $this->_register_plugins();
-
 		// Execute plugins, before_parse
-        $code = $this->_parse_hook( 'before_parse', array( 'code'=>$code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
+		$context = $this->get_plugins()->create_context(array(
+			'code' => $code,
+			'template_basedir' => $template_basedir,
+			'template_filepath' => $template_filepath,
+			'conf' => static::$conf,
+		));
+		$this->get_plugins()->run('before_parse', $context);
+		$code = $context->code;
 
 		// set tags
 		foreach( static::$conf['tags'] as $tag => $tag_array ){
@@ -431,9 +468,10 @@ class Tpl{
 		}
 
         // Execute plugins, after_parse
-        $parsed_code = $this->_parse_hook( 'after_parse', array( 'code'=>$parsed_code, 'template_basedir'=>$template_basedir, 'template_filepath'=>$template_filepath ) );
+		$context->code = $parsed_code;
+        $this->get_plugins()->run('after_parse', $context);
 
-		return $parsed_code;
+		return $context->code;
 
 	}
 
@@ -500,47 +538,6 @@ class Tpl{
 		return $html;
 	
 	}
-
-
-    protected function _register_plugins(){
-
-        $hooks = array( 'before_parse', 'after_parse' );
-
-        foreach( static::$conf['plugins'] as $plugin_name => $plugin ){
-            require_once static::$conf['plugins_dir'] . $plugin_name . ".php";
-            static::$conf['plugins'][$plugin_name]['hooks'] = array();
-            foreach( $hooks as $hook ){
-                if( function_exists( $plugin_name . "_" . $hook ) )
-                    static::$conf['plugins'][$plugin_name]['hooks'][] = $hook;
-            }
-        }
-
-    }
-
-    protected function _parse_hook( $hook, $parameters ){
-
-        foreach( static::$conf['plugins'] as $plugin_name => $plugin ){
-
-            // if the selected hook is here
-            if( ( is_string( $plugin['hooks'] ) && $hook == $plugin['hooks'] ) OR ( is_array($plugin['hooks']) && in_array( $hook, $plugin['hooks'] ) ) ){
-
-                require_once static::$conf['plugins_dir'] . $plugin_name . ".php";
-                return call_user_func( $plugin_name . "_" . $hook, $parameters, static::$conf );
-
-            }
-
-        }
-
-        switch( $hook ){
-            case 'before_parse':
-                return $parameters['code'];
-            case 'after_parse':
-                return $parameters['code'];
-        }
-
-    }
-
-
 }
 
 
