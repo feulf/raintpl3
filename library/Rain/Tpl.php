@@ -43,7 +43,7 @@ class Tpl{
                                                                         'ignore'		=> array( '({ignore}|{\*)'	, '/{ignore}|{\*/' ),
                                                                         'ignore_close'	=> array( '({\/ignore}|\*})', '/{\/ignore}|\*}/' ),
                                                                         'include'		=> array( '({include.*?})'	, '/{include="([^"]*)"}/' ),
-                                                                        'function'		=> array( '({function.*?})'	, '/{function="([a-zA-Z][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/' ),
+                                                                        'function'		=> array( '({function.*?})'	, '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/' ),
                                                                         'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
                                                                         'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
                                                                     ),
