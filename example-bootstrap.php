@@ -17,6 +17,12 @@
 	Tpl::configure( $config );
 
 
+	// Add PathReplace plugin
+	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
+	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+
+
+
 	// set variables
 	$var = array(
 					"variable"	=> "Hello World!",

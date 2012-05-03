@@ -33,6 +33,12 @@
 	//use Rain;
 	MyRainTPL::configure( $config );
 
+
+	// Add PathReplace plugin
+	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
+	MyRainTPL::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+
+
 	global $global_variable;
 	$global_variable = "I'm Global";
 
@@ -47,6 +53,7 @@
 										);
     $tpl->title = "Rain TPL 3 - Easy and Fast template engine";
     $tpl->copyright = "Copyright 2006 - 2012 Rain TPL<br>Project By Rain Team";
+
 
     $tpl->draw( 'page' );
 

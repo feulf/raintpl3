@@ -1,12 +1,11 @@
 <?php
-namespace Rain\Tpl\Plugin;
 
+namespace Rain\Tpl\Plugin;
 require_once __DIR__ . '/../Plugin.php';
 
 class PathReplace extends \Rain\Tpl\Plugin
 {
 	protected $hooks = array('before_parse');
-	private $base_url = '';
 	private $tags = array('a', 'img', 'link', 'script', 'input');
 
 	/**
@@ -26,7 +25,7 @@ class PathReplace extends \Rain\Tpl\Plugin
 
 
 		// get the template base directory
-		$template_directory = $this->base_url . $context->conf['tpl_dir'] . $context->template_basedir;
+		$template_directory = $context->conf['base_url'] . $context->conf['tpl_dir'] . $context->template_basedir;
 
 		// reduce the path
 		$path = preg_replace('/\w+\/\.\.\//', '', $template_directory );
@@ -50,7 +49,7 @@ class PathReplace extends \Rain\Tpl\Plugin
 
 		if( in_array( "a", $tags ) ){
 			$exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:|mailto:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-			$sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . $this->base_url . '$2"', '<a$1href="$2"' ) );
+			$sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . $context->conf['base_url'] . '$2"', '<a$1href="$2"' ) );
 		}
 
 		if( in_array( "input", $tags ) ){
@@ -68,8 +67,4 @@ class PathReplace extends \Rain\Tpl\Plugin
 		return $this;
 	}
 
-	public function set_base_url($base_url) {
-		$this->base_url = (string) $base_url;
-		return $this;
-	}
 }

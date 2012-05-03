@@ -33,6 +33,7 @@ class Tpl{
                                         'tpl_dir'           => 'templates/',
                                         'cache_dir'         => 'cache/',
                                         'tpl_ext'           => 'html',
+										'base_url'			=> '',
                                         'php_enabled'       => false,
                                         'template_syntax'	=> 'Rain',
                                         'registered_tags'	=> array(),
@@ -52,7 +53,7 @@ class Tpl{
                                                                         'function'		=> array( '({function.*?})'	, '/{function="([a-zA-Z][a-zA-Z_0-9]*)(\(.*\)){0,1}"}/' ),
                                                                         'variable'		=> array( '({\$.*?})'		, '/{(\$.*?)}/' ),
                                                                         'constant'		=> array( '({#.*?})'		, '/{#(.*?)#{0,1}}/' ),
-                                                                    ),
+                                                                    )
                         );
 
 
