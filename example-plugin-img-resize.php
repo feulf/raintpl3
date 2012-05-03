@@ -9,19 +9,20 @@
 	// conf
 	$config = array( 
 					"base_url"	=> null, 
-					"tpl_dir"	=> "templates/raintpl3/",
+					"tpl_dir"	=> "templates/image_resize/",
 					"cache_dir"	=> "cache/",
 					"debug"		=> true,
 				   );
-
-	//use Rain;
 	Tpl::configure( $config );
 
 
-	// Add PathReplace plugin
+	// Add PathReplace plugin (necessary to load the CSS with path replace)
 	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
 	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
 
+	require_once('library/Rain/Tpl/Plugin/ImageResize.php');
+	$plugin_options = array( 'quality' => 100, 'crop' => true );
+    Tpl::register_plugin( new Rain\Tpl\Plugin\ImageResize( $plugin_options ) );
 
 	global $global_variable;
 	$global_variable = "I'm Global";
@@ -59,7 +60,4 @@
 	// draw
 	$tpl = new Tpl;
 	$tpl->assign( $var );
-	echo $tpl->draw( "page" );
-
-        
-?>
+    echo $tpl->draw( "page" );

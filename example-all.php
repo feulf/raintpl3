@@ -5,17 +5,23 @@
 
 	// include
 	include "library/Rain/Tpl.php";
-	
+
 	// config
 	$config = array(
 					"base_url"      => null,
 					"tpl_dir"       => "templates/test/",
 					"cache_dir"     => "cache/",
 					"debug"         => true,
-                    "auto_escape"   => true
+                    "auto_escape"   => true,
 				   );
 
 	Tpl::configure( $config );
+
+
+	// Add PathReplace plugin
+	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
+	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+
 
 
 	// set variables
@@ -57,13 +63,6 @@
 												return "Translate: <b>$value</b> in <b>$value2</b>";
 										   }
 					 );
-
-
-	class Test{
-		static public function method( $variable ){
-			echo "Hi I am a static method, and this is the parameter passed to me: $variable!";
-		}
-	}
 
 	// draw
 	$tpl = new Tpl;

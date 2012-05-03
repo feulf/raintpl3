@@ -1,6 +1,8 @@
 <?php
 
 namespace Rain;
+require_once 'Tpl/PluginContainer.php';
+require_once 'Tpl/Plugin.php';
 
 /**
  *  RainTPL
@@ -16,6 +18,13 @@ class Tpl{
 	// variables
 	public				$var				= array();
 
+	/**
+	 * Plugin container
+	 *
+	 * @var \Rain\Tpl\PluginContainer
+	 */
+	protected static    $plugins = null;
+
 	// configuration
 	protected static    $conf = array(
                                         'checksum'          => array(),
@@ -23,12 +32,10 @@ class Tpl{
                                         'debug'             => FALSE,
                                         'tpl_dir'           => 'templates/',
                                         'cache_dir'         => 'cache/',
-                                        'base_url'          => null,
                                         'tpl_ext'           => 'html',
-                                        'php_enabled'       => FALSE,
+										'base_url'			=> '',
+                                        'php_enabled'       => false,
                                         'template_syntax'	=> 'Rain',
-                                        'path_replace'      => TRUE,
-                                        'path_replace_list' => array( 'a', 'img', 'link', 'script', 'input' ),
                                         'registered_tags'	=> array(),
                                         'auto_escape'		=> FALSE,
                                         'tags'              => array(
@@ -136,7 +143,39 @@ class Tpl{
 		static::$conf['registered_tags'][ $tag ] = array( "parse" => $parse, "function" => $function );
 	}
 
+	/**
+	 * Registers a plugin globally.
+	 *
+	 * @param \Rain\Tpl\IPlugin $plugin
+	 * @param string $name name can be used to distinguish plugins of same class.
+	 */
+	public static function register_plugin(\Rain\Tpl\IPlugin $plugin, $name = ''){
+		if ('' === $name) {
+			$name = \get_class($plugin);
+		}
+		static::get_plugins()->add_plugin($name, $plugin);
+    }
 
+	/**
+	 * Removes registered plugin from stack.
+	 *
+	 * @param string $name
+	 */
+	public static function remove_plugin($name){
+		static::get_plugins()->remove_plugin($name);
+    }
+
+	/**
+	 * Returns plugin container.
+	 *
+	 * @return \Rain\Tpl\PluginContainer
+	 */
+	protected static function get_plugins() {
+		if (is_null(static::$plugins)) {
+			static::$plugins = new \Rain\Tpl\PluginContainer();
+		}
+		return static::$plugins;
+	}
 
 	protected function _check_template( $template ){
 		// set filename
@@ -144,7 +183,7 @@ class Tpl{
 		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
 		$template_directory			= static::$conf['tpl_dir'] . $template_basedir;
 		$template_filepath			= $template_directory . $template_name . '.' . static::$conf['tpl_ext'];
-		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . implode( static::$conf['checksum'] ) ) . '.rtpl.php';
+		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . serialize( static::$conf['checksum'] ) ) . '.rtpl.php';
 
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
@@ -299,9 +338,15 @@ class Tpl{
 
 	protected function _compile_template( $code, $is_string, $template_basedir, $template_filepath ){
 
-		//path replace (src of img, background and href of link)
-		if( static::$conf['path_replace'] )
-			$code = $this->_path_replace( $code, $template_basedir );
+		// Execute plugins, before_parse
+		$context = $this->get_plugins()->create_context(array(
+			'code' => $code,
+			'template_basedir' => $template_basedir,
+			'template_filepath' => $template_filepath,
+			'conf' => static::$conf,
+		));
+		$this->get_plugins()->run('before_parse', $context);
+		$code = $context->code;
 
 		// set tags
 		foreach( static::$conf['tags'] as $tag => $tag_array ){
@@ -510,7 +555,7 @@ class Tpl{
 				$found = FALSE;
 				foreach( static::$conf['registered_tags'] as $tags => $array ){
 					if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
-						$found = TRUE;
+						$found = true;
 						$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".var_export($matches,1)." ); ?>";
 					}
 				}
@@ -549,57 +594,11 @@ class Tpl{
             }
         }
 
-		return $parsed_code;
+        // Execute plugins, after_parse
+		$context->code = $parsed_code;
+        $this->get_plugins()->run('after_parse', $context);
 
-	}
-
-
-
-	/**
-	 * replace the path of image src, link href and a href.
-	 * url => template_dir/url
-	 * url# => url
-	 * http://url => http://url
-	 *
-	 * @param string $html
-	 * @return string html sostituito
-	 */
-	protected function _path_replace( $html, $template_basedir ){
-
-		// get the template base directory
-		$template_directory = static::$conf['base_url'] . static::$conf['tpl_dir'] . $template_basedir;
-		
-		// reduce the path
-		$path = preg_replace('/\w+\/\.\.\//', '', $template_directory );
-
-		$exp = $sub = array();
-
-		if( in_array( "img", static::$conf['path_replace_list'] ) ){
-			$exp = array( '/<img(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<img(.*?)src=(?:")([^"]+?)#(?:")/i', '/<img(.*?)src="(.*?)"/', '/<img(.*?)src=(?:\@)([^"]+?)(?:\@)/i' );
-			$sub = array( '<img$1src=@$2://$3@', '<img$1src=@$2@', '<img$1src="' . $path . '$2"', '<img$1src="$2"' );
-		}
-
-		if( in_array( "script", static::$conf['path_replace_list'] ) ){
-			$exp = array_merge( $exp , array( '/<script(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<script(.*?)src=(?:")([^"]+?)#(?:")/i', '/<script(.*?)src="(.*?)"/', '/<script(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<script$1src=@$2://$3@', '<script$1src=@$2@', '<script$1src="' . $path . '$2"', '<script$1src="$2"' ) );
-		}
-
-		if( in_array( "link", static::$conf['path_replace_list'] ) ){
-			$exp = array_merge( $exp , array( '/<link(.*?)href=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<link(.*?)href=(?:")([^"]+?)#(?:")/i', '/<link(.*?)href="(.*?)"/', '/<link(.*?)href=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<link$1href=@$2://$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
-		}
-
-        if( in_array( "a", static::$conf['path_replace_list'] ) ){
-            $exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:|mailto:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-            $sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . static::$conf['base_url'] . '$2"', '<a$1href="$2"' ) );
-        }
-
-		if( in_array( "input", static::$conf['path_replace_list'] ) ){
-			$exp = array_merge( $exp , array( '/<input(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<input(.*?)src=(?:")([^"]+?)#(?:")/i', '/<input(.*?)src="(.*?)"/', '/<input(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<input$1src=@$2://$3@', '<input$1src=@$2@', '<input$1src="' . $path . '$2"', '<input$1src="$2"' ) );
-		}
-
-		return preg_replace( $exp, $sub, $html );
+		return $context->code;
 
 	}
 

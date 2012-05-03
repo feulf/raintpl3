@@ -15,6 +15,11 @@
 				   );
 	Tpl::configure( $config );
 
+	// Add PathReplace plugin
+	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
+	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+
+
 	global $global_variable;
 	$global_variable = "I'm Global";
 
