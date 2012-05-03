@@ -133,5 +133,3 @@ class ImageResize extends \Rain\Tpl\Plugin{
 	}
 
 }
-
-

@@ -14,7 +14,15 @@
 					"debug"		=> true,
 				   );
 	Tpl::configure( $config );
-    Tpl::register_plugin( 'image_resize', array( 'quality'=>100, 'crop' => true ) );
+
+
+	// Add PathReplace plugin (necessary to load the CSS with path replace)
+	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
+	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+
+	require_once('library/Rain/Tpl/Plugin/ImageResize.php');
+	$plugin_options = array( 'quality' => 100, 'crop' => true );
+    Tpl::register_plugin( new Rain\Tpl\Plugin\ImageResize( $plugin_options ) );
 
 	global $global_variable;
 	$global_variable = "I'm Global";
