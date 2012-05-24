@@ -193,7 +193,7 @@ class Tpl{
 
 		// Compile the template if the original has been updated
 		if( static::$conf['debug']  ||  !file_exists( $parsed_template_filepath )  ||  ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ) ) )
-			$this->_compile_file( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath );
+			$this->_compile_file( $template_name, $template_basedir, $template_directory, $template_filepath, $parsed_template_filepath );
 
         return $parsed_template_filepath;
 	}
@@ -223,7 +223,7 @@ class Tpl{
 	 * Compile the file
 	 */
 
-	protected function _compile_file( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath ){
+	protected function _compile_file( $template_name, $template_basedir, $template_directory, $template_filepath, $parsed_template_filepath ){
 
 		// open the template
 		$fp = fopen( $template_filepath, "r" );
@@ -249,7 +249,7 @@ class Tpl{
                                                                         return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 																  }, $code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = false, $template_basedir, $template_filepath );
+			$parsed_code = $this->_compile_template( $code, $is_string = false, $template_basedir, $template_directory, $template_filepath );
 			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
@@ -336,7 +336,7 @@ class Tpl{
 	 * @access protected
 	 */
 
-	protected function _compile_template( $code, $is_string, $template_basedir, $template_filepath ){
+	protected function _compile_template( $code, $is_string, $template_basedir, $template_directory, $template_filepath ){
 
 		// Execute plugins, before_parse
 		$context = $this->get_plugins()->create_context(array(
@@ -397,15 +397,20 @@ class Tpl{
 			//include tag
 			elseif( preg_match( $tag_match['include'], $html, $matches ) ){
 
-				//variables substitution
-				$include_var = $this->_var_replace( $matches[ 1 ], $loop_level );
+				//get the folder of the actual template
+				$actual_folder = substr( $template_directory, strlen(static::$conf['tpl_dir']) );
+
+				//get the included template
+				$include_template = $actual_folder . $this->_var_replace( $matches[ 1 ], $loop_level );
+
+				// reduce the path
+				$include_template = preg_replace('/\w+\/\.\.\//', '', $include_template );
 
 				//dynamic include
 				$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
-							 '$tpl_dir_temp = static::$conf[\'tpl_dir\'];' .
 							 '$tpl->assign( $this->var );' .
 							 ( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
-							 '$tpl->draw( dirname("'.$include_var.'") . ( substr("'.$include_var.'",-1,1) != "/" ? "/" : "" ) . basename("'.$include_var.'") );'.
+							 '$tpl->draw( "'.$include_template.'" );'.
 							 '?>';
 
 			}
