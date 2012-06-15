@@ -613,9 +613,9 @@ class Tpl{
 	protected function _var_replace( $html, $loop_level = NULL, $escape = TRUE, $echo = FALSE ){
 		
 		// change variable name if loop level
-		if( $loop_level )
-			$html = str_replace( array('$value','$key','$counter'), array('$value'.$loop_level,'$key'.$loop_level,'$counter'.$loop_level), $html );
-		
+                if (! empty($loop_level)) 
+                    $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}'.$loop_level, '${1}'.$loop_level, '${1}'.$loop_level), $html); 
+                
 		// if it is a variable
 		if( preg_match_all('/(\$[a-z_A-Z][\.\[\]\"\'a-zA-Z_0-9]*)/', $html, $matches ) ){
 
