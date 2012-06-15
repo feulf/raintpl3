@@ -302,7 +302,8 @@ class Tpl{
                                                                         return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 																  }, $code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir, $template_filepath );
+			$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir, $template_directory = null, $template_filepath );
+
 			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
