@@ -69,5 +69,12 @@
 	$tpl->assign( $var );
 	echo $tpl->draw( "test" );
 
+
         
+	class Test{
+		static public function method( $variable ){
+			echo "Hi I am a static method, and this is the parameter passed to me: $variable!";
+		}
+	}
+
 ?>
