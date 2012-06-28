@@ -28,7 +28,7 @@ class PathReplace extends \Rain\Tpl\Plugin
 		$template_directory = $context->conf['base_url'] . $context->conf['tpl_dir'] . $context->template_basedir;
 
 		// reduce the path
-		$path = str_replace( "://", "@not_replace@", $path );
+		$path = str_replace( "://", "@not_replace@", $template_directory );
 		$path = str_replace( "//", "/", $path );
 		$path = str_replace( "@not_replace@", "://", $path );
 		$path = str_replace( "/./", "/", $path );
