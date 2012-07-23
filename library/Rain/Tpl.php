@@ -72,11 +72,27 @@ class Tpl{
 	/**
 	 * Draw the template
 	 */
-	public function draw( $_template_file_path, $_to_string = FALSE ){
+	public function draw( $_template_file_path, $_to_string = FALSE, $_minify=false){
 		extract( $this->var );
 		ob_start();
 		require $this->_check_template( $_template_file_path );
-		if( $_to_string ) return ob_get_clean(); else echo ob_get_clean();
+		$output = ob_get_clean();
+		
+		if($_minify) {
+			$output = preg_replace(
+				 array(
+					  '/ {2,}/',
+					  '/\t|(?:\r?\n[ \t]*)+/s'
+				 ),
+				 array(
+					  ' ',
+					  ''
+				 ),
+				 $output
+			);		
+		}
+		
+		if( $_to_string ) return $output else echo $output;
 	}
 
 
