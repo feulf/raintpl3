@@ -207,7 +207,7 @@ class Tpl{
 			$name = \get_class($plugin);
 		}
 		static::get_plugins()->add_plugin($name, $plugin);
-		}
+	}
 
 	/**
 	 * Removes registered plugin from stack.
@@ -227,13 +227,16 @@ class Tpl{
 		if (is_null(static::$plugins)) {
 			static::$plugins = new \Rain\Tpl\PluginContainer();
 		}
+
 		return static::$plugins;
 	}
 
 	/**
 	 * Check if the	template and compiles if neccessary
 	 *
-	 * @throws Rain\RainTpl_NotFoundException
+	 * @param string $template template name
+	 *
+	 * @throws \Rain\RainTpl_NotFoundException
 	 * @return string template name
 	 */
 	protected function _check_template( $template ){
@@ -246,7 +249,7 @@ class Tpl{
 
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
-			$e = new RainTpl_NotFoundException( 'Template '. $template_name .' not found!' );
+			$e = new Tpl_NotFoundException( 'Template '. $template_name .' not found!' );
 			throw $e->setTemplateFile($template_filepath);
 		}
 
@@ -260,31 +263,24 @@ class Tpl{
 		return $parsed_template_filepath;
 	}
 
-
-
-
 	protected function _check_string( $string ){
 
-				// set filename
-				$template_name							= md5( $string . implode( static::$conf['checksum'] ) );
+		// set filename
+		$template_name							= md5( $string . implode( static::$conf['checksum'] ) );
 		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . '.s.rtpl.php';
-				$template_filepath					= '';
-				$template_basedir			= '';
-
+		$template_filepath					= '';
+		$template_basedir			= '';
 
 		// Compile the template if the original has been updated
 		if( static::$conf['debug']	||	!file_exists( $parsed_template_filepath ) )
 			$this->_compile_string( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $string );
 
-				return $parsed_template_filepath;
+		return $parsed_template_filepath;
 	}
-
-
 
 	/**
 	 * Compile the file
 	 */
-
 	protected function _compile_file( $template_name, $template_basedir, $template_directory, $template_filepath, $parsed_template_filepath ){
 
 		// open the template
@@ -308,8 +304,8 @@ class Tpl{
 
 			// xml re-substitution
 			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
-																																				return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
-																	}, $code );
+				return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
+			}, $code );
 
 			$parsed_code = $this->_compile_template( $code, $is_string = false, $template_basedir, $template_directory, $template_filepath );
 			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
@@ -323,7 +319,7 @@ class Tpl{
 
 			// check if the cache is writable
 			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to FALSE. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+				throw new Tpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to FALSE. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
@@ -377,7 +373,7 @@ class Tpl{
 
 			// check if the cache is writable
 			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new RainTpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+				throw new Tpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
 			// write compiled file
 			fwrite( $fp, $parsed_code );
@@ -398,7 +394,6 @@ class Tpl{
 	 * Compile template
 	 * @access protected
 	 */
-
 	protected function _compile_template( $code, $is_string, $template_basedir, $template_directory, $template_filepath ){
 
 		// Execute plugins, before_parse
@@ -427,253 +422,245 @@ class Tpl{
 
 		//variables initialization
 		$parsed_code = $comment_is_open = $ignore_is_open = NULL;
-								$open_if = $loop_level = 0;
+		$open_if = $loop_level = 0;
 
-								// if the template is not empty
-								if( $code_split )
+		// if the template is not empty
+		if( $code_split )
 
-										//read all parsed code
-										foreach ( $code_split as $html ){
+			//read all parsed code
+			foreach ( $code_split as $html ){
 
-														//close ignore tag
-														if( !$comment_is_open && preg_match( $tag_match['ignore_close'], $html ) )
-																		$ignore_is_open = FALSE;
+				//close ignore tag
+				if( !$comment_is_open && preg_match( $tag_match['ignore_close'], $html ) )
+					$ignore_is_open = FALSE;
 
-														//code between tag ignore id deleted
-														elseif( $ignore_is_open ){
-																		//ignore the code
-														}
-
-														//close no parse tag
-														elseif( preg_match( $tag_match['noparse_close'], $html ) )
-																		$comment_is_open = FALSE;
-
-														//code between tag noparse is not compiled
-														elseif( $comment_is_open )
-																		$parsed_code .= $html;
-
-														//ignore
-														elseif( preg_match( $tag_match['ignore'], $html ) )
-																		$ignore_is_open = TRUE;
-
-														//noparse
-														elseif( preg_match( $tag_match['noparse'], $html ) )
-																		$comment_is_open = TRUE;
-
-														//include tag
-														elseif( preg_match( $tag_match['include'], $html, $matches ) ){
-
-																		//get the folder of the actual template
-																		$actual_folder = substr( $template_directory, strlen(static::$conf['tpl_dir']) );
-
-																		//get the included template
-																		$include_template = $actual_folder . $this->_var_replace( $matches[ 1 ], $loop_level );
-
-																		// reduce the path
-																		$include_template = preg_replace('/\w+\/\.\.\//', '', $include_template );
-
-																		//dynamic include
-																		$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
-																														'$tpl->assign( $this->var );' .
-																														( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
-																														'$tpl->draw( "'.$include_template.'" );'.
-																														'?>';
-
-														}
-
-														//loop
-														elseif( preg_match( $tag_match['loop'], $html, $matches ) ){
-
-																		// increase the loop counter
-																		$loop_level++;
-
-																		//replace the variable in the loop
-																		$var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = FALSE );
-
-																		// check black list
-																		$this->_black_list( $var );
-
-																		//loop variables
-																		$counter = "\$counter$loop_level";			 // count iteration
-
-																		if( isset($matches['key']) && isset($matches['value']) ){
-																						$key	 = $matches['key'];
-																						$value	 = $matches['value'];
-																		}
-																		elseif( isset($matches['key']) ){
-																						$key	 = "\$key$loop_level";							 // key
-																						$value	 = $matches['key'];
-																		}
-																		else{
-																						$key	 = "\$key$loop_level";							 // key
-																						$value	 = "\$value$loop_level";					 // value
-																		}
-
-																		//loop code
-																		$parsed_code .=	"<?php $counter=-1; if( is_array($var) && sizeof($var) ) foreach( $var as $key => $value ){ $counter++; ?>";
-
-														}
-
-														//close loop tag
-														elseif( preg_match( $tag_match['loop_close'], $html ) ) {
-
-																		//iterator
-																		$counter = "\$counter$loop_level";
-
-																		//decrease the loop counter
-																		$loop_level--;
-
-																		//close loop code
-																		$parsed_code .=	"<?php } ?>";
-
-														}
-
-														//if
-														elseif( preg_match( $tag_match['if'], $html, $matches ) ){
-
-																		//increase open if counter (for intendation)
-																		$open_if++;
-
-																		//tag
-																		$tag = $matches[ 0 ];
-
-																		//condition attribute
-																		$condition = $matches[ 1 ];
-
-																		// check black list
-																		$this->_black_list( $condition );
-
-																		//variable substitution into condition (no delimiter into the condition)
-																		$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
-
-																		//if code
-																		$parsed_code .=	 "<?php if( $parsed_condition ){ ?>";
-
-														}
-
-														//elseif
-														elseif( preg_match( $tag_match['elseif'], $html, $matches ) ){
-
-																		//tag
-																		$tag = $matches[ 0 ];
-
-																		//condition attribute
-																		$condition = $matches[ 1 ];
-
-																		// check black list
-																		$this->_black_list( $condition );
-
-																		//variable substitution into condition (no delimiter into the condition)
-																		$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
-
-																		//elseif code
-																		$parsed_code .=	 "<?php }elseif( $parsed_condition ){ ?>";
-														}
-
-														//else
-														elseif( preg_match( $tag_match['else'], $html ) ) {
-
-																		//else code
-																		$parsed_code .=	 '<?php }else{ ?>';
-
-														}
-
-														//close if tag
-														elseif( preg_match( $tag_match['if_close'], $html ) ) {
-
-																		//decrease if counter
-																		$open_if--;
-
-																		// close if code
-																		$parsed_code .=	 '<?php } ?>';
-
-														}
-
-														// function
-														elseif( preg_match( $tag_match['function'], $html, $matches ) ) {
-
-																		// get function
-																		$function = $matches[1];
-
-																		// var replace
-																		if( isset($matches[2]) )
-																						$parsed_function = $function . $this->_var_replace( $matches[2], $loop_level, $escape = FALSE, $echo = FALSE );
-																		else
-																						$parsed_function = $function . "()";
-
-																		// check black list
-																		$this->_black_list( $parsed_function );
-
-																		// function 
-																		$parsed_code .=	 "<?php echo $parsed_function; ?>";
-
-														}
-
-														//variables
-														elseif( preg_match( $tag_match['variable'], $html, $matches ) ){
-																		//variables substitution (es. {$title})
-																		$parsed_code .= "<?php " . $this->_var_replace( $matches[1], $loop_level, $escape = TRUE, $echo = TRUE ) . "; ?>";
-														}
-
-														//constants
-														elseif( preg_match( $tag_match['constant'], $html, $matches ) ){
-																		$parsed_code .= "<?php echo " . $this->_con_replace( $matches[1], $loop_level ) . "; ?>";
-														}
-
-														// registered tags
-														else{
-
-																		$found = FALSE;
-																		foreach( static::$conf['registered_tags'] as $tags => $array ){
-																						if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
-																										$found = true;
-																										$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".var_export($matches,1)." ); ?>";
-																						}
-																		}
-
-																		if( !$found )
-																						$parsed_code .= $html;
-														}
-
-										}
-
-
-				if( $is_string ){
-						if( $open_if > 0 ) {
-
-								$trace=debug_backtrace();
-								$caller=array_shift($trace);
-
-								$e = new RainTpl_SyntaxException( "Error! You need to close an {if} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
-								throw $e->setTemplateFile($template_filepath);
-						}
-
-						if( $loop_level > 0 ) {
-								$e = new RainTpl_SyntaxException( "Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
-								throw $e->setTemplateFile($template_filepath);
-						}
-				}
-				else{
-						if( $open_if > 0 ) {
-								$e = new RainTpl_SyntaxException( "Error! You need to close an {if} tag in $template_filepath template");
-								throw $e->setTemplateFile($template_filepath);
-						}
-
-						if( $loop_level > 0 ) {
-								$e = new RainTpl_SyntaxException( "Error! You need to close the {loop} tag in $template_filepath template" );
-								throw $e->setTemplateFile($template_filepath);
-						}
+				//code between tag ignore id deleted
+				elseif( $ignore_is_open ){
+					//ignore the code
 				}
 
-				// Execute plugins, after_parse
-	$context->code = $parsed_code;
-				$this->get_plugins()->run('after_parse', $context);
+				//close no parse tag
+				elseif( preg_match( $tag_match['noparse_close'], $html ) )
+					$comment_is_open = FALSE;
 
-	return $context->code;
+				//code between tag noparse is not compiled
+				elseif( $comment_is_open )
+					$parsed_code .= $html;
 
+				//ignore
+				elseif( preg_match( $tag_match['ignore'], $html ) )
+					$ignore_is_open = TRUE;
+
+				//noparse
+				elseif( preg_match( $tag_match['noparse'], $html ) )
+					$comment_is_open = TRUE;
+
+				//include tag
+				elseif( preg_match( $tag_match['include'], $html, $matches ) ){
+
+					//get the folder of the actual template
+					$actual_folder = substr( $template_directory, strlen(static::$conf['tpl_dir']) );
+
+					//get the included template
+					$include_template = $actual_folder . $this->_var_replace( $matches[ 1 ], $loop_level );
+
+					// reduce the path
+					$include_template = preg_replace('/\w+\/\.\.\//', '', $include_template );
+
+					//dynamic include
+					$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
+						'$tpl->assign( $this->var );' .
+						( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
+						'$tpl->draw( "'.$include_template.'" );'.
+						'?>';
+				}
+
+				//loop
+				elseif(preg_match( $tag_match['loop'], $html, $matches )){
+
+					// increase the loop counter
+					$loop_level++;
+
+					//replace the variable in the loop
+					$var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = FALSE );
+
+					// check black list
+					$this->_black_list( $var );
+
+					//loop variables
+					$counter = "\$counter$loop_level";			 // count iteration
+
+					if( isset($matches['key']) && isset($matches['value']) ){
+						$key	 = $matches['key'];
+						$value	 = $matches['value'];
+					}elseif( isset($matches['key']) ){
+						$key	 = "\$key$loop_level";							 // key
+						$value	 = $matches['key'];
+					}else{
+						$key	 = "\$key$loop_level";							 // key
+						$value	 = "\$value$loop_level";					 // value
+					}
+
+					//loop code
+					$parsed_code .=	"<?php $counter=-1; if( is_array($var) && sizeof($var) ) foreach( $var as $key => $value ){ $counter++; ?>";
+
+				}
+
+				//close loop tag
+				elseif( preg_match( $tag_match['loop_close'], $html ) ) {
+
+					//iterator
+					$counter = "\$counter$loop_level";
+
+					//decrease the loop counter
+					$loop_level--;
+
+					//close loop code
+					$parsed_code .=	"<?php } ?>";
+
+				}
+
+				//if
+				elseif( preg_match( $tag_match['if'], $html, $matches ) ){
+
+					//increase open if counter (for intendation)
+					$open_if++;
+
+					//tag
+					$tag = $matches[ 0 ];
+
+					//condition attribute
+					$condition = $matches[ 1 ];
+
+					// check black list
+					$this->_black_list( $condition );
+
+					//variable substitution into condition (no delimiter into the condition)
+					$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
+
+					//if code
+					$parsed_code .=	 "<?php if( $parsed_condition ){ ?>";
+
+				}
+
+				//elseif
+				elseif( preg_match( $tag_match['elseif'], $html, $matches ) ){
+
+					//tag
+					$tag = $matches[ 0 ];
+
+					//condition attribute
+					$condition = $matches[ 1 ];
+
+					// check black list
+					$this->_black_list( $condition );
+
+					//variable substitution into condition (no delimiter into the condition)
+					$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
+
+					//elseif code
+					$parsed_code .=	 "<?php }elseif( $parsed_condition ){ ?>";
+				}
+
+				//else
+				elseif( preg_match( $tag_match['else'], $html ) ) {
+
+				//else code
+				$parsed_code .=	 '<?php }else{ ?>';
+
+			}
+
+			//close if tag
+			elseif( preg_match( $tag_match['if_close'], $html ) ) {
+
+				//decrease if counter
+				$open_if--;
+
+				// close if code
+				$parsed_code .=	 '<?php } ?>';
+
+			}
+
+			// function
+			elseif( preg_match( $tag_match['function'], $html, $matches ) ) {
+
+				// get function
+				$function = $matches[1];
+
+				// var replace
+				if( isset($matches[2]) )
+					$parsed_function = $function . $this->_var_replace( $matches[2], $loop_level, $escape = FALSE, $echo = FALSE );
+				else
+					$parsed_function = $function . "()";
+
+				// check black list
+				$this->_black_list( $parsed_function );
+
+				// function 
+				$parsed_code .=	 "<?php echo $parsed_function; ?>";
+
+			}
+
+			//variables
+			elseif( preg_match( $tag_match['variable'], $html, $matches ) ){
+				//variables substitution (es. {$title})
+				$parsed_code .= "<?php " . $this->_var_replace( $matches[1], $loop_level, $escape = TRUE, $echo = TRUE ) . "; ?>";
+			}
+
+			//constants
+			elseif( preg_match( $tag_match['constant'], $html, $matches ) ){
+				$parsed_code .= "<?php echo " . $this->_con_replace( $matches[1], $loop_level ) . "; ?>";
+			}
+
+			// registered tags
+			else{
+
+				$found = FALSE;
+				foreach( static::$conf['registered_tags'] as $tags => $array ){
+					if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
+						$found = true;
+						$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".var_export($matches,1)." ); ?>";
+					}
+				}
+
+				if( !$found )
+					$parsed_code .= $html;
+			}
+
+		}
+
+		if( $is_string ){
+			if( $open_if > 0 ) {
+
+				$trace=debug_backtrace();
+				$caller=array_shift($trace);
+
+				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
+				throw $e->setTemplateFile($template_filepath);
+			}
+
+			if( $loop_level > 0 ) {
+				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
+				throw $e->setTemplateFile($template_filepath);
+			}
+		}else{
+			if( $open_if > 0 ) {
+				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag in $template_filepath template");
+				throw $e->setTemplateFile($template_filepath);
+			}
+
+			if( $loop_level > 0 ) {
+				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} tag in $template_filepath template" );
+				throw $e->setTemplateFile($template_filepath);
+			}
+		}
+
+		// Execute plugins, after_parse
+		$context->code = $parsed_code;
+		$this->get_plugins()->run('after_parse', $context);
+
+		return $context->code;
 	}
-
-
 
 	protected function _var_replace( $html, $loop_level = NULL, $escape = TRUE, $echo = FALSE ){
 		
@@ -716,10 +703,11 @@ class Tpl{
 		
 	}
 
+	/**
+	 * @alias _modifier_replace
+	 */
 	protected function _con_replace( $html ){
-		$html = $this->_modifier_replace( $html );
-		return $html;
-		
+		return $this->_modifier_replace( $html );
 	}
 
 	protected function _modifier_replace( $html ){
@@ -759,10 +747,10 @@ class Tpl{
 				$line++;
 
 			// stop the execution of the script
-			$e = new RainTpl_SyntaxException('Syntax '.$match[0].' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line '.$line );
+			$e = new Tpl_SyntaxException('Syntax '.$match[0].' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line '.$line );
 			throw $e->setTemplateFile( $this->template_info['template_filepath'] )
-				->setTag( $match[0] )
-				->setTemplateLine($line);
+				->tag( $match[0] )
+				->templateLine($line);
 
 			return false;
 		}
@@ -774,7 +762,7 @@ class Tpl{
 /**
  * Basic Rain tpl exception.
  */
-class RainTpl_Exception extends \Exception{
+class Tpl_Exception extends \Exception{
 		
 	/**
 	 * Path of template file with error.
@@ -795,7 +783,7 @@ class RainTpl_Exception extends \Exception{
 	 * Sets path of template file with error.
 	 *
 	 * @param string $templateFile
-	 * @return RainTpl_Exception
+	 * @return \Rain\Tpl_Exception
 	 */
 	public function setTemplateFile($templateFile)
 	{
@@ -807,13 +795,13 @@ class RainTpl_Exception extends \Exception{
 /**
  * Exception thrown when template file does not exists.
  */
-class RainTpl_NotFoundException extends RainTpl_Exception{
+class Tpl_NotFoundException extends Tpl_Exception{
 }
 
 /**
  * Exception thrown when syntax error occurs.
  */
-class RainTpl_SyntaxException extends RainTpl_Exception{
+class Tpl_SyntaxException extends Tpl_Exception{
 	/**
 	 * Line in template file where error has occured.
 	 *
@@ -829,48 +817,35 @@ class RainTpl_SyntaxException extends RainTpl_Exception{
 	protected $tag = null;
 
 	/**
-	 * Returns line in template file where error has occured
-	 * or null if line is not defined.
+	 * Handles the line in template file where error has occured
+	 * 
+	 * @param int | null
 	 *
-	 * @return int | null
+	 * @return \Rain\Tpl_SyntaxException | int | null
 	 */
-	public function getTemplateLine()
-	{
-		return $this->templateLine;
+	public function templateLine($line){
+		if(is_null($line))
+			return $this->templateLine;
+		else{
+			$this->templateLine = (int) $line;
+			return $this;
+		}
 	}
 
 	/**
-	 * Sets	line in template file where error has occured.
+	 * Handles the tag which caused an error.
 	 *
-	 * @param int $templateLine
-	 * @return RainTpl_SyntaxException
-	 */
-	public function setTemplateLine($templateLine)
-	{
-		$this->templateLine = (int) $templateLine;
-		return $this;
-	}
-
-	/**
-	 * Returns tag which caused an error.
+	 * @param string | null $tag
 	 *
-	 * @return string
+	 * @return \Rain\Tpl_SyntaxException | string | null
 	 */
-	public function getTag()
-	{
-		return $this->tag;
-	}
-
-	/**
-	 * Sets tag which caused an error.
-	 *
-	 * @param string $tag
-	 * @return RainTpl_SyntaxException
-	 */
-	public function setTag($tag)
-	{
-		$this->tag = (string) $tag;
-		return $this;
+	public function tag($tag=null){
+		if(is_null($tag))
+			return $this->tag;
+		else{
+			$this->tag = (string) $tag;
+			return $this;
+		}
 	}
 }
 
