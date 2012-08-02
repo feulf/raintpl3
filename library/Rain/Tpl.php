@@ -250,7 +250,7 @@ class Tpl{
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
 			$e = new Tpl_NotFoundException( 'Template '. $template_name .' not found!' );
-			throw $e->setTemplateFile($template_filepath);
+			throw $e->templateFile($template_filepath);
 		}
 
 		// Compile the template if the original has been updated
@@ -636,22 +636,22 @@ class Tpl{
 				$caller=array_shift($trace);
 
 				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
-				throw $e->setTemplateFile($template_filepath);
+				throw $e->templateFile($template_filepath);
 			}
 
 			if( $loop_level > 0 ) {
 				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
-				throw $e->setTemplateFile($template_filepath);
+				throw $e->templateFile($template_filepath);
 			}
 		}else{
 			if( $open_if > 0 ) {
 				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag in $template_filepath template");
-				throw $e->setTemplateFile($template_filepath);
+				throw $e->templateFile($template_filepath);
 			}
 
 			if( $loop_level > 0 ) {
 				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} tag in $template_filepath template" );
-				throw $e->setTemplateFile($template_filepath);
+				throw $e->templateFile($template_filepath);
 			}
 		}
 
@@ -748,7 +748,7 @@ class Tpl{
 
 			// stop the execution of the script
 			$e = new Tpl_SyntaxException('Syntax '.$match[0].' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line '.$line );
-			throw $e->setTemplateFile( $this->template_info['template_filepath'] )
+			throw $e->templateFile( $this->template_info['template_filepath'] )
 				->tag( $match[0] )
 				->templateLine($line);
 
@@ -765,30 +765,23 @@ class Tpl{
 class Tpl_Exception extends \Exception{
 		
 	/**
-	 * Path of template file with error.
+	 * @var Path of template file with error.
 	 */
 	protected $templateFile = '';
 
 	/**
-	 * Returns path of template file with error.
+	 * Handles path of template file with error.
 	 *
-	 * @return string
+	 * @param string | null $templateFile
+	 * @return \Rain\Tpl_Exception | string
 	 */
-	public function getTemplateFile()
-	{
-		return $this->templateFile;
-	}
-
-	/**
-	 * Sets path of template file with error.
-	 *
-	 * @param string $templateFile
-	 * @return \Rain\Tpl_Exception
-	 */
-	public function setTemplateFile($templateFile)
-	{
-		$this->templateFile = (string) $templateFile;
-		return $this;
+	public function templateFile($templateFile){
+		if(is_null($file))
+			return $this->templateFile;
+		else{
+			$this->templateFile = (string) $templateFile;
+			return $this;
+		}
 	}
 }
 
@@ -817,9 +810,10 @@ class Tpl_SyntaxException extends Tpl_Exception{
 	protected $tag = null;
 
 	/**
-	 * Handles the line in template file where error has occured
+	 * Handles the line in template file
+	 * where error has occured
 	 * 
-	 * @param int | null
+	 * @param int | null $line
 	 *
 	 * @return \Rain\Tpl_SyntaxException | int | null
 	 */
