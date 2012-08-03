@@ -141,7 +141,7 @@ class Tpl{
 	}
 
 	/**
-	 * Draw the template
+	 * Draw a string
 	 */
 	public function draw_string( $_string, $_to_string = false ){
 		extract( $this->var );
@@ -159,17 +159,19 @@ class Tpl{
 				static::configure( $key, $value );
 		elseif( isset( static::$conf[$setting] ) ){
 			static::$conf[$setting] = $value;
-			static::$conf['checksum'][$setting] = $value; // take trace of all config
+			// take trace of all config
+			static::$conf['checksum'][$setting] = $value;
 		}
-				
 	}
 
 	/**
 	 * Assign variable
 	 * eg. 	$t->assign('name','mickey');
 	 *
-	 * @param mixed $variable_name Name of template variable or associative array name/value
-	 * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
+	 * @param mixed $variable_name Name of
+	 * template variable or associative array name/value
+	 * @param mixed $value value assigned to this variable.
+	 * Not set if variable_name is an associative array
 	 */
 	public function assign( $variable, $value = null ){
 		if( is_array( $variable ) )
@@ -178,7 +180,6 @@ class Tpl{
 			$this->var[ $variable ] = $value;
 	}
 
-	
 	/**
 	 * Clean the expired files from cache
 	 * @param type $expire_time Set the expiration time
@@ -193,16 +194,20 @@ class Tpl{
 
 
 	public static function register_tag( $tag, $parse, $function ){
-		static::$conf['registered_tags'][ $tag ] = array( "parse" => $parse, "function" => $function );
+		static::$conf['registered_tags'][ $tag ] = array(
+			"parse" => $parse,
+			"function" => $function
+		);
 	}
 
 	/**
 	 * Registers a plugin globally.
 	 *
 	 * @param \Rain\Tpl\IPlugin $plugin
-	 * @param string $name name can be used to distinguish plugins of same class.
+	 * @param string $name name can be used
+	 * to distinguish plugins of same class.
 	 */
-	public static function register_plugin(\Rain\Tpl\IPlugin $plugin, $name = ''){
+	public static function register_plugin(Tpl\IPlugin $plugin, $name=''){
 		if ('' === $name) {
 			$name = \get_class($plugin);
 		}
@@ -224,9 +229,8 @@ class Tpl{
 	 * @return \Rain\Tpl\PluginContainer
 	 */
 	protected static function get_plugins() {
-		if (is_null(static::$plugins)) {
+		if (is_null(static::$plugins))
 			static::$plugins = new \Rain\Tpl\PluginContainer();
-		}
 
 		return static::$plugins;
 	}
@@ -241,24 +245,39 @@ class Tpl{
 	 */
 	protected function _check_template( $template ){
 		// set filename
-		$template_name				= basename( $template );
-		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
-		$template_directory			= static::$conf['tpl_dir'] . $template_basedir;
-		$template_filepath			= $template_directory . $template_name . '.' . static::$conf['tpl_ext'];
-		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . serialize( static::$conf['checksum'] ) ) . '.rtpl.php';
+		$template_name = basename( $template );
+
+		$template_basedir	= strpos($template,"/")
+		 ? dirname($template) . '/' : null;
+
+		$template_directory	= static::$conf['tpl_dir'] . $template_basedir;
+
+		$template_filepath = $template_directory .
+		 $template_name . '.' .
+		 static::$conf['tpl_ext'];
+
+		$parsed_template_filepath	= static::$conf['cache_dir'] .
+		 $template_name . "." .
+		 md5( $template_directory . serialize( static::$conf['checksum'] ) ) .
+		 '.rtpl.php';
 
 		// if the template doesn't exsist throw an error
 		if( !file_exists( $template_filepath ) ){
-			$e = new Tpl_NotFoundException( 'Template '. $template_name .' not found!' );
+			$e = new Tpl_NotFoundException(
+				'Template '. $template_name .' not found!'
+			);
+
 			throw $e->templateFile($template_filepath);
 		}
 
 		// Compile the template if the original has been updated
 		if( static::$conf['debug']
-		 || !file_exists( $parsed_template_filepath )
-		 || ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ))
+		 || !file_exists($parsed_template_filepath)
+		 || (filemtime($parsed_template_filepath) < filemtime($template_filepath))
 		)
-			$this->_compile_file( $template_name, $template_basedir, $template_directory, $template_filepath, $parsed_template_filepath );
+			$this->_compile_file( $template_name, $template_basedir,
+			 $template_directory, $template_filepath, $parsed_template_filepath
+			);
 
 		return $parsed_template_filepath;
 	}
@@ -266,14 +285,17 @@ class Tpl{
 	protected function _check_string( $string ){
 
 		// set filename
-		$template_name							= md5( $string . implode( static::$conf['checksum'] ) );
-		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . '.s.rtpl.php';
-		$template_filepath					= '';
-		$template_basedir			= '';
+		$template_name = md5( $string . implode( static::$conf['checksum'] ) );
+		$parsed_template_filepath	= static::$conf['cache_dir'] .
+		 $template_name . '.s.rtpl.php';
+		$template_filepath = '';
+		$template_basedir	= '';
 
 		// Compile the template if the original has been updated
-		if( static::$conf['debug']	||	!file_exists( $parsed_template_filepath ) )
-			$this->_compile_string( $template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $string );
+		if( static::$conf['debug'] || !file_exists( $parsed_template_filepath ) )
+			$this->_compile_string( $template_name, $template_basedir,
+			 $template_filepath, $parsed_template_filepath, $string
+			);
 
 		return $parsed_template_filepath;
 	}
@@ -281,7 +303,8 @@ class Tpl{
 	/**
 	 * Compile the file
 	 */
-	protected function _compile_file( $template_name, $template_basedir, $template_directory, $template_filepath, $parsed_template_filepath ){
+	protected function _compile_file( $template_name, $template_basedir,
+	 $template_directory, $template_filepath, $parsed_template_filepath){
 
 		// open the template
 		$fp = fopen( $template_filepath, "r" );
@@ -293,7 +316,8 @@ class Tpl{
 			$this->template_info['template_filepath'] = $template_filepath;
 			
 			// read the file			
-			$this->template_info['code'] = $code = fread($fp, filesize( $template_filepath ) );
+			$this->template_info['code'] = $code =
+			 fread($fp, filesize( $template_filepath ) );
 
 			// xml substitution
 			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
@@ -307,8 +331,11 @@ class Tpl{
 				return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 			}, $code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = false, $template_basedir, $template_directory, $template_filepath );
-			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
+			$parsed_code = $this->_compile_template( $code, $is_string = false,
+			 $template_basedir, $template_directory, $template_filepath
+			);
+			$parsed_code =
+			 "<?php if(!class_exists('Rain\Tpl')){exit;}?>" .$parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
 			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
@@ -319,7 +346,12 @@ class Tpl{
 
 			// check if the cache is writable
 			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new Tpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to FALSE. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+				throw new Tpl_Exception ('Cache directory ' .
+				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
+				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
+				 'FALSE. More details on http://www.raintpl.com/Documentation/' .
+				 'Documentation-for-PHP-developers/Configuration/'
+				);
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
@@ -331,16 +363,16 @@ class Tpl{
 
 		// close the file
 		fclose( $fp );
-
 	}
 
 
 
 	/**
-	 * Compile the file
+	 * Compile a string
 	 */
 
-	protected function _compile_string(	$template_name, $template_basedir, $template_filepath, $parsed_template_filepath, $code ){
+	protected function _compile_string(	$template_name, $template_basedir,
+	 $template_filepath, $parsed_template_filepath, $code ){
 
 		// open the template
 		$fp = fopen( $parsed_template_filepath, "w" );
@@ -356,13 +388,16 @@ class Tpl{
 				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
 
 			// xml re-substitution
-			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
-																																				return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
-																	}, $code );
+			$code = preg_replace_callback( "/##XML(.*?)XML##/s", function( $match ){
+				return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
+			}, $code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = true, $template_basedir, $template_directory = null, $template_filepath );
+			$parsed_code = $this->_compile_template( $code, $is_string = true,
+			 $template_basedir, $template_directory = null, $template_filepath
+			);
 
-			$parsed_code = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
+			$parsed_code =
+			 "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
 			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
@@ -373,7 +408,12 @@ class Tpl{
 
 			// check if the cache is writable
 			if( !is_writable( static::$conf['cache_dir'] ) )
-				throw new Tpl_Exception ('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+				throw new Tpl_Exception ('Cache directory ' .
+				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
+				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
+				 'false. More details on http://www.raintpl.com/Documentation/' .
+				 'Documentation-for-PHP-developers/Configuration/'
+				);
 
 			// write compiled file
 			fwrite( $fp, $parsed_code );
@@ -388,13 +428,12 @@ class Tpl{
 
 	}
 
-
-
 	/**
 	 * Compile template
 	 * @access protected
 	 */
-	protected function _compile_template( $code, $is_string, $template_basedir, $template_directory, $template_filepath ){
+	protected function _compile_template( $code, $is_string, $template_basedir,
+	 $template_directory, $template_filepath ){
 
 		// Execute plugins, before_parse
 		$context = $this->get_plugins()->create_context(array(
@@ -418,7 +457,9 @@ class Tpl{
 
 
 		//split the code with the tags regexp
-		$code_split = preg_split( "/" . implode( "|", $tag_split ) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+		$code_split = preg_split( "/" . implode( "|", $tag_split ) . "/", $code,
+		 -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY
+		);
 
 		//variables initialization
 		$parsed_code = $comment_is_open = $ignore_is_open = NULL;
@@ -431,7 +472,7 @@ class Tpl{
 			foreach ( $code_split as $html ){
 
 				//close ignore tag
-				if( !$comment_is_open && preg_match( $tag_match['ignore_close'], $html ) )
+				if(!$comment_is_open && preg_match($tag_match['ignore_close'], $html))
 					$ignore_is_open = FALSE;
 
 				//code between tag ignore id deleted
@@ -459,20 +500,25 @@ class Tpl{
 				elseif( preg_match( $tag_match['include'], $html, $matches ) ){
 
 					//get the folder of the actual template
-					$actual_folder = substr( $template_directory, strlen(static::$conf['tpl_dir']) );
+					$actual_folder = substr( $template_directory,
+					 strlen(static::$conf['tpl_dir']) );
 
 					//get the included template
-					$include_template = $actual_folder . $this->_var_replace( $matches[ 1 ], $loop_level );
+					$include_template = $actual_folder .
+					 $this->_var_replace( $matches[ 1 ], $loop_level );
 
 					// reduce the path
-					$include_template = preg_replace('/\w+\/\.\.\//', '', $include_template );
+					$include_template = preg_replace('/\w+\/\.\.\//', '',
+					 $include_template );
 
 					//dynamic include
 					$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
-						'$tpl->assign( $this->var );' .
-						( !$loop_level ? null : '$tpl->assign( "key", $key'.$loop_level.' ); $tpl->assign( "value", $value'.$loop_level.' );' ).
-						'$tpl->draw( "'.$include_template.'" );'.
-						'?>';
+					 '$tpl->assign( $this->var );' .
+					 (!$loop_level ? null :
+						'$tpl->assign( "key", $key'.$loop_level.' );' .
+						'$tpl->assign( "value", $value'.$loop_level.' );').
+					 '$tpl->draw( "'.$include_template.'" );'.
+					 '?>';
 				}
 
 				//loop
@@ -482,7 +528,8 @@ class Tpl{
 					$loop_level++;
 
 					//replace the variable in the loop
-					$var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = FALSE );
+					$var = $this->_var_replace($matches['variable'], $loop_level-1,
+						$escape = FALSE );
 
 					// check black list
 					$this->_black_list( $var );
@@ -502,7 +549,9 @@ class Tpl{
 					}
 
 					//loop code
-					$parsed_code .=	"<?php $counter=-1; if( is_array($var) && sizeof($var) ) foreach( $var as $key => $value ){ $counter++; ?>";
+					$parsed_code .=	"<?php $counter=-1; " .
+					 "if( is_array($var) && sizeof($var) ) " .
+					 "foreach( $var as $key => $value ){ $counter++; ?>";
 
 				}
 
@@ -535,8 +584,10 @@ class Tpl{
 					// check black list
 					$this->_black_list( $condition );
 
-					//variable substitution into condition (no delimiter into the condition)
-					$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
+					//variable substitution into condition
+					//(no delimiter into the condition)
+					$parsed_condition =
+					 $this->_var_replace( $condition, $loop_level, $escape = FALSE );
 
 					//if code
 					$parsed_code .=	 "<?php if( $parsed_condition ){ ?>";
@@ -555,8 +606,10 @@ class Tpl{
 					// check black list
 					$this->_black_list( $condition );
 
-					//variable substitution into condition (no delimiter into the condition)
-					$parsed_condition = $this->_var_replace( $condition, $loop_level, $escape = FALSE );
+					//variable substitution into condition
+					//(no delimiter into the condition)
+					$parsed_condition =
+					 $this->_var_replace( $condition, $loop_level, $escape = FALSE );
 
 					//elseif code
 					$parsed_code .=	 "<?php }elseif( $parsed_condition ){ ?>";
@@ -589,7 +642,8 @@ class Tpl{
 
 				// var replace
 				if( isset($matches[2]) )
-					$parsed_function = $function . $this->_var_replace( $matches[2], $loop_level, $escape = FALSE, $echo = FALSE );
+					$parsed_function = $function . $this->_var_replace(
+					 $matches[2], $loop_level, $escape = FALSE, $echo = FALSE);
 				else
 					$parsed_function = $function . "()";
 
@@ -604,12 +658,14 @@ class Tpl{
 			//variables
 			elseif( preg_match( $tag_match['variable'], $html, $matches ) ){
 				//variables substitution (es. {$title})
-				$parsed_code .= "<?php " . $this->_var_replace( $matches[1], $loop_level, $escape = TRUE, $echo = TRUE ) . "; ?>";
+				$parsed_code .= "<?php " .
+				 $this->_var_replace( $matches[1], $loop_level, TRUE, TRUE ) . "; ?>";
 			}
 
 			//constants
 			elseif( preg_match( $tag_match['constant'], $html, $matches ) ){
-				$parsed_code .= "<?php echo " . $this->_con_replace( $matches[1], $loop_level ) . "; ?>";
+				$parsed_code .= "<?php echo " .
+				 $this->_con_replace( $matches[1], $loop_level ) . "; ?>";
 			}
 
 			// registered tags
@@ -619,7 +675,9 @@ class Tpl{
 				foreach( static::$conf['registered_tags'] as $tags => $array ){
 					if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
 						$found = true;
-						$parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".var_export($matches,1)." ); ?>";
+						$parsed_code .= "<?php echo call_user_func( " .
+						 "static::\$conf['registered_tags']['$tags']['function'], " .
+						 var_export($matches,1)." ); ?>";
 					}
 				}
 
@@ -635,22 +693,28 @@ class Tpl{
 				$trace=debug_backtrace();
 				$caller=array_shift($trace);
 
-				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
+				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag " .
+				 "in the string, loaded by {$caller['file']} at line {$caller['line']}"
+				);
 				throw $e->templateFile($template_filepath);
 			}
 
 			if( $loop_level > 0 ) {
-				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
+				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} " .
+				 "tag in the string, loaded by {$caller['file']} at line " .
+				 "{$caller['line']}" );
 				throw $e->templateFile($template_filepath);
 			}
 		}else{
 			if( $open_if > 0 ) {
-				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag in $template_filepath template");
+				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag " .
+				 "in $template_filepath template");
 				throw $e->templateFile($template_filepath);
 			}
 
 			if( $loop_level > 0 ) {
-				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} tag in $template_filepath template" );
+				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} " .
+				 "tag in $template_filepath template" );
 				throw $e->templateFile($template_filepath);
 			}
 		}
@@ -662,20 +726,27 @@ class Tpl{
 		return $context->code;
 	}
 
-	protected function _var_replace( $html, $loop_level = NULL, $escape = TRUE, $echo = FALSE ){
+	protected function _var_replace( $html, $loop_level = NULL,
+	 $escape = TRUE, $echo = FALSE ){
 		
 		// change variable name if loop level
-								if (! empty($loop_level)) 
-										$html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}'.$loop_level, '${1}'.$loop_level, '${1}'.$loop_level), $html); 
+		if (! empty($loop_level)) 
+			$html = preg_replace(
+			 array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'),
+			 array('${1}'.$loop_level, '${1}'.$loop_level, '${1}'.$loop_level),
+			 $html); 
 								
 		// if it is a variable
-		if( preg_match_all('/(\$[a-z_A-Z][\.\[\]\"\'a-zA-Z_0-9]*)/', $html, $matches ) ){
+		if (preg_match_all('/(\$[a-z_A-Z][\.\[\]\"\'a-zA-Z_0-9]*)/', $html,
+		 $matches)){
 
 			// substitute . and [] with [" "]
 			for( $i=0;$i<count($matches[1]);$i++ ){
 				
-				$rep = preg_replace( '/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]', $matches[1][$i] );
-				$rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*)/', '["$1"]', $rep );
+				$rep = preg_replace( '/\[(\${0,1}[a-zA-Z_0-9]*)\]/', '["$1"]',
+				 $matches[1][$i] );
+				$rep = preg_replace( '/\.(\${0,1}[a-zA-Z_0-9]*)/', '["$1"]',
+				 $rep );
 				$html = str_replace( $matches[0][$i], $rep, $html );
 
 			}
@@ -689,18 +760,17 @@ class Tpl{
 				// escape character
 				if( static::$conf['auto_escape'] && $escape )
 					//$html = "htmlspecialchars( $html )";
-										$html = "htmlspecialchars( $html, ENT_COMPAT, '".static::$conf['charset']."', FALSE )";
+					$html = "htmlspecialchars( $html, ENT_COMPAT,'" .
+					 static::$conf['charset'] . "', FALSE )";
 			
 				// if is an assignment it doesn't add echo
 				if( $echo )
-						$html = "echo " . $html;
-
+					$html = "echo " . $html;
 			}
 
 		}
 		
-		return $html;
-		
+		return $html;	
 	}
 
 	/**
@@ -721,12 +791,13 @@ class Tpl{
 			$function = $explode[0];
 			$params = isset( $explode[1] ) ? "," . $explode[1] : null;
 
-			$html = $function . "(" . $this->_modifier_replace( substr( $html, 0, $pos ) ) . "$params)";
+			$html = $function . "(" .
+			 $this->_modifier_replace( substr( $html, 0, $pos ) ) .
+			 "$params)";
 
 		}
 		
 		return $html;
-	
 	}
 
 	protected function _black_list( $html ){
@@ -735,7 +806,9 @@ class Tpl{
 			return true;
 
 		if( empty( self::$conf['black_list_preg'] ) )
-			self::$conf['black_list_preg'] = '#[\W\s]*' . implode( '[\W\s]*|[\W\s]*', self::$conf['black_list'] ) . '[\W\s]*#';
+			self::$conf['black_list_preg'] = '#[\W\s]*' .
+			 implode( '[\W\s]*|[\W\s]*', self::$conf['black_list'] ) .
+			 '[\W\s]*#';
 
 		// check if the function is in the black list (or not in white list)
 		if( preg_match( self::$conf['black_list_preg'], $html, $match ) ){
@@ -747,7 +820,8 @@ class Tpl{
 				$line++;
 
 			// stop the execution of the script
-			$e = new Tpl_SyntaxException('Syntax '.$match[0].' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line '.$line );
+			$e = new Tpl_SyntaxException("Syntax $match[0] not allowed in " .
+			 "template: {$this->template_info['template_filepath']} at line $line");
 			throw $e->templateFile( $this->template_info['template_filepath'] )
 				->tag( $match[0] )
 				->templateLine($line);
@@ -756,8 +830,6 @@ class Tpl{
 		}
 	}
 }
-
-//TODO Change Exception names
 
 /**
  * Basic Rain tpl exception.
@@ -817,11 +889,11 @@ class Tpl_SyntaxException extends Tpl_Exception{
 	 *
 	 * @return \Rain\Tpl_SyntaxException | int | null
 	 */
-	public function templateLine($line){
+	public function templateLine($templateLine){
 		if(is_null($line))
 			return $this->templateLine;
 		else{
-			$this->templateLine = (int) $line;
+			$this->templateLine = (int) $templateLine;
 			return $this;
 		}
 	}
@@ -842,5 +914,3 @@ class Tpl_SyntaxException extends Tpl_Exception{
 		}
 	}
 }
-
-// -- end
