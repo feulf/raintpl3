@@ -514,13 +514,17 @@ class Tpl{
 					 $include_template );
 
 					//dynamic include
-					$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
+					$parsed_code .= '<?php require $this->_check_template("' .
+					 $include_template .
+					 '");?>';
+
+					/*$parsed_code .= '<?php $tpl = new '.get_called_class().';' .
 					 '$tpl->assign( $this->var );' .
 					 (!$loop_level ? null :
 						'$tpl->assign( "key", $key'.$loop_level.' );' .
 						'$tpl->assign( "value", $value'.$loop_level.' );').
 					 '$tpl->draw( "'.$include_template.'" );'.
-					 '?>';
+					 '?>';*/
 				}
 
 				//loop
@@ -834,7 +838,7 @@ class Tpl{
 }
 
 /**
- * Basic Rain tpl exception.
+ * Basic Rain\Tpl exception.
  */
 class Tpl_Exception extends \Exception{
 		
