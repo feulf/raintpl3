@@ -370,6 +370,8 @@ class Tpl{
 
 	/**
 	 * Compile a string
+	 * 
+	 * @throws \Rain\TPL_Exceptions not write permissions
 	 */
 
 	protected function _compile_string(	$template_name, $template_basedir,
@@ -394,8 +396,7 @@ class Tpl{
 			}, $code );
 
 			$parsed_code = $this->_compile_template( $code, $is_string = true,
-			 $template_basedir, $template_directory = null, $template_filepath
-			);
+			 $template_basedir, $template_directory = null, $template_filepath);
 
 			$parsed_code =
 			 "<?php if(!class_exists('".get_class($this)."')){exit;}?>" .
@@ -433,6 +434,7 @@ class Tpl{
 	/**
 	 * Compile template
 	 * @access protected
+	 * @throws \Rain\Tpl_SyntaxException 
 	 */
 	protected function _compile_template( $code, $is_string, $template_basedir,
 	 $template_directory, $template_filepath ){
@@ -806,6 +808,12 @@ class Tpl{
 		return $html;
 	}
 
+	/**
+	 * Check if the html contains blacklisted functions
+	 *
+	 * @param string $html the html to check.
+	 * @throws \Rain\TPL_SyntaxException blacklisted function found
+	 */
 	protected function _black_list( $html ){
 
 		if( !self::$conf['sandbox'] || !self::$conf['black_list'] )
