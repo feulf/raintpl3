@@ -335,7 +335,8 @@ class Tpl{
 			 $template_basedir, $template_directory, $template_filepath
 			);
 			$parsed_code =
-			 "<?php if(!class_exists('Rain\Tpl')){exit;}?>" .$parsed_code;
+			 "<?php if(!class_exists('".get_class($this)."')){exit;}?>" .
+			 $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
 			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
@@ -397,7 +398,8 @@ class Tpl{
 			);
 
 			$parsed_code =
-			 "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsed_code;
+			 "<?php if(!class_exists('".get_class($this)."')){exit;}?>" .
+			 $parsed_code;
 
 			// fix the php-eating-newline-after-closing-tag-problem
 			$parsed_code = str_replace( "?>\n", "?>\n\n", $parsed_code );
