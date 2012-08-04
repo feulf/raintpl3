@@ -276,8 +276,7 @@ class Tpl{
 		 || (filemtime($parsed_template_filepath) < filemtime($template_filepath))
 		)
 			$this->_compile_file( $template_name, $template_basedir,
-			 $template_directory, $template_filepath, $parsed_template_filepath
-			);
+			 $template_directory, $template_filepath, $parsed_template_filepath);
 
 		return $parsed_template_filepath;
 	}
@@ -294,14 +293,16 @@ class Tpl{
 		// Compile the template if the original has been updated
 		if( static::$conf['debug'] || !file_exists( $parsed_template_filepath ) )
 			$this->_compile_string( $template_name, $template_basedir,
-			 $template_filepath, $parsed_template_filepath, $string
-			);
+			 $template_filepath, $parsed_template_filepath, $string);
 
 		return $parsed_template_filepath;
 	}
 
 	/**
-	 * Compile the file
+	 * Compile the file and save it
+	 *
+	 * @param string $parsed_template_filepat the name of the save file
+	 * @throws \Rain\TPL_Exceptions not write permissions
 	 */
 	protected function _compile_file( $template_name, $template_basedir,
 	 $template_directory, $template_filepath, $parsed_template_filepath){
@@ -332,8 +333,8 @@ class Tpl{
 			}, $code );
 
 			$parsed_code = $this->_compile_template( $code, $is_string = false,
-			 $template_basedir, $template_directory, $template_filepath
-			);
+			 $template_basedir, $template_directory, $template_filepath);
+
 			$parsed_code =
 			 "<?php if(!class_exists('".get_class($this)."')){exit;}?>" .
 			 $parsed_code;
@@ -351,8 +352,7 @@ class Tpl{
 				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
 				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
 				 'FALSE. More details on http://www.raintpl.com/Documentation/' .
-				 'Documentation-for-PHP-developers/Configuration/'
-				);
+				 'Documentation-for-PHP-developers/Configuration/');
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
