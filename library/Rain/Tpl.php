@@ -128,7 +128,7 @@ class Tpl{
 		)
 	);
 
-	protected $template_info = array();
+	protected $templates_info = array();
 
 	/**
 	 * Draw the template
@@ -313,26 +313,36 @@ class Tpl{
 		// lock the file
 		if (flock( $fp, LOCK_SH ) ){
 
-			// save the filepath in the info
-			$this->template_info['template_filepath'] = $template_filepath;
-			
+			// check if the cache is writable
+			if (!is_writable( static::$conf['cache_dir']))
+				throw new Tpl_Exception ('Cache directory ' .
+				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
+				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
+				 'FALSE. More details on http://www.raintpl.com/Documentation/' .
+				 'Documentation-for-PHP-developers/Configuration/');
+
 			// read the file			
-			$this->template_info['code'] = $code =
-			 fread($fp, filesize( $template_filepath ) );
+			$code = fread($fp, filesize($template_filepath));
+
+			// pile the file info
+			$this->templates_info[] = array(
+			 'filepath' => $template_filepath,
+			 'code' => $code
+			);
 
 			// xml substitution
-			$code = preg_replace( "/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code );
+			$code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
 
 			// disable php tag
-			if (!static::$conf['php_enabled'] )
-				$code = str_replace( array("<?","?>"), array("&lt;?","?&gt;"), $code );
+			if (!static::$conf['php_enabled'])
+				$code = str_replace(array("<?","?>"), array("&lt;?","?&gt;"), $code);
 
 			// xml re-substitution
-			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function( $match ){
+			$code = preg_replace_callback ( "/##XML(.*?)XML##/s", function ($match){
 				return "<?php echo '<?xml ".stripslashes($match[1])." ?>'; ?>";
 			}, $code );
 
-			$parsed_code = $this->_compile_template( $code, $is_string = false,
+			$parsed_code = $this->_compile_template($code, $is_string = false,
 			 $template_basedir, $template_directory, $template_filepath);
 
 			$parsed_code =
@@ -346,13 +356,8 @@ class Tpl{
 			if (!is_dir( static::$conf['cache_dir'] ) )
 				mkdir( static::$conf['cache_dir'], 0755, TRUE );
 
-			// check if the cache is writable
-			if (!is_writable( static::$conf['cache_dir'] ) )
-				throw new Tpl_Exception ('Cache directory ' .
-				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
-				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
-				 'FALSE. More details on http://www.raintpl.com/Documentation/' .
-				 'Documentation-for-PHP-developers/Configuration/');
+			// remove an item of the template info pile
+			unset($this->templates_info[count($this->templates_info) - 1]);
 
 			// write compiled file
 			file_put_contents( $parsed_template_filepath, $parsed_code );
@@ -564,7 +569,7 @@ class Tpl{
 				}
 
 				//close loop tag
-				elseif (preg_match( $tag_match['loop_close'], $html ) ) {
+				elseif (preg_match($tag_match['loop_close'], $html)){
 
 					//iterator
 					$counter = "\$counter$loop_level";
@@ -578,19 +583,19 @@ class Tpl{
 				}
 
 				//if
-				elseif (preg_match( $tag_match['if'], $html, $matches ) ){
+				elseif (preg_match($tag_match['if'], $html, $matches)){
 
 					//increase open if counter (for intendation)
 					$open_if++;
 
 					//tag
-					$tag = $matches[ 0 ];
+					$tag = $matches[0];
 
 					//condition attribute
-					$condition = $matches[ 1 ];
+					$condition = $matches[1];
 
 					// check black list
-					$this->_black_list( $condition );
+					$this->_black_list($condition);
 
 					//variable substitution into condition
 					//(no delimiter into the condition)
@@ -826,17 +831,18 @@ class Tpl{
 
 		// check if the function is in the black list (or not in white list)
 		if (preg_match( self::$conf['black_list_preg'], $html, $match ) ){
+			$template_info = $this->templates_info[count($this->templates_info) - 1];
 
 			// find the line of the error
 			$line = 0;
-			$rows = explode( "\n", $this->template_info['code'] );
+			$rows = explode( "\n", $template_info['code'] );
 			while( !strpos( $rows[$line], $html ) && $line+1 < count($rows) )
 				$line++;
 
 			// stop the execution of the script
 			$e = new Tpl_SyntaxException("Syntax $match[0] not allowed in " .
-			 "template: {$this->template_info['template_filepath']} at line $line");
-			throw $e->templateFile( $this->template_info['template_filepath'] )
+			 "template: {$template_info['filepath']} at line $line");
+			throw $e->templateFile( $template_info['filepath'] )
 				->tag( $match[0] )
 				->templateLine($line);
 
