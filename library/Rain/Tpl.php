@@ -757,8 +757,6 @@ class Tpl{
 	}
 }
 
-//TODO Change Exception names
-
 /**
  * Basic Rain tpl exception.
  */
@@ -776,12 +774,10 @@ class Tpl_Exception extends \Exception{
 	 * @return \Rain\Tpl_Exception | string
 	 */
 	public function templateFile($templateFile){
-		if(is_null($file))
-			return $this->templateFile;
-		else{
-			$this->templateFile = (string) $templateFile;
-			return $this;
-		}
+		if(is_null($file)) return $this->templateFile;
+
+		$this->templateFile = (string) $templateFile;
+		return $this;
 	}
 }
 
@@ -818,12 +814,10 @@ class Tpl_SyntaxException extends Tpl_Exception{
 	 * @return \Rain\Tpl_SyntaxException | int | null
 	 */
 	public function templateLine($line){
-		if(is_null($line))
-			return $this->templateLine;
-		else{
-			$this->templateLine = (int) $line;
-			return $this;
-		}
+		if(is_null($line)) return $this->templateLine;
+		
+		$this->templateLine = (int) $line;
+		return $this;
 	}
 
 	/**
@@ -834,12 +828,10 @@ class Tpl_SyntaxException extends Tpl_Exception{
 	 * @return \Rain\Tpl_SyntaxException | string | null
 	 */
 	public function tag($tag=null){
-		if(is_null($tag))
-			return $this->tag;
-		else{
-			$this->tag = (string) $tag;
-			return $this;
-		}
+		if(is_null($tag)) return $this->tag;
+
+		$this->tag = (string) $tag;
+		return $this;
 	}
 }
 
