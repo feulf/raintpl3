@@ -565,6 +565,7 @@ class Tpl{
                                     foreach( static::$conf['registered_tags'] as $tags => $array ){
                                             if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
                                                 $found = true;
+                                                unset($matches[0]); // needed to make it work with arrays
                                                 $varray = var_export($matches,1);
 						$tmp = preg_split('/\'/', $varray);
 						foreach($tmp as $key => $reg){
