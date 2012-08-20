@@ -41,6 +41,8 @@ class Tpl{
                                         'tags'              => array(
                                                                         'loop'			=> array( '({loop.*?})'		, '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/' ),
                                                                         'loop_close'	=> array( '({\/loop})'		, '/{\/loop}/' ),
+                                                                        'loop_break'	=> array( '({break})'		, '/{break}/' ),
+                                                                        'loop_continue'	=> array( '({continue})'		, '/{continue}/' ),
                                                                         'if'			=> array( '({if.*?})'		, '/{if="([^"]*)"}/' ),
                                                                         'elseif'		=> array( '({elseif.*?})'	, '/{elseif="([^"]*)"}/' ),
                                                                         'else'			=> array( '({else})'		, '/{else}/' ),
@@ -465,6 +467,18 @@ class Tpl{
                                     $parsed_code .=  "<?php } ?>";
 
                             }
+
+			    //break loop tag
+	 		    elseif( preg_match( $tag_match['loop_break'], $html ) ) {
+	 			//close loop code
+	 			$parsed_code .=  "<?php break; ?>";
+	 		    }
+	 		
+	 		    //continue loop tag
+	 		    elseif( preg_match( $tag_match['loop_continue'], $html ) ) {
+	 			//close loop code
+	 			$parsed_code .=  "<?php continue; ?>";
+	 		    }
 
                             //if
                             elseif( preg_match( $tag_match['if'], $html, $matches ) ){
