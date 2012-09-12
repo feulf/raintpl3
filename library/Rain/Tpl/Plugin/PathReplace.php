@@ -22,10 +22,11 @@ class PathReplace extends \Rain\Tpl\Plugin
 		$html = $context->code;
 		$template_basedir = $context->template_basedir;
 		$tags = $this->tags;
+		$basecode = "<?php echo static::conf['base_url']; ?>";
 
 
 		// get the template base directory
-		$template_directory = $context->conf['base_url'] . $context->conf['tpl_dir'] . $context->template_basedir;
+		$template_directory = $basecode . $context->conf['tpl_dir'] . $context->template_basedir;
 
 		// reduce the path
 		$path = str_replace( "://", "@not_replace@", $template_directory );
@@ -53,7 +54,7 @@ class PathReplace extends \Rain\Tpl\Plugin
 
 		if( in_array( "a", $tags ) ){
 			$exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:|mailto:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-			$sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . $context->conf['base_url'] . '$2"', '<a$1href="$2"' ) );
+			$sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . $basecode . '$2"', '<a$1href="$2"' ) );
 		}
 
 		if( in_array( "input", $tags ) ){
