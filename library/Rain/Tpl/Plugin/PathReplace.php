@@ -52,8 +52,8 @@ class PathReplace extends \Rain\Tpl\Plugin
 		}
 
 		if( in_array( "a", $tags ) ){
-			$exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:|mailto:)([^"]+?)(?:")/i', '/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
-			$sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . $context->conf['base_url'] . '$2"', '<a$1href="$2"' ) );
+			$exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http\:\/\/|https\:\/\/|javascript:|mailto:)([^"]+?)(?:")/i','/<a(.*?)href=(?:\@)([^"]+?)\+(?:\@)/i' ,'/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'  ) );
+			$sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="$2"', '<a$1href="' . $context->conf['base_url'] . '$2"', '<a$1href="$2"' ) );
 		}
 
 		if( in_array( "input", $tags ) ){
