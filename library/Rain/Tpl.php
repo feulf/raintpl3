@@ -197,12 +197,15 @@ class Tpl{
 		if( static::$conf['debug']  ||  !file_exists( $parsed_template_filepath )  ||  ( filemtime($parsed_template_filepath) < filemtime( $template_filepath ) ) )
 			$this->_compile_file( $template_name, $template_basedir, $template_directory, $template_filepath, $parsed_template_filepath );
 
-        return $parsed_template_filepath;
+                return $parsed_template_filepath;
 	}
 
 
 
-
+        /**
+         * Check if a string has been already compiled
+         * @param type $string
+         */
 	protected function _check_string( $string ){
 
         // set filename
