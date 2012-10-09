@@ -43,7 +43,9 @@ class Tpl{
 				'({loop.*?})',
 				'/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'
 			),
-			'loop_close' => array('({\/loop})','/{\/loop}/'),
+			'loop_close'	=> array( '({\/loop})'		, '/{\/loop}/' ),
+			'loop_break'	=> array( '({break})'		, '/{break}/' ),
+			'loop_continue'	=> array( '({continue})'		, '/{continue}/' ),
 			'if' => array('({if.*?})','/{if="([^"]*)"}/'),
 			'elseif' => array('({elseif.*?})','/{elseif="([^"]*)"}/'),
 			'else' => array('({else})','/{else}/'),
@@ -245,44 +247,37 @@ class Tpl{
 	 */
 	protected function _check_template( $template ){
 		// set filename
-		$template_name = basename( $template );
-
-		$template_basedir	= strpos($template,"/")
-		 ? dirname($template) . '/' : null;
-
-		$template_directory	= static::$conf['tpl_dir'] . $template_basedir;
-
-		$template_filepath = $template_directory .
-		 $template_name . '.' .
-		 static::$conf['tpl_ext'];
-
-		$parsed_template_filepath	= static::$conf['cache_dir'] .
-		 $template_name . "." .
-		 md5( $template_directory . serialize( static::$conf['checksum'] ) ) .
-		 '.rtpl.php';
+		$template_name				= basename( $template );
+		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
+		$template_directory			= static::$conf['tpl_dir'] . $template_basedir;
+		$template_filepath			= $template_directory . $template_name . '.' . static::$conf['tpl_ext'];
+		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . serialize( static::$conf['checksum'] ) ) . '.rtpl.php';
 
 		// if the template doesn't exsist throw an error
-		if (!file_exists( $template_filepath ) ){
-			$e = new Tpl_NotFoundException(
-				'Template '. $template_name .' not found!'
-			);
-
-			throw $e->templateFile($template_filepath);
+		if(!file_exists($template_filepath)){
+			$e = new RainTpl_NotFoundException( 'Template '. $template_name .' not found!' );
+			throw $e->setTemplateFile($template_filepath);
 		}
 
 		// Compile the template if the original has been updated
-		if (static::$conf['debug']
+		if( static::$conf['debug']
 		 || !file_exists($parsed_template_filepath)
-		 || (filemtime($parsed_template_filepath) < filemtime($template_filepath))
+		 ||  (filemtime($parsed_template_filepath) < filemtime( $template_filepath ) )
 		)
-			$this->_compile_file( $template_name, $template_basedir,
-			 $template_directory, $template_filepath, $parsed_template_filepath);
+			$this->_compile_file($template_name,
+			 $template_basedir,
+			 $template_directory,
+			 $template_filepath,
+			 $parsed_template_filepath
+			);
 
 		return $parsed_template_filepath;
 	}
-
+	/**
+	 * Check if a string has been already compiled
+	 * @param type $string
+	 */
 	protected function _check_string( $string ){
-
 		// set filename
 		$template_name = md5( $string . implode( static::$conf['checksum'] ) );
 		$parsed_template_filepath	= static::$conf['cache_dir'] .
@@ -550,38 +545,45 @@ class Tpl{
 					//loop variables
 					$counter = "\$counter$loop_level";			 // count iteration
 
-					if (isset($matches['key']) && isset($matches['value']) ){
-						$key	 = $matches['key'];
-						$value	 = $matches['value'];
-					}elseif (isset($matches['key']) ){
-						$key	 = "\$key$loop_level";							 // key
-						$value	 = $matches['key'];
-					}else{
-						$key	 = "\$key$loop_level";							 // key
-						$value	 = "\$value$loop_level";					 // value
-					}
-	
-					//loop code
-					$parsed_code .=	"<?php $counter=-1; " .
-					 "if (is_array($var) && sizeof($var) ) " .
-					 "foreach( $var as $key => $value ){ $counter++; ?>";
+          if( isset($matches['key']) && isset($matches['value']) ){
+            $key	 = $matches['key'];
+            $value	 = $matches['value'];
+          }elseif( isset($matches['key']) ){
+            $key	 = "\$key$loop_level";               // key
+            $value	 = $matches['key'];
+          }else{
+            $key	 = "\$key$loop_level";               // key
+            $value	 = "\$value$loop_level";           // value
+          }
 
-				}
+          //loop code
+          $parsed_code .=  "<?php $counter=-1; if( is_array($var) && sizeof($var) ) foreach( $var as $key => $value ){ $counter++; ?>";
 
-				//close loop tag
-				elseif (preg_match($tag_match['loop_close'], $html)){
+        }
 
-					//iterator
-					$counter = "\$counter$loop_level";
+  	     //close loop tag
+         elseif( preg_match( $tag_match['loop_close'], $html ) ) {
+           //iterator
+           $counter = "\$counter$loop_level";
 
-					//decrease the loop counter
-					$loop_level--;
+           //decrease the loop counter
+           $loop_level--;
 
-					//close loop code
-					$parsed_code .=	"<?php } ?>";
+           //close loop code
+           $parsed_code .=  "<?php } ?>";
+         }
 
-				}
+			    //break loop tag
+	 		    elseif( preg_match( $tag_match['loop_break'], $html ) ) {
+	 			//close loop code
+	 			$parsed_code .=  "<?php break; ?>";
+	 		    }
 
+	 		    //continue loop tag
+	 		    elseif( preg_match( $tag_match['loop_continue'], $html ) ) {
+	 			//close loop code
+	 			$parsed_code .=  "<?php continue; ?>";
+	 		    }
 				//if
 				elseif (preg_match($tag_match['if'], $html, $matches)){
 
