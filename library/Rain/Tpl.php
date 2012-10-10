@@ -182,7 +182,7 @@ class Tpl{
 	protected function _check_template( $template ){
 		// set filename
 		$template_name				= basename( $template );
-		$template_basedir			= strpos($template,"/") ? dirname($template) . '/' : null;
+		$template_basedir			= strpos($template,DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
 		$template_directory			= static::$conf['tpl_dir'] . $template_basedir;
 		$template_filepath			= $template_directory . $template_name . '.' . static::$conf['tpl_ext'];
 		$parsed_template_filepath	= static::$conf['cache_dir'] . $template_name . "." . md5( $template_directory . serialize( static::$conf['checksum'] ) ) . '.rtpl.php';
