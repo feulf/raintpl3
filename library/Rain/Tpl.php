@@ -432,6 +432,14 @@ class Tpl{
 
                                     //replace the variable in the loop
                                     $var = $this->_var_replace($matches['variable'], $loop_level-1, $escape = FALSE );
+                                    if( preg_match('#\(#',$var) ){
+                                        $newvar = "\$newvar{$loop_level}";
+                                        $assign_new_var = "$newvar=$var;";
+                                    }
+                                    else{
+                                        $newvar=$var;
+                                        $assign_new_var = null;
+                                    }
 
                                     // check black list
                                     $this->_black_list( $var );
@@ -451,9 +459,11 @@ class Tpl{
                                             $key	 = "\$key$loop_level";               // key
                                             $value	 = "\$value$loop_level";           // value
                                     }
+                                    
+                                    
 
                                     //loop code
-                                    $parsed_code .=  "<?php $counter=-1; if( is_array($var) && sizeof($var) ) foreach( $var as $key => $value ){ $counter++; ?>";
+                                    $parsed_code .=  "<?php $counter=-1; $assign_new_var if( isset($newvar) && ( is_array($newvar) || $newvar instanceof Traversable ) && sizeof($newvar) ) foreach( $newvar as $key => $value ){ $counter++; ?>";
 
                             }
 
