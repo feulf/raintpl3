@@ -856,7 +856,7 @@ class Tpl{
 /**
  * Basic Rain\Tpl exception.
  */
-class Tpl_Exception extends \Exception{
+class Exception extends \Exception{
 		
 	/**
 	 * @var Path of template file with error.
@@ -880,13 +880,13 @@ class Tpl_Exception extends \Exception{
 /**
  * Exception thrown when template file does not exists.
  */
-class Tpl_NotFoundException extends Tpl_Exception{
+class NotFoundException extends Exception{
 }
 
 /**
  * Exception thrown when syntax error occurs.
  */
-class Tpl_SyntaxException extends Tpl_Exception{
+class SyntaxException extends Exception{
 	/**
 	 * Line in template file where error has occured.
 	 *
