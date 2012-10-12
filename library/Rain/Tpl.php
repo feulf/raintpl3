@@ -255,7 +255,7 @@ class Tpl{
 
 		// if the template doesn't exsist throw an error
 		if(!file_exists($template_filepath)){
-			$e = new RainTpl_NotFoundException( 'Template '. $template_name .' not found!' );
+			$e = new NotFoundException( 'Template '. $template_name .' not found!' );
 			throw $e->setTemplateFile($template_filepath);
 		}
 
@@ -310,7 +310,7 @@ class Tpl{
 
 			// check if the cache is writable
 			if (!is_writable( static::$conf['cache_dir']))
-				throw new Tpl_Exception ('Cache directory ' .
+				throw new Exception ('Cache directory ' .
 				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
 				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
 				 'FALSE. More details on http://www.raintpl.com/Documentation/' .
@@ -411,7 +411,7 @@ class Tpl{
 
 			// check if the cache is writable
 			if (!is_writable( static::$conf['cache_dir'] ) )
-				throw new Tpl_Exception ('Cache directory ' .
+				throw new Exception ('Cache directory ' .
 				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
 				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
 				 'false. More details on http://www.raintpl.com/Documentation/' .
@@ -708,27 +708,27 @@ class Tpl{
 				$trace=debug_backtrace();
 				$caller=array_shift($trace);
 
-				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag " .
+				$e = new SyntaxException( "Error! You need to close an {if} tag " .
 				 "in the string, loaded by {$caller['file']} at line {$caller['line']}"
 				);
 				throw $e->templateFile($template_filepath);
 			}
 
 			if ($loop_level > 0 ) {
-				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} " .
+				$e = new SyntaxException( "Error! You need to close the {loop} " .
 				 "tag in the string, loaded by {$caller['file']} at line " .
 				 "{$caller['line']}" );
 				throw $e->templateFile($template_filepath);
 			}
 		}else{
 			if ($open_if > 0 ) {
-				$e = new Tpl_SyntaxException( "Error! You need to close an {if} tag " .
+				$e = new SyntaxException( "Error! You need to close an {if} tag " .
 				 "in $template_filepath template");
 				throw $e->templateFile($template_filepath);
 			}
 
 			if ($loop_level > 0 ) {
-				$e = new Tpl_SyntaxException( "Error! You need to close the {loop} " .
+				$e = new SyntaxException( "Error! You need to close the {loop} " .
 				 "tag in $template_filepath template" );
 				throw $e->templateFile($template_filepath);
 			}
