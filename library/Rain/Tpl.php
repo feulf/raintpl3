@@ -4,6 +4,11 @@ namespace Rain;
 require_once 'Tpl/PluginContainer.php';
 require_once 'Tpl/Plugin.php';
 
+require_once 'Tpl/Exception.php';
+require_once 'Tpl/NotFoundException.php';
+require_once 'Tpl/SyntaxException.php';
+
+
 /**
  *	RainTPL
  *	--------
@@ -242,7 +247,7 @@ class Tpl{
 	 *
 	 * @param string $template template name
 	 *
-	 * @throws \Rain\RainTpl_NotFoundException
+	 * @throws \Rain\Tpl\NotFoundException
 	 * @return string template name
 	 */
 	protected function _check_template( $template ){
@@ -255,8 +260,8 @@ class Tpl{
 
 		// if the template doesn't exsist throw an error
 		if(!file_exists($template_filepath)){
-			$e = new NotFoundException( 'Template '. $template_name .' not found!' );
-			throw $e->setTemplateFile($template_filepath);
+			$e = new Tpl\NotFoundException( 'Template '. $template_name .' not found!' );
+			throw $e->templateFile($template_filepath);
 		}
 
 		// Compile the template if the original has been updated
@@ -297,7 +302,7 @@ class Tpl{
 	 * Compile the file and save it
 	 *
 	 * @param string $parsed_template_filepat the name of the save file
-	 * @throws \Rain\TPL_Exceptions not write permissions
+	 * @throws Exception not write permissions
 	 */
 	protected function _compile_file( $template_name, $template_basedir,
 	 $template_directory, $template_filepath, $parsed_template_filepath){
@@ -310,7 +315,7 @@ class Tpl{
 
 			// check if the cache is writable
 			if (!is_writable( static::$conf['cache_dir']))
-				throw new Exception ('Cache directory ' .
+				throw new \Exception ('Cache directory ' .
 				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
 				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
 				 'FALSE. More details on http://www.raintpl.com/Documentation/' .
@@ -327,6 +332,7 @@ class Tpl{
 
 			// xml substitution
 			$code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
+			//<?
 
 			// disable php tag
 			if (!static::$conf['php_enabled'])
@@ -371,7 +377,7 @@ class Tpl{
 	/**
 	 * Compile a string
 	 * 
-	 * @throws \Rain\TPL_Exceptions not write permissions
+	 * @throws Exception not write permissions
 	 */
 
 	protected function _compile_string(	$template_name, $template_basedir,
@@ -411,7 +417,7 @@ class Tpl{
 
 			// check if the cache is writable
 			if (!is_writable( static::$conf['cache_dir'] ) )
-				throw new Exception ('Cache directory ' .
+				throw new \Exception ('Cache directory ' .
 				 static::$conf['cache_dir'] . 'doesn\'t have write permission. ' .
 				 'Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to ' .
 				 'false. More details on http://www.raintpl.com/Documentation/' .
@@ -434,7 +440,7 @@ class Tpl{
 	/**
 	 * Compile template
 	 * @access protected
-	 * @throws \Rain\Tpl_SyntaxException 
+	 * @throws \Rain\Tpl\SyntaxException 
 	 */
 	protected function _compile_template( $code, $is_string, $template_basedir,
 	 $template_directory, $template_filepath ){
@@ -708,27 +714,27 @@ class Tpl{
 				$trace=debug_backtrace();
 				$caller=array_shift($trace);
 
-				$e = new SyntaxException( "Error! You need to close an {if} tag " .
+				$e = new Tpl\SyntaxException( "Error! You need to close an {if} tag " .
 				 "in the string, loaded by {$caller['file']} at line {$caller['line']}"
 				);
 				throw $e->templateFile($template_filepath);
 			}
 
 			if ($loop_level > 0 ) {
-				$e = new SyntaxException( "Error! You need to close the {loop} " .
+				$e = new Tpl\SyntaxException( "Error! You need to close the {loop} " .
 				 "tag in the string, loaded by {$caller['file']} at line " .
 				 "{$caller['line']}" );
 				throw $e->templateFile($template_filepath);
 			}
 		}else{
 			if ($open_if > 0 ) {
-				$e = new SyntaxException( "Error! You need to close an {if} tag " .
+				$e = new Tpl\SyntaxException( "Error! You need to close an {if} tag " .
 				 "in $template_filepath template");
 				throw $e->templateFile($template_filepath);
 			}
 
 			if ($loop_level > 0 ) {
-				$e = new SyntaxException( "Error! You need to close the {loop} " .
+				$e = new Tpl\SyntaxException( "Error! You need to close the {loop} " .
 				 "tag in $template_filepath template" );
 				throw $e->templateFile($template_filepath);
 			}
@@ -819,7 +825,7 @@ class Tpl{
 	 * Check if the html contains blacklisted functions
 	 *
 	 * @param string $html the html to check.
-	 * @throws \Rain\TPL_SyntaxException blacklisted function found
+	 * @throws \Rain\TPL\SyntaxException blacklisted function found
 	 */
 	protected function _black_list($html){
 
@@ -842,7 +848,7 @@ class Tpl{
 				$line++;
 
 			// stop the execution of the script
-			$e = new Tpl_SyntaxException("Syntax $match[0] not allowed in " .
+			$e = new Tpl\SyntaxException("Syntax $match[0] not allowed in " .
 			 "template: {$template_info['filepath']} at line $line");
 			throw $e->templateFile( $template_info['filepath'] )
 				->tag( $match[0] )
@@ -850,82 +856,5 @@ class Tpl{
 
 			return false;
 		}
-	}
-}
-
-/**
- * Basic Rain\Tpl exception.
- */
-class Exception extends \Exception{
-		
-	/**
-	 * @var Path of template file with error.
-	 */
-	protected $templateFile = '';
-
-	/**
-	 * Handles path of template file with error.
-	 *
-	 * @param string | null $templateFile
-	 * @return \Rain\Tpl_Exception | string
-	 */
-	public function templateFile($templateFile){
-		if(is_null($file)) return $this->templateFile;
-
-		$this->templateFile = (string) $templateFile;
-		return $this;
-	}
-}
-
-/**
- * Exception thrown when template file does not exists.
- */
-class NotFoundException extends Exception{
-}
-
-/**
- * Exception thrown when syntax error occurs.
- */
-class SyntaxException extends Exception{
-	/**
-	 * Line in template file where error has occured.
-	 *
-	 * @var int | null
-	 */
-	protected $templateLine = null;
-
-	/**
-	 * Tag which caused an error.
-	 *
-	 * @var string | null
-	 */
-	protected $tag = null;
-
-	/**
-	 * Handles the line in template file
-	 * where error has occured
-	 * 
-	 * @param int | null $line
-	 *
-	 * @return \Rain\Tpl_SyntaxException | int | null
-	 */
-	public function templateLine($line){
-		if(is_null($line)) return $this->templateLine;
-		
-		$this->templateLine = (int) $line;
-		return $this;
-	}
-	/**
-	 * Handles the tag which caused an error.
-	 *
-	 * @param string | null $tag
-	 *
-	 * @return \Rain\Tpl_SyntaxException | string | null
-	 */
-	public function tag($tag=null){
-		if(is_null($tag)) return $this->tag;
-
-		$this->tag = (string) $tag;
-		return $this;
 	}
 }
