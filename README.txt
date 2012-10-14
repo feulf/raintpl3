@@ -21,3 +21,8 @@ Template auto generation, from default template (to make easier the process of c
 Better Sandbox
 Better Error management
 Javascript integration with Ajax/JSON
+
+
+
+Run the unit test after each update of the class:
+$phpunit tests
