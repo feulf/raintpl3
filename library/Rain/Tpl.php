@@ -136,7 +136,7 @@ class Tpl{
 		$files = glob( static::$conf['cache_dir'] . "*.rtpl.php" );
 		$time = time();
 		foreach( $files as $file )
-			if( $time - filemtime($file) > $expired_time )
+			if( $time - filemtime($file) > $expire_time )
 				unlink($file);
 	}
 
