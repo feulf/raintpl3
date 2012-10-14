@@ -614,6 +614,9 @@ class Tpl{
             }
 
             if( $loop_level > 0 ) {
+                
+                $trace=debug_backtrace();
+                $caller=array_shift($trace);
                 $e = new RainTpl_SyntaxException( "Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}" );
                 throw $e->setTemplateFile($template_filepath);
             }
