@@ -16,13 +16,8 @@ More examples
 
 
 ToDo/Wish list:
-Short syntax:  {loop $var}   {if $var}
-Template auto generation, from default template (to make easier the process of creating the template)
-Better Sandbox
+Short syntax: {loop $var} {if $var}
+Template auto generation, in debug mode if a template was not found RainTPL create a dummy template with all the variables used and loop
+Better Sandbox with White List, so with addModifier
 Better Error management
-Javascript integration with Ajax/JSON
-
-
-
-Run the unit test after each update of the class:
-$phpunit tests
+AddTemplateFolder, possibility to define an alternative template folder so if a template is not found will search on the other folder
