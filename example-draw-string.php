@@ -4,8 +4,8 @@
     use Rain\Tpl;
 
 
-	memory_usage_start();
-	timer_start();
+	memoryUsageStart();
+	timerStart();
 
 	// include
 	include "library/Rain/Tpl.php";
@@ -23,7 +23,7 @@
 
 	// Add PathReplace plugin
 	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
-	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+	Rain\Tpl::registerPlugin( new Rain\Tpl\Plugin\PathReplace() );
 
 
 	// set variables
@@ -46,7 +46,7 @@
 				);
 
 	// add a tag
-	Tpl::register_tag(	"({@.*?@})", // preg split
+	Tpl::registerTag(	"({@.*?@})", // preg split
 						"{@(.*?)@}", // preg match
 						function( $params ){ // function called by the tag
 												$value = $params[1][0];
@@ -56,7 +56,7 @@
 
 
 	// add a tag
-	Tpl::register_tag(	"({%.*?%})", // preg split
+	Tpl::registerTag(	"({%.*?%})", // preg split
 						"{%(.*?)(?:\|(.*?))%}", // preg match
 						function( $params ){ // function called by the tag
 												$value = $params[1][0];
@@ -81,7 +81,7 @@
 	// draw
 	$tpl = new Tpl;
 	$tpl->assign( $var );
-	echo $tpl->draw_string( $string );
+	echo $tpl->drawString( $string );
 
 // -- end
 
@@ -96,7 +96,7 @@
 //-------------------------------------------------------------
 
 	echo "<br>---------<br>";
-	echo memory_usage();
+	echo memoryUsage();
 	echo "<br>";
 	echo timer();
 
@@ -113,7 +113,7 @@
 	/**
 	 * Save the memory used at this point
 	 */
-	function memory_usage_start( $memName = "execution_time" ){
+	function memoryUsageStart( $memName = "execution_time" ){
 		return $GLOBALS['memoryCounter'][$memName] = memory_get_usage();
 	}
 
@@ -122,9 +122,9 @@
 	/**
 	 * Get the memory used
 	 */
-	function memory_usage( $memName = "execution_time", $byte_format = true ){
+	function memoryUsage( $memName = "execution_time", $byteFormat = true ){
 		$totMem = memory_get_usage() - $GLOBALS['memoryCounter'][ $memName ];
-		return $byte_format ? byte_format($totMem) : $totMem;
+		return $byteFormat ? byteFormat($totMem) : $totMem;
 	}
 
 
@@ -137,7 +137,7 @@
 	/**
 	 * Start the timer
 	 */
-	function timer_start( $timeName = "execution_time" ){
+	function timerStart( $timeName = "execution_time" ){
 		$stimer = explode( ' ', microtime( ) );
 		$GLOBALS['timeCounter'][$timeName] = $stimer[ 1 ] + $stimer[ 0 ];
 	}
@@ -156,7 +156,7 @@
 	 * Convert byte to more readable format, like "1 KB" instead of "1024".
 	 * cut_zero, remove the 0 after comma ex:  10,00 => 10	  14,30 => 14,3
 	 */
-	function byte_format( $size ){
+	function byteFormat( $size ){
 		if( $size > 0 ){
 			$unim = array("B","KB","MB","GB","TB","PB");
 			for( $i=0; $size >= 1024; $i++ )

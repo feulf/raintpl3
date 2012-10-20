@@ -329,7 +329,7 @@ class Tpl {
             'template_filepath' => $templateFilepath,
             'conf' => static::$conf,
                 ));
-        $this->getPlugins()->run('before_parse', $context);
+        $this->getPlugins()->run('beforeParse', $context);
         $code = $context->code;
 
         // set tags
@@ -392,13 +392,17 @@ class Tpl {
 
                     // reduce the path
                     $includeTemplate = preg_replace('/\w+\/\.\.\//', '', $includeTemplate);
+                    
+                    $parsedCode .= '<?php require $this->_check_template("' . $includeTemplate . '");?>';
 
                     //dynamic include
+                    /*
                     $parsedCode .= '<?php $tpl = new ' . get_called_class() . ';' .
                             '$tpl->assign( $this->var );' .
                             (!$loopLevel ? null : '$tpl->assign( "key", $key' . $loopLevel . ' ); $tpl->assign( "value", $value' . $loopLevel . ' );' ) .
                             '$tpl->draw( "' . $includeTemplate . '" );' .
                             '?>';
+                     */
                 }
 
                 //loop
@@ -601,7 +605,7 @@ class Tpl {
 
         // Execute plugins, after_parse
         $context->code = $parsedCode;
-        $this->getPlugins()->run('after_parse', $context);
+        $this->getPlugins()->run('afterParse', $context);
 
         return $context->code;
     }
