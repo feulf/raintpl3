@@ -393,16 +393,9 @@ class Tpl {
                     // reduce the path
                     $includeTemplate = preg_replace('/\w+\/\.\.\//', '', $includeTemplate);
                     
-                    $parsedCode .= '<?php require $this->_check_template("' . $includeTemplate . '");?>';
-
                     //dynamic include
-                    /*
-                    $parsedCode .= '<?php $tpl = new ' . get_called_class() . ';' .
-                            '$tpl->assign( $this->var );' .
-                            (!$loopLevel ? null : '$tpl->assign( "key", $key' . $loopLevel . ' ); $tpl->assign( "value", $value' . $loopLevel . ' );' ) .
-                            '$tpl->draw( "' . $includeTemplate . '" );' .
-                            '?>';
-                     */
+                    $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
+
                 }
 
                 //loop
