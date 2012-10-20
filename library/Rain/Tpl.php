@@ -174,17 +174,35 @@ class Tpl {
 
     protected function checkTemplate($template) {
         // set filename
+        
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
-        $templateDirectory = static::$conf['tpl_dir'] . $templateBasedir;
-        $templateFilepath = $templateDirectory . $templateName . '.' . static::$conf['tpl_ext'];
-        $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize(static::$conf['checksum'])) . '.rtpl.php';
+        
+        $templateFound = false;
+        do{
 
-        // if the template doesn't exsist throw an error
-        if (!file_exists($templateFilepath)) {
+            if( static::$conf['sel_tpl_dir'] = is_array(static::$conf['tpl_dir']) ? array_shift( static::$conf['tpl_dir'] ) : static::$conf['tpl_dir'] ){
+
+                $templateDirectory = static::$conf['sel_tpl_dir'] . $templateBasedir;
+                $templateFilepath = $templateDirectory . $templateName . '.' . static::$conf['tpl_ext'];
+
+                // if the template doesn't exsist throw an error
+                if (file_exists($templateFilepath)){
+                    $templateFound = true;
+                    
+                }
+
+            }
+
+        // loop until a template is found
+        }while( !$templateFound && is_array(static::$conf['tpl_dir']) && sizeof(static::$conf['tpl_dir']) );
+
+        if( !$templateFound ){
             $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
             throw $e->setTemplateFile($templateFilepath);
         }
+
+        $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize(static::$conf['checksum'])) . '.rtpl.php';
 
         // Compile the template if the original has been updated
         if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) ))
@@ -385,7 +403,7 @@ class Tpl {
                 elseif (preg_match($tagMatch['include'], $html, $matches)) {
 
                     //get the folder of the actual template
-                    $actualFolder = substr($templateDirectory, strlen(static::$conf['tpl_dir']));
+                    $actualFolder = substr($templateDirectory, strlen(static::$conf['sel_tpl_dir']));
 
                     //get the included template
                     $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
