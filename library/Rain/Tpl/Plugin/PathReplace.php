@@ -22,7 +22,7 @@ class PathReplace extends \Rain\Tpl\Plugin
 		$html = $context->code;
 		$template_basedir = $context->template_basedir;
 		$tags = $this->tags;
-		$basecode = "<?php echo static::conf['base_url']; ?>";
+		$basecode = "<?php echo static::\$conf['base_url']; ?>";
 
 
 		// get the template base directory
