@@ -36,7 +36,7 @@
 
 	// Add PathReplace plugin
 	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
-	MyRainTPL::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+	MyRainTPL::registerPlugin( new Rain\Tpl\Plugin\PathReplace() );
 
 
 	global $global_variable;

@@ -18,11 +18,11 @@
 
 	// Add PathReplace plugin (necessary to load the CSS with path replace)
 	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
-	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+	Rain\Tpl::registerPlugin( new Rain\Tpl\Plugin\PathReplace() );
 
 	require_once('library/Rain/Tpl/Plugin/ImageResize.php');
 	$plugin_options = array( 'quality' => 100, 'crop' => true );
-    Tpl::register_plugin( new Rain\Tpl\Plugin\ImageResize( $plugin_options ) );
+        Tpl::registerPlugin( new Rain\Tpl\Plugin\ImageResize( $plugin_options ) );
 
 	global $global_variable;
 	$global_variable = "I'm Global";
@@ -53,7 +53,7 @@
 		return "Translate: <b>$value</b>";
 	};
 	// add a function
-	Tpl::register_tag( "({@.*?@})", "{@(.*?)@}", $test );
+	Tpl::registerTag( "({@.*?@})", "{@(.*?)@}", $test );
 
 
 
