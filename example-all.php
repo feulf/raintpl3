@@ -20,7 +20,7 @@
 
 	// Add PathReplace plugin
 	require_once('library/Rain/Tpl/Plugin/PathReplace.php');
-	Rain\Tpl::register_plugin( new Rain\Tpl\Plugin\PathReplace() );
+	Rain\Tpl::registerPlugin( new Rain\Tpl\Plugin\PathReplace() );
 
 
 
@@ -44,7 +44,7 @@
 				);
 
 	// add a tag
-	Tpl::register_tag(	"({@.*?@})", // preg split
+	Tpl::registerTag(	"({@.*?@})", // preg split
 						"{@(.*?)@}", // preg match
 						function( $params ){ // function called by the tag
 												$value = $params[1][0];
@@ -54,7 +54,7 @@
 
 
 	// add a tag
-	Tpl::register_tag(	"({%.*?%})", // preg split
+	Tpl::registerTag(	"({%.*?%})", // preg split
 						"{%(.*?)(?:\|(.*?))%}", // preg match
 						function( $params ){ // function called by the tag
 												$value = $params[1][0];

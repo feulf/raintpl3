@@ -2,25 +2,33 @@
 namespace Rain\Tpl;
 
 /**
- * Basic Rain\Tpl exception.
+ * Basic Rain tpl exception.
  */
-class Exception extends \Exception{
-		
-	/**
-	 * @var Path of template file with error.
-	 */
-	protected $templateFile = '';
+class Exception extends \Exception {
 
-	/**
-	 * Handles path of template file with error.
-	 *
-	 * @param string | null $templateFile
-	 * @return \Rain\Tpl_Exception | string
-	 */
-	public function templateFile($templateFile){
-		if(is_null($file)) return $this->templateFile;
+    /**
+     * Path of template file with error.
+     */
+    protected $templateFile = '';
 
-		$this->templateFile = (string) $templateFile;
-		return $this;
-	}
+    /**
+     * Returns path of template file with error.
+     *
+     * @return string
+     */
+    public function getTemplateFile() {
+        return $this->templateFile;
+    }
+
+    /**
+     * Sets path of template file with error.
+     *
+     * @param string $templateFile
+     * @return RainTpl_Exception
+     */
+    public function setTemplateFile($templateFile) {
+        $this->templateFile = (string) $templateFile;
+        return $this;
+    }
+
 }

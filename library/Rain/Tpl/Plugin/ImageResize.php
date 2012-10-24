@@ -5,11 +5,11 @@ require_once __DIR__ . '/../Plugin.php';
 
 class ImageResize extends \Rain\Tpl\Plugin{
 
-	protected $hooks = array('before_parse');
+	protected $hooks = array('beforeParse');
 	private $quality = 80;
 	private $crop = TRUE;
 
-	public function before_parse(\ArrayAccess $context){
+	public function beforeParse(\ArrayAccess $context){
 		// set variables
 		$html = $context->code;
 		$template_basedir = $context->template_basedir;
@@ -45,7 +45,7 @@ class ImageResize extends \Rain\Tpl\Plugin{
 					$crop = $matches['crop'][$i] == 'true' ? true : false;
 
 				if( $w > 0 && $h > 0 && $resize != 'false' ){
-					$new_tag = preg_replace( '/(.*?)src="(.*?)"(.*?)/', '$1src="<?php echo Rain\Tpl\Plugin\ImageResize::img_resize(\''.$src.'\', \''.$img_cache_dir.'\', \''.$w.'\', \''.$h.'\', \''.$quality.'\', \''.$crop.'\' ); ?>"$3', $tag );
+					$new_tag = preg_replace( '/(.*?)src="(.*?)"(.*?)/', '$1src="<?php echo Rain\Tpl\Plugin\ImageResize::imgResize(\''.$src.'\', \''.$img_cache_dir.'\', \''.$w.'\', \''.$h.'\', \''.$quality.'\', \''.$crop.'\' ); ?>"$3', $tag );
 					$html = str_replace( $tag, $new_tag, $html );
 					$image_resized = true;
 				}
@@ -60,29 +60,29 @@ class ImageResize extends \Rain\Tpl\Plugin{
 		$context->code = $html;
 	}
 
-	public function set_quality($quality) {
+	public function setQuality($quality) {
 		$this->quality = (int) $quality;
 		return $this;
 	}
 
-	public function set_crop($crop) {
+	public function setCrop($crop) {
 		$this->crop = (string) $crop;
 		return $this;
 	}
 
-	public static function img_resize( $src, $dest, $w, $h, $quality, $crop ){
+	public static function imgResize( $src, $dest, $w, $h, $quality, $crop ){
 
 		$ext = substr(strrchr($src, '.'),1);
 		$dest = $dest . 'img.'. md5( $src . $crop . $quality ) . $w . 'x' . $h . '.' . $ext;
 
 
 		if( !file_exists( $dest ) )
-			static::rain_img_resize( $src, $dest, $w, $h, $quality, $crop );
+			static::rainImgResize( $src, $dest, $w, $h, $quality, $crop );
 		return $dest;
 
 	}
 
-	public static function rain_img_resize($src, $dst, $width, $height, $quality, $crop=0){
+	public static function rainImgResize($src, $dst, $width, $height, $quality, $crop=0){
 
 		if(!list($w, $h) = getimagesize($src)) return "Unsupported picture type!";
 
