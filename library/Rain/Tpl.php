@@ -78,6 +78,16 @@ class Tpl {
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
+        
+        
+        // Execute plugins, before_parse
+        $context = $this->getPlugins()->createContext(array(
+            'code' => $html,
+            'conf' => static::$conf,
+        ));
+        $this->getPlugins()->run('afterDraw', $context);
+        $html = $context->code;
+        
         if ($toString)
             return $html; 
         else
@@ -92,6 +102,16 @@ class Tpl {
         ob_start();
         require $this->checkString($string);
         $html = ob_get_clean();
+
+
+        // Execute plugins, before_parse
+        $context = $this->getPlugins()->createContext(array(
+            'code' => $html,
+            'conf' => static::$conf,
+        ));
+        $this->getPlugins()->run('afterDraw', $context);
+        $html = $context->code;
+
         if ($toString)
             return $html; 
         else
@@ -394,8 +414,8 @@ class Tpl {
                     //get the included template
                     $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
 
-                    // reduce the path
-                    $includeTemplate = preg_replace('/\w+\/\.\.\//', '', $includeTemplate);
+                    // reduce the path                    
+                    $includeTemplate = Tpl::reducePath( $includeTemplate );
                     
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
@@ -691,6 +711,19 @@ class Tpl {
 
             return false;
         }
+    }
+    
+    public static function reducePath( $path ){
+        // reduce the path
+        $path = str_replace( "://", "@not_replace@", $path );
+        $path = preg_replace( "#(/+)#", "/", $path );
+        $path = preg_replace( "#(/\./+)#", "/", $path );
+        $path = str_replace( "@not_replace@", "://", $path );
+
+        while( preg_match( '#\.\./#', $path ) ){
+            $path = preg_replace('#\w+/\.\./#', '', $path );
+        }
+        return $path;
     }
 
 }
