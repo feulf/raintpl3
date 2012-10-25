@@ -31,11 +31,11 @@ class PluginContainer
 	 * @throws \InvalidArgumentException Plugin of same name already exists in container.
 	 * @return PluginContainer
 	 */
-	public function add_plugin($name, IPlugin $plugin) {
+	public function addPlugin($name, IPlugin $plugin) {
 		if (isset($this->plugins[(string) $name])) {
 			throw new \InvalidArgumentException('Plugin named "' . $name . '" already exists in container');
 		}
-		return $this->set_plugin($name, $plugin);
+		return $this->setPlugin($name, $plugin);
 	}
 
 	/**
@@ -45,11 +45,11 @@ class PluginContainer
 	 * @param IPlugin $plugin
 	 * @return PluginContainer
 	 */
-	public function set_plugin($name, IPlugin $plugin) {
-		$this->remove_plugin($name);
+	public function setPlugin($name, IPlugin $plugin) {
+		$this->removePlugin($name);
 		$this->plugins[(string) $name] = $plugin;
 
-		foreach ((array) $plugin->declare_hooks() as $hook => $method) {
+		foreach ((array) $plugin->declareHooks() as $hook => $method) {
 			if (is_int($hook)) {
 				// numerical key, method has same name as hook
 				$hook = $method;
@@ -66,7 +66,7 @@ class PluginContainer
 		return $this;
 	}
 
-	public function remove_plugin($name) {
+	public function removePlugin($name) {
 		$name = (string) $name;
 		if (!isset($this->plugins[$name])) {
 			return;
@@ -108,7 +108,7 @@ class PluginContainer
 	 * @param array $params
 	 * @return \ArrayObject
 	 */
-	public function create_context($params = array())
+	public function createContext($params = array())
 	{
 		return new \ArrayObject((array) $params, \ArrayObject::ARRAY_AS_PROPS);
 	}

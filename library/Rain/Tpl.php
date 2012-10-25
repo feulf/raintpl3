@@ -69,7 +69,7 @@ class Tpl {
         ),
     );
     protected $templateInfo = array();
-
+    
     /**
      * Draw the template
      */
@@ -77,9 +77,11 @@ class Tpl {
         extract($this->var);
         ob_start();
         require $this->checkTemplate($templateFilePath);
+        $html = ob_get_clean();
         if ($toString)
-            return ob_get_clean(); else
-            echo ob_get_clean();
+            return $html; 
+        else
+            echo $html;
     }
 
     /**
@@ -89,9 +91,11 @@ class Tpl {
         extract($this->var);
         ob_start();
         require $this->checkString($string);
+        $html = ob_get_clean();
         if ($toString)
-            return ob_get_clean(); else
-            echo ob_get_clean();
+            return $html; 
+        else
+            echo $html;
     }
 
     /**
@@ -148,7 +152,7 @@ class Tpl {
         if ('' === $name) {
             $name = \get_class($plugin);
         }
-        static::getPlugins()->add_plugin($name, $plugin);
+        static::getPlugins()->addPlugin($name, $plugin);
     }
 
     /**
@@ -323,7 +327,7 @@ class Tpl {
     protected function compileTemplate($code, $isString, $templateBasedir, $templateDirectory, $templateFilepath) {
 
         // Execute plugins, before_parse
-        $context = $this->getPlugins()->create_context(array(
+        $context = $this->getPlugins()->createContext(array(
             'code' => $code,
             'template_basedir' => $templateBasedir,
             'template_filepath' => $templateFilepath,
@@ -545,15 +549,15 @@ class Tpl {
                     $parsedCode .= "<?php " . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = TRUE) . "; ?>";
                 }
 
+
                 //constants
                 elseif (preg_match($tagMatch['constant'], $html, $matches)) {
                     $parsedCode .= "<?php echo " . $this->conReplace($matches[1], $loopLevel) . "; ?>";
                 }
-
                 // registered tags
                 else {
-
-                    $found = FALSE;
+                    
+                    $found = FALSE;                   
                     foreach (static::$conf['registered_tags'] as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
                             $found = true;
@@ -561,8 +565,9 @@ class Tpl {
                         }
                     }
 
-                    if (!$found)
+                    if (!$found){
                         $parsedCode .= $html;
+                    }
                 }
             }
 
@@ -610,8 +615,7 @@ class Tpl {
             $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $loopLevel, '${1}' . $loopLevel, '${1}' . $loopLevel), $html);
 
         // if it is a variable
-        if (preg_match_all('/(\$[a-z_A-Z][\.\[\]\"\'a-zA-Z_0-9]*)/', $html, $matches)) {
-
+        if (preg_match_all('/(\$[a-z_A-Z][^\s]*)/', $html, $matches)) {
             // substitute . and [] with [" "]
             for ($i = 0; $i < count($matches[1]); $i++) {
 
