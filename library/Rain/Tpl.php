@@ -183,7 +183,7 @@ class Tpl {
         // if the template doesn't exsist throw an error
         if (!file_exists($templateFilepath)) {
             $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
-            throw $e->setTemplateFile($templateFilepath);
+            throw $e->templateFile($templateFilepath);
         }
 
         // Compile the template if the original has been updated
@@ -574,7 +574,7 @@ class Tpl {
                 $caller = array_shift($trace);
 
                 $e = new Tpl\SyntaxException("Error! You need to close an {if} tag in the string, loaded by {$caller['file']} at line {$caller['line']}");
-                throw $e->setTemplateFile($templateFilepath);
+                throw $e->templateFile($templateFilepath);
             }
 
             if ($loopLevel > 0) {
@@ -582,17 +582,17 @@ class Tpl {
                 $trace = debug_backtrace();
                 $caller = array_shift($trace);
                 $e = new Tpl\SyntaxException("Error! You need to close the {loop} tag in the string, loaded by {$caller['file']} at line {$caller['line']}");
-                throw $e->setTemplateFile($templateFilepath);
+                throw $e->templateFile($templateFilepath);
             }
         } else {
             if ($openIf > 0) {
                 $e = new Tpl\SyntaxException("Error! You need to close an {if} tag in $templateFilepath template");
-                throw $e->setTemplateFile($templateFilepath);
+                throw $e->templateFile($templateFilepath);
             }
 
             if ($loopLevel > 0) {
                 $e = new Tpl\SyntaxException("Error! You need to close the {loop} tag in $templateFilepath template");
-                throw $e->setTemplateFile($templateFilepath);
+                throw $e->templateFile($templateFilepath);
             }
         }
 
@@ -681,9 +681,9 @@ class Tpl {
 
             // stop the execution of the script
             $e = new Tpl\SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line ' . $line);
-            throw $e->setTemplateFile($this->template_info['template_filepath'])
-                    ->setTag($match[0])
-                    ->setTemplateLine($line);
+            throw $e->templateFile($this->template_info['template_filepath'])
+                    ->tag($match[0])
+                    ->templateLine($line);
 
             return false;
         }
