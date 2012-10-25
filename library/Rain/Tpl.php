@@ -553,25 +553,17 @@ class Tpl {
                 // registered tags
                 else {
                     
-                    
-                    $found = FALSE;
-                    foreach( static::$conf['registered_tags'] as $tags => $array ){
-                            if( preg_match_all( '/' . $array['parse'] . '/', $html, $matches ) ){
-                                $found = true;
-                                unset($matches[0]); // needed to make it work with arrays
-                                $varray = var_export($matches,1);
-                                $tmp = preg_split('/\'/', $varray);
-                                foreach($tmp as $key => $reg){
-                                        if(preg_match('/^\$/', $reg)) $varray = str_replace("'$reg'",$reg,$varray);
-                                }
-                                $varray = str_replace('"','\"',$varray);
-                                $varray = str_replace("'",'"',$varray);
-                                $parsed_code .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], ".$varray." ); ?>";
-                            }
+                    $found = FALSE;                   
+                    foreach (static::$conf['registered_tags'] as $tags => $array) {
+                        if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
+                            $found = true;
+                            $parsedCode .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], " . var_export($matches, 1) . " ); ?>";
+                        }
                     }
 
-                    if (!$found)
+                    if (!$found){
                         $parsedCode .= $html;
+                    }
                 }
             }
 
