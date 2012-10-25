@@ -225,10 +225,10 @@ class Tpl {
         if (flock($fp, LOCK_SH)) {
 
             // save the filepath in the info
-            $this->template_info['template_filepath'] = $templateFilepath;
+            $this->tempateInfo['template_filepath'] = $templateFilepath;
 
             // read the file			
-            $this->template_info['code'] = $code = fread($fp, filesize($templateFilepath));
+            $this->tempateInfo['code'] = $code = fread($fp, filesize($templateFilepath));
 
             // xml substitution
             $code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
@@ -675,13 +675,13 @@ class Tpl {
 
             // find the line of the error
             $line = 0;
-            $rows = explode("\n", $this->template_info['code']);
+            $rows = explode("\n", $this->tempateInfo['code']);
             while (!strpos($rows[$line], $html) && $line + 1 < count($rows))
                 $line++;
 
             // stop the execution of the script
-            $e = new Tpl\SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->template_info['template_filepath'] . ' at line ' . $line);
-            throw $e->templateFile($this->template_info['template_filepath'])
+            $e = new Tpl\SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->tempateInfo['template_filepath'] . ' at line ' . $line);
+            throw $e->templateFile($this->tempateInfo['template_filepath'])
                     ->tag($match[0])
                     ->templateLine($line);
 
