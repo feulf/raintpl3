@@ -11,8 +11,7 @@
 					"base_url"      => null,
 					"tpl_dir"       => "templates/",
 					"cache_dir"     => "cache/",
-					"debug"         => true,
-                    "auto_escape"   => true
+					"debug"         => true // set to false to improve the speed
 				   );
 	Tpl::configure( $config );
 

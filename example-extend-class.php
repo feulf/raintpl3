@@ -26,7 +26,7 @@
 					"base_url"	=> null, 
 					"tpl_dir"	=> "templates/raintpl3/",
 					"cache_dir"	=> "cache/",
-					"debug"		=> true,
+					"debug"         => true, // set to false to improve the speed
 					"charset"	=> "Something different",
 				   );
 

@@ -11,8 +11,7 @@
 					"base_url"      => null,
 					"tpl_dir"       => "templates/test/",
 					"cache_dir"     => "cache/",
-					"debug"         => true,
-                    "auto_escape"   => true,
+					"debug"         => true, // set to false to improve the speed
 				   );
 
 	Tpl::configure( $config );
@@ -36,7 +35,7 @@
 					"week"		=> array( "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ),
 					"user"		=> (object) array("name"=>"Rain", "citizen" => "Earth", "race" => "Human" ),
 					"numbers"	=> array( 3, 2, 1 ),
-					"bad_text"	=> 'Hey this is a malicious XSS <script>alert(1);</script>',
+					"bad_text"	=> 'Hey this is a malicious XSS <script>alert("auto_escape is always enabled");</script>',
 					"table"		=> array( array( "Apple", "1996" ), array( "PC", "1997" ) ),
 					"title"		=> "Rain TPL 3 - Easy and Fast template engine", 
 					"copyright" => "Copyright 2006 - 2012 Rain TPL<br>Project By Rain Team",

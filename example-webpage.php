@@ -11,7 +11,7 @@
 					"base_url"	=> null, 
 					"tpl_dir"	=> "templates/raintpl2/",
 					"cache_dir"	=> "cache/",
-					"debug"		=> true,
+					"debug"         => true // set to false to improve the speed
 				   );
 	Tpl::configure( $config );
 
