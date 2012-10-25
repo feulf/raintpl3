@@ -16,7 +16,7 @@
 					"tpl_dir"       => "templates/test/",
 					"cache_dir"     => "cache/",
 					"debug"         => false,
-                    "auto_escape"   => true
+                                        "auto_escape"   => false
 				   );
 
 	Tpl::configure( $config );
