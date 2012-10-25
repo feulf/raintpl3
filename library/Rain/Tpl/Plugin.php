@@ -23,7 +23,7 @@ class Plugin implements IPlugin
 
 	public function  __construct($options = array())
 	{
-		$this->set_options($options);
+		$this->setOptions($options);
 	}
 	/**
 	 * Returns a list of hooks that are implemented by the plugin.
@@ -31,7 +31,7 @@ class Plugin implements IPlugin
 	 * - a key/value pair where key is hook name and value is implementing method,
 	 * - a value only when hook has same name as method.
 	 */
-	public function declare_hooks() {
+	public function declareHooks() {
 		return $this->hooks;
 	}
 
@@ -40,9 +40,9 @@ class Plugin implements IPlugin
 	 *
 	 * @var array
 	 */
-	public function set_options($options) {
+	public function setOptions($options) {
 		foreach ((array) $options as $key => $val) {
-			$this->set_option($key, $val);
+			$this->setOption($key, $val);
 		}
 		return $this;
 	}
@@ -55,7 +55,7 @@ class Plugin implements IPlugin
 	 * @throws \InvalidArgumentException Wrong option name or value
 	 * @return Plugin
 	 */
-	public function set_option($name, $value) {
+	public function setOption($name, $value) {
 		$method = 'set_' . $name;
 		if (!\method_exists($this, $method)) {
 			throw new \InvalidArgumentException('Key "' . $name . '" is not a valid settings option' );

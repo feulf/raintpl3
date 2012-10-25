@@ -26,12 +26,12 @@ interface IPlugin
 	 * - a key/value pair where key is hook name and value is implementing method,
 	 * - a value only when hook has same name as method.
 	 */
-	public function declare_hooks();
+	public function declareHooks();
 
 	/**
 	 * Sets plugin options.
 	 *
 	 * @var array
 	 */
-	public function set_options($options);
+	public function setOptions($options);
 }
