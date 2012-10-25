@@ -619,8 +619,7 @@ class Tpl {
             $html = preg_replace(array('/(\$key)\b/', '/(\$value)\b/', '/(\$counter)\b/'), array('${1}' . $loopLevel, '${1}' . $loopLevel, '${1}' . $loopLevel), $html);
 
         // if it is a variable
-        if (preg_match_all('/(\$[a-z_A-Z][\.\[\]\"\'a-zA-Z_0-9]*)/', $html, $matches)) {
-
+        if (preg_match_all('/(\$[a-z_A-Z][^\s]*)/', $html, $matches)) {
             // substitute . and [] with [" "]
             for ($i = 0; $i < count($matches[1]); $i++) {
 
