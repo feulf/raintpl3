@@ -39,7 +39,7 @@ class Tpl {
         'php_enabled' => false,
         'template_syntax' => 'Rain',
         'registered_tags' => array(),
-        'auto_escape' => false,
+        'auto_escape' => true,
         'tags' => array(
             'loop' => array('({loop.*?})', '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'),
             'loop_close' => array('({\/loop})', '/{\/loop}/'),
@@ -398,7 +398,7 @@ class Tpl {
                     $includeTemplate = preg_replace('/\w+\/\.\.\//', '', $includeTemplate);
                     
                     //dynamic include
-                    $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
+                    $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';//<?
 
                 }
 
@@ -540,7 +540,7 @@ class Tpl {
                     $this->blackList($parsedFunction);
 
                     // function 
-                    $parsedCode .= "<?php echo $parsedFunction; ?>";
+                    $parsedCode .= "<?php echo $parsedFunction; ?>";//<?
                 }
 
                 //variables
