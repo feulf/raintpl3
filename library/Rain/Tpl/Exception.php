@@ -1,5 +1,4 @@
 <?php
-
 namespace Rain\Tpl;
 
 /**
@@ -26,5 +25,3 @@ class Exception extends \Exception {
         return $this;
 		}
 }
-
-// -- end

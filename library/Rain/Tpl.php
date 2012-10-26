@@ -39,7 +39,7 @@ class Tpl {
         'php_enabled' => false,
         'template_syntax' => 'Rain',
         'registered_tags' => array(),
-        'auto_escape' => TRUE,
+        'auto_escape' => false,
         'tags' => array(
             'loop' => array('({loop.*?})', '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'),
             'loop_close' => array('({\/loop})', '/{\/loop}/'),
@@ -78,6 +78,16 @@ class Tpl {
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
+        
+        
+        // Execute plugins, before_parse
+        $context = $this->getPlugins()->createContext(array(
+            'code' => $html,
+            'conf' => static::$conf,
+        ));
+        $this->getPlugins()->run('afterDraw', $context);
+        $html = $context->code;
+        
         if ($toString)
             return $html; 
         else
@@ -92,6 +102,16 @@ class Tpl {
         ob_start();
         require $this->checkString($string);
         $html = ob_get_clean();
+
+
+        // Execute plugins, before_parse
+        $context = $this->getPlugins()->createContext(array(
+            'code' => $html,
+            'conf' => static::$conf,
+        ));
+        $this->getPlugins()->run('afterDraw', $context);
+        $html = $context->code;
+
         if ($toString)
             return $html; 
         else
@@ -124,6 +144,8 @@ class Tpl {
             $this->var = $variable + $this->var;
         else
             $this->var[$variable] = $value;
+
+        return $this;
     }
 
     /**
@@ -149,9 +171,8 @@ class Tpl {
      * @param string $name name can be used to distinguish plugins of same class.
      */
     public static function registerPlugin(\Rain\Tpl\IPlugin $plugin, $name = '') {
-        if ('' === $name) {
-            $name = \get_class($plugin);
-        }
+        $name = (string)$name ?: \get_class($plugin);
+
         static::getPlugins()->addPlugin($name, $plugin);
     }
 
@@ -170,10 +191,8 @@ class Tpl {
      * @return \Rain\Tpl\PluginContainer
      */
     protected static function getPlugins() {
-        if (is_null(static::$plugins)) {
-            static::$plugins = new \Rain\Tpl\PluginContainer();
-        }
-        return static::$plugins;
+        return static::$plugins 
+            ?: static::$plugins = new \Rain\Tpl\PluginContainer();
     }
 
     protected function checkTemplate($template) {
@@ -235,7 +254,7 @@ class Tpl {
             $this->templateInfo['code'] = $code = fread($fp, filesize($templateFilepath));
 
             // xml substitution
-            $code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
+            $code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
 
             // disable php tag
             if (!static::$conf['php_enabled'])
@@ -394,8 +413,8 @@ class Tpl {
                     //get the included template
                     $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
 
-                    // reduce the path
-                    $includeTemplate = preg_replace('/\w+\/\.\.\//', '', $includeTemplate);
+                    // reduce the path                    
+                    $includeTemplate = Tpl::reducePath( $includeTemplate );
                     
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
@@ -692,7 +711,18 @@ class Tpl {
             return false;
         }
     }
+    
+    public static function reducePath( $path ){
+        // reduce the path
+        $path = str_replace( "://", "@not_replace@", $path );
+        $path = preg_replace( "#(/+)#", "/", $path );
+        $path = preg_replace( "#(/\./+)#", "/", $path );
+        $path = str_replace( "@not_replace@", "://", $path );
+
+        while( preg_match( '#\.\./#', $path ) ){
+            $path = preg_replace('#\w+/\.\./#', '', $path );
+        }
+        return $path;
+    }
 
 }
-
-// -- end

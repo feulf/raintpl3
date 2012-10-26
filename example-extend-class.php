@@ -26,8 +26,9 @@
 					"base_url"	=> null, 
 					"tpl_dir"	=> "templates/raintpl3/",
 					"cache_dir"	=> "cache/",
-					"debug"         => true, // set to false to improve the speed
-					"charset"	=> "Something different",
+					"debug" => true, // set to false to improve the speed
+					"auto_escape" => true,
+					"charset"	=> "ISO-8859-1",
 				   );
 
 	//use Rain;
