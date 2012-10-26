@@ -144,6 +144,8 @@ class Tpl {
             $this->var = $variable + $this->var;
         else
             $this->var[$variable] = $value;
+
+        return $this;
     }
 
     /**
