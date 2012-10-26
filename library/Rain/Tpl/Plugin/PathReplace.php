@@ -20,7 +20,6 @@ class PathReplace extends \Rain\Tpl\Plugin
 
 		// set variables
 		$html = $context->code;
-		$template_basedir = $context->template_basedir;
 		$tags = $this->tags;
 		$basecode = "<?php echo static::\$conf['base_url']; ?>";
 
@@ -29,16 +28,7 @@ class PathReplace extends \Rain\Tpl\Plugin
 		$template_directory = $basecode . $context->conf['tpl_dir'] . $context->template_basedir;
 
 		// reduce the path
-                $path = str_replace( "://", "@not_replace@", $template_directory );
-                $path = preg_replace( "#(/+)#", "/", $path );
-                $path = preg_replace( "#(/\./+)#", "/", $path );
-                $path = str_replace( "@not_replace@", "://", $path );
-
-                while( preg_match( '#\.\./#', $path ) ){
-                    $path = preg_replace('#\w+/\.\./#', '', $path );
-                }
-                
-                
+                $path = \Rain\Tpl::reducePath( $template_directory );
 
 		$exp = $sub = array();
 
