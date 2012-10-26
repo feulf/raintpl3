@@ -169,9 +169,8 @@ class Tpl {
      * @param string $name name can be used to distinguish plugins of same class.
      */
     public static function registerPlugin(\Rain\Tpl\IPlugin $plugin, $name = '') {
-        if ('' === $name) {
-            $name = \get_class($plugin);
-        }
+        $name = (string)$name ?: \get_class($plugin);
+
         static::getPlugins()->addPlugin($name, $plugin);
     }
 
@@ -190,10 +189,8 @@ class Tpl {
      * @return \Rain\Tpl\PluginContainer
      */
     protected static function getPlugins() {
-        if (is_null(static::$plugins)) {
-            static::$plugins = new \Rain\Tpl\PluginContainer();
-        }
-        return static::$plugins;
+        return static::$plugins 
+            ?: static::$plugins = new \Rain\Tpl\PluginContainer();
     }
 
     protected function checkTemplate($template) {
@@ -255,7 +252,7 @@ class Tpl {
             $this->templateInfo['code'] = $code = fread($fp, filesize($templateFilepath));
 
             // xml substitution
-            $code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
+            $code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
 
             // disable php tag
             if (!static::$conf['php_enabled'])
