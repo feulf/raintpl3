@@ -72,6 +72,12 @@ class Tpl {
     
     /**
      * Draw the template
+     *
+     * @param string $templateFilePath: name of the template file
+     * @param bool $toString: if the method should return a string
+     * or echo the output
+     * 
+     * @return void, string: depending of the $toString
      */
     public function draw($templateFilePath, $toString = FALSE) {
         extract($this->var);
@@ -95,7 +101,12 @@ class Tpl {
     }
 
     /**
-     * Draw the template
+     * Draw a string
+     *
+     * @param string $string: string in RainTpl format
+     * @param bool $toString: if the param
+     *
+     * @return void, string: depending of the $toString
      */
     public function drawString($string, $toString = false) {
         extract($this->var);
@@ -120,6 +131,10 @@ class Tpl {
 
     /**
      * Configure the template
+     *
+     * @param string, array $setting: name of the setting to configure
+     * or associative array type 'setting' => 'value'
+     * @param mixed $value: value of the setting to configure
      */
     public static function configure($setting, $value = null) {
         if (is_array($setting))
@@ -138,6 +153,8 @@ class Tpl {
      *
      * @param mixed $variable Name of template variable or associative array name/value
      * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
+     *
+     * @return \Rain\Tpl $this
      */
     public function assign($variable, $value = null) {
         if (is_array($variable))
@@ -160,6 +177,13 @@ class Tpl {
                 unlink($file);
     }
 
+    /**
+     * Allows the developer to register a tag.
+     *
+     * @param string $tag nombre del tag
+     * @param regexp $parse regular expression to parse the tag
+     * @param anonymous function $function: action to do when the tag is parsed
+     */
     public static function registerTag($tag, $parse, $function) {
         static::$conf['registered_tags'][$tag] = array("parse" => $parse, "function" => $function);
     }
@@ -195,6 +219,14 @@ class Tpl {
             ?: static::$plugins = new \Rain\Tpl\PluginContainer();
     }
 
+		/**
+     * Check if the template exist and compile it if necessary
+     *
+     * @param string $template: name of the file of the template
+     *
+     * @throw \Rain\Tpl\NotFoundException the file doesn't exists
+     * @return string: full filepath that php must use to include
+     */
     protected function checkTemplate($template) {
         // set filename
         $templateName = basename($template);
@@ -216,9 +248,12 @@ class Tpl {
         return $parsedTemplateFilepath;
     }
 
-    /**
-     * Check if a string has been already compiled
-     * @param type $string
+		/**
+     * Compile a string if necessary
+     *
+     * @param string $string: RainTpl template string to compile
+     *
+     * @return string: full filepath that php must use to include
      */
     protected function checkString($string) {
 
@@ -237,9 +272,21 @@ class Tpl {
     }
 
     /**
-     * Compile the file
+     * Compile the file and save it in the cache
+     *
+     * @param string $templateName: name of the template
+     * @param string $templateBaseDir
+     * @param string $templateDirectory
+     * @param string $templateFilepath
+     * @param string $parsedTemplateFilepath: cache file where to save the template
      */
-    protected function compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath) {
+    protected function compileFile(
+        $templateName,
+        $templateBasedir,
+        $templateDirectory,
+        $templateFilepath,
+        $parsedTemplateFilepath
+    ) {
 
         // open the template
         $fp = fopen($templateFilepath, "r");
@@ -291,7 +338,13 @@ class Tpl {
     }
 
     /**
-     * Compile the file
+     * Compile a string and save it in the cache
+     *
+     * @param string $templateName: name of the template
+     * @param string $templateBaseDir
+     * @param string $templateFilepath
+     * @param string $parsedTemplateFilepath: cache file where to save the template
+     * @param string $code: code to compile
      */
     protected function compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $code) {
 
@@ -342,6 +395,8 @@ class Tpl {
     /**
      * Compile template
      * @access protected
+     *
+     * @param string $code: code to compile
      */
     protected function compileTemplate($code, $isString, $templateBasedir, $templateDirectory, $templateFilepath) {
 
@@ -351,7 +406,8 @@ class Tpl {
             'template_basedir' => $templateBasedir,
             'template_filepath' => $templateFilepath,
             'conf' => static::$conf,
-                ));
+        ));
+
         $this->getPlugins()->run('beforeParse', $context);
         $code = $context->code;
 
