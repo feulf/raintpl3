@@ -21,3 +21,6 @@ Template auto generation, in debug mode if a template was not found RainTPL crea
 Better Sandbox with White List, so with addModifier
 Better Error management
 AddTemplateFolder, possibility to define an alternative template folder so if a template is not found will search on the other folder
+LESSCSS Plugin
+MarkDown Plugin
+{header} tag to change a template header

@@ -1,5 +1,4 @@
 <?php
-
 namespace Rain\Tpl;
 
 /**
@@ -52,5 +51,3 @@ class SyntaxException extends Exception {
         return $this;
      }
 }
-
-// -- end
