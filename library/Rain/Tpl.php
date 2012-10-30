@@ -124,6 +124,8 @@ class Tpl {
             $this->var = $variable + $this->var;
         else
             $this->var[$variable] = $value;
+        // return this for FluentInterface, example new Tpl()->assign('title','name')->draw('template');
+        return $this;
     }
 
     /**
