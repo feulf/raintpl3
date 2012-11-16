@@ -19,12 +19,12 @@ class Exception extends \Exception {
      * @return \Rain\Tpl_Exception | string
      */  	
     public function templateFile($templateFile){
-        if(is_null($file))
+        if(is_null($templateFile))
             return $this->templateFile;
 
         $this->templateFile = (string) $templateFile;
         return $this;
-		}
+    }
 }
 
 // -- end
