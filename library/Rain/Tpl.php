@@ -28,6 +28,7 @@ class Tpl {
      */
     protected static $plugins = null;
     // configuration
+    protected $config = array();
     protected static $conf = array(
         'checksum' => array(),
         'charset' => 'UTF-8',
@@ -39,7 +40,7 @@ class Tpl {
         'php_enabled' => false,
         'template_syntax' => 'Rain',
         'registered_tags' => array(),
-        'auto_escape' => TRUE,
+        'auto_escape' => false,
         'tags' => array(
             'loop' => array('({loop.*?})', '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'),
             'loop_close' => array('({\/loop})', '/{\/loop}/'),
@@ -69,7 +70,21 @@ class Tpl {
         ),
     );
     protected $templateInfo = array();
-    
+
+    public function __construct(){
+        $this->config = static::$conf;
+    }
+
+    public function config($setting, $value = null) {
+        if (is_array($setting))
+            foreach ($setting as $key => $value)
+                $this::config($key, $value);
+        else if (isset($this->config[$setting])) {
+            $this->config[$setting] = $value;
+
+            $this->config['checksum'][$setting] = $value; // take trace of all config
+        }
+    }
     /**
      * Draw the template
      */
@@ -78,6 +93,16 @@ class Tpl {
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
+        
+        
+        // Execute plugins, before_parse
+        $context = $this->getPlugins()->createContext(array(
+            'code' => $html,
+            'conf' => $this->config,
+        ));
+        $this->getPlugins()->run('afterDraw', $context);
+        $html = $context->code;
+        
         if ($toString)
             return $html; 
         else
@@ -92,6 +117,16 @@ class Tpl {
         ob_start();
         require $this->checkString($string);
         $html = ob_get_clean();
+
+
+        // Execute plugins, before_parse
+        $context = $this->getPlugins()->createContext(array(
+            'code' => $html,
+            'conf' => $this->config,
+        ));
+        $this->getPlugins()->run('afterDraw', $context);
+        $html = $context->code;
+
         if ($toString)
             return $html; 
         else
@@ -114,7 +149,7 @@ class Tpl {
 
     /**
      * Assign variable
-     * eg. 	$t->assign('name','mickey');
+     * eg.     $t->assign('name','mickey');
      *
      * @param mixed $variable Name of template variable or associative array name/value
      * @param mixed $value value assigned to this variable. Not set if variable_name is an associative array
@@ -124,7 +159,7 @@ class Tpl {
             $this->var = $variable + $this->var;
         else
             $this->var[$variable] = $value;
-        // return this for FluentInterface, example new Tpl()->assign('title','name')->draw('template');
+
         return $this;
     }
 
@@ -151,9 +186,8 @@ class Tpl {
      * @param string $name name can be used to distinguish plugins of same class.
      */
     public static function registerPlugin(\Rain\Tpl\IPlugin $plugin, $name = '') {
-        if ('' === $name) {
-            $name = \get_class($plugin);
-        }
+        $name = (string)$name ?: \get_class($plugin);
+
         static::getPlugins()->addPlugin($name, $plugin);
     }
 
@@ -172,19 +206,17 @@ class Tpl {
      * @return \Rain\Tpl\PluginContainer
      */
     protected static function getPlugins() {
-        if (is_null(static::$plugins)) {
-            static::$plugins = new \Rain\Tpl\PluginContainer();
-        }
-        return static::$plugins;
+        return static::$plugins 
+            ?: static::$plugins = new \Rain\Tpl\PluginContainer();
     }
 
     protected function checkTemplate($template) {
         // set filename
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
-        $templateDirectory = static::$conf['tpl_dir'] . $templateBasedir;
-        $templateFilepath = $templateDirectory . $templateName . '.' . static::$conf['tpl_ext'];
-        $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize(static::$conf['checksum'])) . '.rtpl.php';
+        $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
+        $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
+        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
 
         // if the template doesn't exsist throw an error
         if (!file_exists($templateFilepath)) {
@@ -193,7 +225,7 @@ class Tpl {
         }
 
         // Compile the template if the original has been updated
-        if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) ))
+        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) ))
             $this->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
 
         return $parsedTemplateFilepath;
@@ -206,14 +238,14 @@ class Tpl {
     protected function checkString($string) {
 
         // set filename
-        $templateName = md5($string . implode(static::$conf['checksum']));
-        $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . '.s.rtpl.php';
+        $templateName = md5($string . implode($this->config['checksum']));
+        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . '.s.rtpl.php';
         $templateFilepath = '';
         $templateBasedir = '';
 
 
         // Compile the template if the original has been updated
-        if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath))
+        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath))
             $this->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
 
         return $parsedTemplateFilepath;
@@ -237,10 +269,10 @@ class Tpl {
             $this->templateInfo['code'] = $code = fread($fp, filesize($templateFilepath));
 
             // xml substitution
-            $code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
+            $code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
 
             // disable php tag
-            if (!static::$conf['php_enabled'])
+            if (!$this->config['php_enabled'])
                 $code = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $code);
 
             // xml re-substitution
@@ -255,12 +287,12 @@ class Tpl {
             $parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
 
             // create directories
-            if (!is_dir(static::$conf['cache_dir']))
-                mkdir(static::$conf['cache_dir'], 0755, TRUE);
+            if (!is_dir($this->config['cache_dir']))
+                mkdir($this->config['cache_dir'], 0755, TRUE);
 
             // check if the cache is writable
-            if (!is_writable(static::$conf['cache_dir']))
-                throw new Tpl\Exception('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to FALSE. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+            if (!is_writable($this->config['cache_dir']))
+                throw new Tpl\Exception('Cache directory ' . $this->config['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to FALSE. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
             // write compiled file
             file_put_contents($parsedTemplateFilepath, $parsedCode);
@@ -288,7 +320,7 @@ class Tpl {
             $code = preg_replace("/<\?xml(.*?)\?>/s", "##XML\\1XML##", $code);
 
             // disable php tag
-            if (!static::$conf['php_enabled'])
+            if (!$this->config['php_enabled'])
                 $code = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $code);
 
             // xml re-substitution
@@ -304,12 +336,12 @@ class Tpl {
             $parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
 
             // create directories
-            if (!is_dir(static::$conf['cache_dir']))
-                mkdir(static::$conf['cache_dir'], 0755, true);
+            if (!is_dir($this->config['cache_dir']))
+                mkdir($this->config['cache_dir'], 0755, true);
 
             // check if the cache is writable
-            if (!is_writable(static::$conf['cache_dir']))
-                throw new Tpl\Exception('Cache directory ' . static::$conf['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
+            if (!is_writable($this->config['cache_dir']))
+                throw new Tpl\Exception('Cache directory ' . $this->config['cache_dir'] . 'doesn\'t have write permission. Set write permission or set RAINTPL_CHECK_TEMPLATE_UPDATE to false. More details on http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/Configuration/');
 
             // write compiled file
             fwrite($fp, $parsedCode);
@@ -333,19 +365,19 @@ class Tpl {
             'code' => $code,
             'template_basedir' => $templateBasedir,
             'template_filepath' => $templateFilepath,
-            'conf' => static::$conf,
-                ));
+            'conf' => $this->config,
+        ));
         $this->getPlugins()->run('beforeParse', $context);
         $code = $context->code;
 
         // set tags
-        foreach (static::$conf['tags'] as $tag => $tagArray) {
+        foreach ($this->config['tags'] as $tag => $tagArray) {
             list( $split, $match ) = $tagArray;
             $tagSplit[$tag] = $split;
             $tagMatch[$tag] = $match;
         }
 
-        $keys = array_keys(static::$conf['registered_tags']);
+        $keys = array_keys($this->config['registered_tags']);
         $tagSplit += array_merge($tagSplit, $keys);
 
 
@@ -391,13 +423,13 @@ class Tpl {
                 elseif (preg_match($tagMatch['include'], $html, $matches)) {
 
                     //get the folder of the actual template
-                    $actualFolder = substr($templateDirectory, strlen(static::$conf['tpl_dir']));
+                    $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
 
                     //get the included template
                     $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
 
-                    // reduce the path
-                    $includeTemplate = preg_replace('/\w+\/\.\.\//', '', $includeTemplate);
+                    // reduce the path                    
+                    $includeTemplate = Tpl::reducePath( $includeTemplate );
                     
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
@@ -560,7 +592,7 @@ class Tpl {
                 else {
                     
                     $found = FALSE;                   
-                    foreach (static::$conf['registered_tags'] as $tags => $array) {
+                    foreach ($this->config['registered_tags'] as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
                             $found = true;
                             $parsedCode .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], " . var_export($matches, 1) . " ); ?>";
@@ -633,9 +665,9 @@ class Tpl {
             if (!preg_match('/\$.*=.*/', $html)) {
 
                 // escape character
-                if (static::$conf['auto_escape'] && $escape)
+                if ($this->config['auto_escape'] && $escape)
                 //$html = "htmlspecialchars( $html )";
-                    $html = "htmlspecialchars( $html, ENT_COMPAT, '" . static::$conf['charset'] . "', FALSE )";
+                    $html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
 
                 // if is an assignment it doesn't add echo
                 if ($echo)
@@ -694,7 +726,18 @@ class Tpl {
             return false;
         }
     }
+    
+    public static function reducePath( $path ){
+        // reduce the path
+        $path = str_replace( "://", "@not_replace@", $path );
+        $path = preg_replace( "#(/+)#", "/", $path );
+        $path = preg_replace( "#(/\./+)#", "/", $path );
+        $path = str_replace( "@not_replace@", "://", $path );
+
+        while( preg_match( '#\.\./#', $path ) ){
+            $path = preg_replace('#\w+/\.\./#', '', $path );
+        }
+        return $path;
+    }
 
 }
-
-// -- end
