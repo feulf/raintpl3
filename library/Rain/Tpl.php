@@ -205,7 +205,7 @@ class Tpl {
      * @param anonymous function $function: action to do when the tag is parsed
      */
     public static function registerTag($tag, $parse, $function) {
-        $this->config['registered_tags'][$tag] = array("parse" => $parse, "function" => $function);
+        static::$conf['registered_tags'][$tag] = array("parse" => $parse, "function" => $function);
     }
 
     /**
