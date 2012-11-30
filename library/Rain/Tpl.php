@@ -21,56 +21,79 @@ class Tpl {
     // variables
     public $var = array();
 
+    protected $templateInfo = array(),
+        $config = array(),
+        $objectConf = array();
+
     /**
      * Plugin container
      *
      * @var \Rain\Tpl\PluginContainer
      */
     protected static $plugins = null;
+
     // configuration
     protected static $conf = array(
         'checksum' => array(),
         'charset' => 'UTF-8',
-        'debug' => FALSE,
+        'debug' => false,
         'tpl_dir' => 'templates/',
         'cache_dir' => 'cache/',
         'tpl_ext' => 'html',
         'base_url' => '',
         'php_enabled' => false,
         'template_syntax' => 'Rain',
-        'registered_tags' => array(),
         'auto_escape' => false,
-        'tags' => array(
-            'loop' => array('({loop.*?})', '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'),
-            'loop_close' => array('({\/loop})', '/{\/loop}/'),
-            'loop_break' => array('({break})', '/{break}/'),
-            'loop_continue' => array('({continue})', '/{continue}/'),
-            'if' => array('({if.*?})', '/{if="([^"]*)"}/'),
-            'elseif' => array('({elseif.*?})', '/{elseif="([^"]*)"}/'),
-            'else' => array('({else})', '/{else}/'),
-            'if_close' => array('({\/if})', '/{\/if}/'),
-            'noparse' => array('({noparse})', '/{noparse}/'),
-            'noparse_close' => array('({\/noparse})', '/{\/noparse}/'),
-            'ignore' => array('({ignore}|{\*)', '/{ignore}|{\*/'),
-            'ignore_close' => array('({\/ignore}|\*})', '/{\/ignore}|\*}/'),
-            'include' => array('({include.*?})', '/{include="([^"]*)"}/'),
-            'function' => array('({function.*?})', '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'),
-            'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
-            'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
-        ),
         'sandbox' => true,
-        'black_list' => array('exec', 'shell_exec', 'pcntl_exec', 'passthru', 'proc_open', 'system', 'posix_kill', 'posix_setsid', 'pcntl_fork', 'posix_uname', 'php_uname',
-            'phpinfo', 'popen', 'file_get_contents', 'file_put_contents', 'rmdir', 'mkdir', 'unlink', 'highlight_contents', 'symlink', 'apache_child_terminate',
-            'apache_setenv', 'define_syslog_variables', 'escapeshellarg', 'escapeshellcmd', 'eval', 'fp', 'fput', 'ftp_connect', 'ftp_exec', 'ftp_get',
-            'ftp_login', 'ftp_nb_fput', 'ftp_put', 'ftp_raw', 'ftp_rawlist', 'highlight_file', 'ini_alter', 'ini_get_all', 'ini_restore', 'inject_code',
-            'mysql_pconnect', 'openlog', 'passthru', 'php_uname', 'phpAds_remoteInfo', 'phpAds_XmlRpc', 'phpAds_xmlrpcDecode', 'phpAds_xmlrpcEncode',
-            'posix_getpwuid', 'posix_kill', 'posix_mkfifo', 'posix_setpgid', 'posix_setsid', 'posix_setuid', 'posix_uname', 'proc_close', 'proc_get_status',
-            'proc_nice', 'proc_open', 'proc_terminate', 'syslog', 'xmlrpc_entity_decode'
-        ),
     );
-    protected $templateInfo = array(),
-        $config = array(),
-        $objectConf = array();
+
+    // tags registered by the developers
+    protected static $registered_tags = array();
+
+    // tags natively supported
+    protected static $tags = array(
+        'loop' => array(
+            '({loop.*?})',
+            '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'
+        ),
+        'loop_close' => array('({\/loop})', '/{\/loop}/'),
+        'loop_break' => array('({break})', '/{break}/'),
+        'loop_continue' => array('({continue})', '/{continue}/'),
+        'if' => array('({if.*?})', '/{if="([^"]*)"}/'),
+        'elseif' => array('({elseif.*?})', '/{elseif="([^"]*)"}/'),
+        'else' => array('({else})', '/{else}/'),
+        'if_close' => array('({\/if})', '/{\/if}/'),
+        'noparse' => array('({noparse})', '/{noparse}/'),
+        'noparse_close' => array('({\/noparse})', '/{\/noparse}/'),
+        'ignore' => array('({ignore}|{\*)', '/{ignore}|{\*/'),
+        'ignore_close' => array('({\/ignore}|\*})', '/{\/ignore}|\*}/'),
+        'include' => array('({include.*?})', '/{include="([^"]*)"}/'),
+        'function' => array(
+            '({function.*?})',
+            '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'
+        ),
+        'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
+        'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
+    );
+
+    // black list of functions and variables
+    protected static $black_list = array(
+        'exec', 'shell_exec', 'pcntl_exec', 'passthru', 'proc_open', 'system',
+        'posix_kill', 'posix_setsid', 'pcntl_fork', 'posix_uname', 'php_uname',
+        'phpinfo', 'popen', 'file_get_contents', 'file_put_contents', 'rmdir',
+        'mkdir', 'unlink', 'highlight_contents', 'symlink',
+        'apache_child_terminate', 'apache_setenv', 'define_syslog_variables',
+        'escapeshellarg', 'escapeshellcmd', 'eval', 'fp', 'fput',
+        'ftp_connect', 'ftp_exec', 'ftp_get', 'ftp_login', 'ftp_nb_fput',
+        'ftp_put', 'ftp_raw', 'ftp_rawlist', 'highlight_file', 'ini_alter',
+        'ini_get_all', 'ini_restore', 'inject_code', 'mysql_pconnect',
+        'openlog', 'passthru', 'php_uname', 'phpAds_remoteInfo',
+        'phpAds_XmlRpc', 'phpAds_xmlrpcDecode', 'phpAds_xmlrpcEncode',
+        'posix_getpwuid', 'posix_kill', 'posix_mkfifo', 'posix_setpgid',
+        'posix_setsid', 'posix_setuid', 'posix_uname', 'proc_close',
+        'proc_get_status', 'proc_nice', 'proc_open', 'proc_terminate',
+        'syslog', 'xmlrpc_entity_decode'
+    );
 
     /**
      * Draw the template
@@ -205,7 +228,7 @@ class Tpl {
      * @param anonymous function $function: action to do when the tag is parsed
      */
     public static function registerTag($tag, $parse, $function) {
-        static::$conf['registered_tags'][$tag] = array("parse" => $parse, "function" => $function);
+        static::$registered_tags[$tag] = array("parse" => $parse, "function" => $function);
     }
 
     /**
@@ -432,13 +455,13 @@ class Tpl {
         $code = $context->code;
 
         // set tags
-        foreach ($this->config['tags'] as $tag => $tagArray) {
+        foreach (static::$tags as $tag => $tagArray) {
             list( $split, $match ) = $tagArray;
             $tagSplit[$tag] = $split;
             $tagMatch[$tag] = $match;
         }
 
-        $keys = array_keys($this->config['registered_tags']);
+        $keys = array_keys(static::$registered_tags);
         $tagSplit += array_merge($tagSplit, $keys);
 
 
@@ -653,10 +676,10 @@ class Tpl {
                 else {
  
                     $found = FALSE;
-                    foreach ($this->config['registered_tags'] as $tags => $array) {
+                    foreach (static::$registered_tags as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
                             $found = true;
-                            $parsedCode .= "<?php echo call_user_func( static::\$conf['registered_tags']['$tags']['function'], " . var_export($matches, 1) . " ); ?>";
+                            $parsedCode .= "<?php echo call_user_func( static::\$registered_tags['$tags']['function'], " . var_export($matches, 1) . " ); ?>";
                         }
                     }
 
@@ -763,14 +786,14 @@ class Tpl {
 
     protected function blackList($html) {
 
-        if (!self::$conf['sandbox'] || !self::$conf['black_list'])
+        if (!static::$conf['sandbox'] || !static::$black_list)
             return true;
 
-        if (empty(self::$conf['black_list_preg']))
-            self::$conf['black_list_preg'] = '#[\W\s]*' . implode('[\W\s]*|[\W\s]*', self::$conf['black_list']) . '[\W\s]*#';
+        if (empty(static::$conf['black_list_preg']))
+            static::$conf['black_list_preg'] = '#[\W\s]*' . implode('[\W\s]*|[\W\s]*', static::$black_list) . '[\W\s]*#';
 
         // check if the function is in the black list (or not in white list)
-        if (preg_match(self::$conf['black_list_preg'], $html, $match)) {
+        if (preg_match(static::$conf['black_list_preg'], $html, $match)) {
 
             // find the line of the error
             $line = 0;
@@ -800,5 +823,4 @@ class Tpl {
         }
         return $path;
     }
-
 }
