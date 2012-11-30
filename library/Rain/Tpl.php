@@ -42,7 +42,6 @@ class Tpl {
         'tpl_ext' => 'html',
         'base_url' => '',
         'php_enabled' => false,
-        'template_syntax' => 'Rain',
         'auto_escape' => false,
         'sandbox' => true,
     );
