@@ -162,6 +162,7 @@ class Tpl {
      * @param string, array $setting: name of the setting to configure
      * or associative array type 'setting' => 'value'
      * @param mixed $value: value of the setting to configure
+     * @return \Rain\Tpl $this
      */
     public function objectConfigure($setting, $value = null) {
         if (is_array($setting))
@@ -169,6 +170,8 @@ class Tpl {
                 $this->objectConfigure($key, $value);
         else if (isset(static::$conf[$setting]))
             $this->objectConf[$setting] = $value;
+
+        return $this;
     }
 
     /**
