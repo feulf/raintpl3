@@ -7,7 +7,7 @@ By Federico Ulfo and a lot [awesome contributors](https://github.com/rainphp/rai
 
 Features
 --------
-* Easy for designers, only 10 tags, *{$variable}*, *{include}*, *{loop}*, *{if}*, *{ignore}*, *{noparse}*, *{function}*
+* Easy for designers, only 10 tags, *{$variable}*, *{#constant#}*, *{include}*, *{loop}*, *{if}*, *{* comment *}*, *{noparse}*, *{function}*
 * Easy for developers, 5 methods to load and draw templates.
 * Powerful, modifier and operation with variables
 * Extensible, load plugins and register new tags
