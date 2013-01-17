@@ -24,13 +24,7 @@ Installation / Usage
     {
         "require": {
             "rain/raintpl": ">=3.0.0"
-        },
-        "repositories": [
-            {
-                "type": "vcs",
-                "url": "https://github.com/rainphp/raintpl3"
-            }
-        ]
+        }
     }
     ```
 3. Run the following code
