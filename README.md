@@ -43,4 +43,4 @@ Installation / Usage
 
 Documentation
 -------------
-The documentation of RainTPL is divided in documentation for web designers and documentation for PHP developers.
+The [documentation](http://www.raintpl.com/Documentation/) of RainTPL is divided in [documentation for web designers](http://www.raintpl.com/Documentation/Documentation-for-web-designers/) and [documentation for PHP developers](http://www.raintpl.com/Documentation/Documentation-for-PHP-developers/).
