@@ -1,23 +1,46 @@
-Rain TPL 3
-------------
+RainTPL 3
+=========
 
-New features:
-Better parser in less code
-Plugins system to add functionality (included path_replace and image_resize plugins)
-Back-compatibility with Rain TPL 2 templates
-Cascade modifier, {$title|strtolower|ucfirst}
-Register Tag, to create custom tags that call closure functions, example: {@translate this text@}
-Loop tag improved: {loop="list" as $i => $array} ... {/loop} and {loop="range(0,3)" as $i }
-Modifier can be called into if tag {if="$title|streln > 10"} ... {/if}
-Added Clean() method to delete old cache files
-Added autoescape
-Removed Static Cache
-More examples
+By Federico Ulfo, Faryshta and a lot of other cool contributors!
+
+RainTPL is an easy template engine for PHP that enables designers and developers to work better together, it loads HTML template to separate the presentation from the logic.
+
+Features
+--------
+* Easy for designers, only 10 tags, *{$variable}*, *{include}*, *{loop}*, *{if}*, *{ignore}*, *{noparse}*, *{function}*
+* Easy for developers, 5 methods to load and draw templates.
+* Powerful, modifier and operation with variables
+* Extensible, load plugins and register new tags
+* Secure, sandbox with blacklist.
 
 
-ToDo/Wish list:
-Short syntax: {loop $var} {if $var}
-Template auto generation, in debug mode if a template was not found RainTPL create a dummy template with all the variables used and loop
-Better Sandbox with White List, so with addModifier
-Better Error management
-AddTemplateFolder, possibility to define an alternative template folder so if a template is not found will search on the other folder
+Installation / Usage
+--------------------
+
+1. Install composer https://github.com/composer/composer
+2. Create a composer.json inside your application folder:
+
+    ``` json
+    {
+        "require": {
+            "rain/raintpl": ">=3.0.0"
+        },
+        "repositories": [
+            {
+                "type": "vcs",
+                "url": "https://github.com/rainphp/raintpl3"
+            }
+        ]
+    }
+    ```
+3. Run the following code
+
+    ``` sh
+    $ php composer.phar install
+    ```
+
+4. Run one example of RainTPL with your browser: ```http://localhost/raintpl3/example.php```
+
+Documentation
+-------------
+The documentation of RainTPL is divided in documentation for designers and documentation for developers.
