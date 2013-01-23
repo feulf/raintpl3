@@ -1,9 +1,4 @@
 <?php
-\set_include_path(
-	\dirname(\dirname(__DIR__)) . DIRECTORY_SEPARATOR . 'library'
-	. PATH_SEPARATOR . \get_include_path()
-);
-require_once 'Rain/Tpl.php';
 
 class TplTest extends PHPUnit_Framework_TestCase
 {
@@ -12,7 +7,7 @@ class TplTest extends PHPUnit_Framework_TestCase
 	/**
 	 * Sets include path to raintpl lib.
 	 */
-	public function setUp()
+	public function setup()
 	{
 		$this->configure();
 		$this->engine = new \Rain\Tpl();
@@ -31,18 +26,18 @@ class TplTest extends PHPUnit_Framework_TestCase
 	{
 		// Make a mock that registers to all hooks and check required context keys.
 		$hooks = array(
-			'before_parse' => array('code', 'template_basedir', 'template_filepath', 'conf'),
-			'after_parse' => array('code', 'template_basedir', 'template_filepath', 'conf'),
+			'beforeParse' => array('code', 'template_basedir', 'template_filepath', 'conf'),
+			'afterParse' => array('code', 'template_basedir', 'template_filepath', 'conf'),
 		);
 
 		// init mock plugin
 		$methods = array_keys($hooks);
 		$plugin = $this->getMock(
 			'Rain\Tpl\IPlugin',
-			array_merge(array('declare_hooks', 'set_options'), $methods)
+			array_merge(array('declareHooks', 'setOptions'), $methods)
 		);
 		$plugin->expects($this->once())
-			->method('declare_hooks')
+			->method('declareHooks')
 			->will($this->returnValue($methods));
 		foreach ($hooks as $method => $required) {
 			$contstrains = array();

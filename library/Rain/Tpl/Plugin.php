@@ -56,7 +56,8 @@ class Plugin implements IPlugin
 	 * @return Plugin
 	 */
 	public function setOption($name, $value) {
-		$method = 'set_' . $name;
+		$method = 'set' . ucfirst($name);
+
 		if (!\method_exists($this, $method)) {
 			throw new \InvalidArgumentException('Key "' . $name . '" is not a valid settings option' );
 		}

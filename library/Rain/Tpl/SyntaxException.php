@@ -22,8 +22,8 @@ class SyntaxException extends Exception {
     protected $tag = null;
 
     /**
-	   * Handles the line in template file
-	   * where error has occured
+     * Handles the line in template file
+     * where error has occured
      * 
      * @param int | null $line
      *  	

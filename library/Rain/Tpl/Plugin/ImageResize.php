@@ -6,8 +6,8 @@ require_once __DIR__ . '/../Plugin.php';
 class ImageResize extends \Rain\Tpl\Plugin{
 
 	protected $hooks = array('beforeParse');
-	private $quality = 80;
-	private $crop = TRUE;
+	protected $quality = 80;
+	protected $crop = TRUE;
 
 	public function beforeParse(\ArrayAccess $context){
 		// set variables
@@ -45,6 +45,7 @@ class ImageResize extends \Rain\Tpl\Plugin{
 					$crop = $matches['crop'][$i] == 'true' ? true : false;
 
 				if( $w > 0 && $h > 0 && $resize != 'false' ){
+                                    echo $src;exit;
 					$new_tag = preg_replace( '/(.*?)src="(.*?)"(.*?)/', '$1src="<?php echo Rain\Tpl\Plugin\ImageResize::imgResize(\''.$src.'\', \''.$img_cache_dir.'\', \''.$w.'\', \''.$h.'\', \''.$quality.'\', \''.$crop.'\' ); ?>"$3', $tag );
 					$html = str_replace( $tag, $new_tag, $html );
 					$image_resized = true;
