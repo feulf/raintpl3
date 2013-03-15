@@ -759,7 +759,15 @@ class Tpl {
                 // if is an assignment it doesn't add echo
                 if ($echo)
                     $html = "echo " . $html;
-            }
+            }  else {
+				
+				$tmp = explode("=",$html);
+				if (count($tmp)==2) {
+					$key = ltrim(trim($tmp[0]),"$");
+					$html.= "; \$this->var[\"$key\"] =& \$$key";
+				}
+				
+			}
         }
 
         return $html;
