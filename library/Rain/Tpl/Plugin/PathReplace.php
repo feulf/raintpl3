@@ -53,8 +53,8 @@ class PathReplace extends \Rain\Tpl\Plugin
 		}
 
 		if( in_array( "link", $tags ) ){
-			$exp = array_merge( $exp , array( '/<link(.*?)href=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<link(.*?)href=(?:")([^"]+?)#(?:")/i', '/<link(.*?)href="(.*?)"/', '/<link(.*?)href=(?:\@)([^"]+?)(?:\@)/i' ) );
-			$sub = array_merge( $sub , array( '<link$1href=@$2://$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
+			$exp = array_merge( $exp , array( '/<link(.*?)href=(?:")(http:\/\/|https:\/\/|{)([^"]+?)(?:")/i', '/<link(.*?)href=(?:")([^"]+?)#(?:")/i', '/<link(.*?)href="(.*?)"/', '/<link(.*?)href=(?:\@)([^"]+?)(?:\@)/i' ) );
+			$sub = array_merge( $sub , array( '<link$1href=@$2$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
 		}
 
 		if( in_array( "a", $tags ) ){
