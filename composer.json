@@ -1,18 +1,26 @@
 {
     "name": "rain/raintpl",
+    "type": "library",
     "description": "easy and fast template engine",
+    "homepage":"http://raintpl.com",
+    "license": "MIT",
     "authors": [
         {
             "name": "Federico Ulfo",
             "email": "rainelemental@gmail.com"
+        },
+        {
+            "name": "Rain Community"
         }
     ],
-    "minimum-stability": "stable",
     "require": {
-
+        "php": ">=5.3"
     },
+    "minimum-stability": "dev",
     "autoload": {
-        "psr-0": { "Rain": "library/" }
+        "psr-0": { 
+            "Rain": "library/" 
+        }
     }
 }
 
