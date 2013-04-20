@@ -35,7 +35,7 @@ class Tpl {
         'registered_tags' => array(),
         'auto_escape' => TRUE,
         'tags' => array(
-            'loop' => array('({loop.*?})', '/{loop="(?<variable>\${0,1}[^"]*)"(?: as (?<key>\$.*?)(?: => (?<value>\$.*?)){0,1}){0,1}}/'),
+            'loop' => array('({loop.*?})', '/{loop="(?P<variable>\${0,1}[^"]*)"(?: as (?P<key>\$.*?)(?: => (?P<value>\$.*?)){0,1}){0,1}}/'),
             'loop_close' => array('({\/loop})', '/{\/loop}/'),
             'loop_break' => array('({break})', '/{break}/'),
             'loop_continue' => array('({continue})', '/{continue}/'),
