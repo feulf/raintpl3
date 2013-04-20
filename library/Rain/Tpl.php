@@ -122,23 +122,27 @@ class Tpl {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
+        
+        //create context
+        $context = $this->getPlugins()->createContext(array(
+    	'conf' => $this->config,
+    	));
+    	
+    	// Execute plugins, before_draw
         $this->getPlugins()->run('beforeDraw', $context);
+        
         ob_start();
         require $this->checkTemplate($templateFilePath);
-        $html = ob_get_clean();
+        //updating code
+        $context->code = ob_get_clean();
 
-        // Execute plugins, before_parse
-        $context = $this->getPlugins()->createContext(array(
-            'code' => $html,
-            'conf' => $this->config,
-        ));
+	// Execute plugins, after_draw
         $this->getPlugins()->run('afterDraw', $context);
-        $html = $context->code;
 
         if ($toString)
-            return $html;
+            return $context->code;
         else
-            echo $html;
+            echo $context->code;
     }
 
     /**
@@ -153,23 +157,28 @@ class Tpl {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
+        
+        //create context
+        $context = $this->getPlugins()->createContext(array(
+    	'conf' => $this->config,
+    	));
+    	
+    	// Execute plugins, before_draw
+        $this->getPlugins()->run('beforeDraw', $context);
+        
         ob_start();
         require $this->checkString($string);
-        $html = ob_get_clean();
+        $context->code = ob_get_clean();
 
 
-        // Execute plugins, before_parse
-        $context = $this->getPlugins()->createContext(array(
-            'code' => $html,
-            'conf' => $this->config,
-        ));
+        // Execute plugins, after_parse
         $this->getPlugins()->run('afterDraw', $context);
-        $html = $context->code;
 
         if ($toString)
-            return $html;
+            return $context->code;
         else
-            echo $html;
+            echo $context->code;
+
     }
 
     /**
