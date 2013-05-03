@@ -36,10 +36,9 @@ class Tpl {
         'tpl_ext' => 'html',
         'base_url' => '',
         'php_enabled' => false,
-        'auto_escape' => false,
-        'template_syntax' => 'Rain',
+        'auto_escape' => true,
+        'sandbox' => true,
         'registered_tags' => array(),
-        'auto_escape' => TRUE,
         'tags' => array(
             'loop' => array('({loop.*?})', '/{loop="(?P<variable>\${0,1}[^"]*)"(?: as (?P<key>\$.*?)(?: => (?P<value>\$.*?)){0,1}){0,1}}/'),
             'loop_close' => array('({\/loop})', '/{\/loop}/'),
@@ -57,8 +56,7 @@ class Tpl {
             'function' => array('({function.*?})', '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'),
             'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
             'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
-        ),
-        'sandbox' => true,
+        )
     );
 
     // tags registered by the developers
