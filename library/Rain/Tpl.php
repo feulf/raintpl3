@@ -122,7 +122,7 @@ class Tpl {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
-        $this->getPlugins()->run('beforeDraw', $context);
+        
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
@@ -156,7 +156,6 @@ class Tpl {
         ob_start();
         require $this->checkString($string);
         $html = ob_get_clean();
-
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
