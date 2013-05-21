@@ -39,24 +39,6 @@ class Tpl {
         'auto_escape' => true,
         'sandbox' => true,
         'registered_tags' => array(),
-        'tags' => array(
-            'loop' => array('({loop.*?})', '/{loop="(?P<variable>\${0,1}[^"]*)"(?: as (?P<key>\$.*?)(?: => (?P<value>\$.*?)){0,1}){0,1}}/'),
-            'loop_close' => array('({\/loop})', '/{\/loop}/'),
-            'loop_break' => array('({break})', '/{break}/'),
-            'loop_continue' => array('({continue})', '/{continue}/'),
-            'if' => array('({if.*?})', '/{if="([^"]*)"}/'),
-            'elseif' => array('({elseif.*?})', '/{elseif="([^"]*)"}/'),
-            'else' => array('({else})', '/{else}/'),
-            'if_close' => array('({\/if})', '/{\/if}/'),
-            'noparse' => array('({noparse})', '/{noparse}/'),
-            'noparse_close' => array('({\/noparse})', '/{\/noparse}/'),
-            'ignore' => array('({ignore}|{\*)', '/{ignore}|{\*/'),
-            'ignore_close' => array('({\/ignore}|\*})', '/{\/ignore}|\*}/'),
-            'include' => array('({include.*?})', '/{include="([^"]*)"}/'),
-            'function' => array('({function.*?})', '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'),
-            'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
-            'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
-        )
     );
 
     // tags registered by the developers
@@ -75,6 +57,8 @@ class Tpl {
         'elseif' => array('({elseif.*?})', '/{elseif="([^"]*)"}/'),
         'else' => array('({else})', '/{else}/'),
         'if_close' => array('({\/if})', '/{\/if}/'),
+        'autoescape' => array('({autoescape.*?})', '/{autoescape="([^"]*)"}/'),
+        'autoescape_close' => array('({\/autoescape})', '/{\/autoescape}/'),
         'noparse' => array('({noparse})', '/{noparse}/'),
         'noparse_close' => array('({\/noparse})', '/{\/noparse}/'),
         'ignore' => array('({ignore}|{\*)', '/{ignore}|{\*/'),
@@ -655,6 +639,26 @@ class Tpl {
 
                     // close if code
                     $parsedCode .= '<?php } ?>';
+                }
+
+                // autoescape off
+                elseif (preg_match($tagMatch['autoescape'], $html, $matches)) {
+
+                    // get function
+                    $mode = $matches[1];
+                    $this->config['auto_escape_old'] = $this->config['auto_escape'];
+                    
+                    if ($mode == 'off' or $mode == 'false' or $mode == '0' or $mode == null) {
+                        $this->config['auto_escape'] = false;
+                    } else {
+                        $this->config['auto_escape'] = true;
+                    }
+
+                }
+                // autoescape on
+                elseif (preg_match($tagMatch['autoescape_close'], $html, $matches)) {
+                    $this->config['auto_escape'] = $this->config['auto_escape_old'];
+                    unset($this->config['auto_escape_old']);
                 }
 
                 // function
