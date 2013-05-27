@@ -1,8 +1,6 @@
 RainTPL 3
 =========
 
-By Federico Ulfo and a lot [awesome contributors](https://github.com/rainphp/raintpl3/network)!
-
 [RainTPL](http://raintpl.com) is an easy template engine for PHP that enables designers and developers to work better together, it loads HTML template to separate the presentation from the logic.
 
 Features
@@ -34,6 +32,7 @@ Installation / Usage
     ```
 
 4. Run one example of RainTPL with your browser: ```http://localhost/raintpl3/example.php```
+
 
 Documentation
 -------------
