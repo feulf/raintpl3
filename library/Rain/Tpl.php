@@ -786,17 +786,19 @@ class Tpl {
     protected function modifierReplace($html) {
         
         $this->blackList($html);
-        preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
-        
-        $function_params = $result[1];
-        $explode = explode(":",$result[2]);
-        $function = $explode[0];
-        $params = isset($explode[1]) ? "," . $explode[1] : null;
+        if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
+            preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
 
-        $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
+            $function_params = $result[1];
+            $explode = explode(":",$result[2]);
+            $function = $explode[0];
+            $params = isset($explode[1]) ? "," . $explode[1] : null;
 
-        if (strpos($html,'|') !== false) {
-            $html = $this->modifierReplace($html);
+            $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
+
+            if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
+                $html = $this->modifierReplace($html);
+            }
         }
 
         return $html;
