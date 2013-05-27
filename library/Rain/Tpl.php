@@ -784,17 +784,21 @@ class Tpl {
     }
 
     protected function modifierReplace($html) {
+        
+        $this->blackList($html);
+        preg_match_all('/([\$a-z_A-Z0-9\(\),]+)\|([\$a-z_A-Z0-9\(\):,]+)/i', $html,$matches,PREG_SET_ORDER);
 
-        if ($pos = strrpos($html, "|")) {
-
-            // check black list
-            $this->blackList($html);
-
-            $explode = explode(":", substr($html, $pos + 1));
+        foreach ($matches as $result) {
+            $function_params = $result[1];
+            $explode = explode(":",$result[2]);
             $function = $explode[0];
             $params = isset($explode[1]) ? "," . $explode[1] : null;
 
-            $html = $function . "(" . $this->modifierReplace(substr($html, 0, $pos)) . "$params)";
+            $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
+        }
+
+        if (strpos($html,'|') !== false) {
+            $html = $this->modifierReplace($html);
         }
 
         return $html;
