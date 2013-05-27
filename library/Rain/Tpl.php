@@ -786,16 +786,14 @@ class Tpl {
     protected function modifierReplace($html) {
         
         $this->blackList($html);
-        preg_match_all('/([\$a-z_A-Z0-9\(\),]+)\|([\$a-z_A-Z0-9\(\):,]+)/i', $html,$matches,PREG_SET_ORDER);
+        preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
+        
+        $function_params = $result[1];
+        $explode = explode(":",$result[2]);
+        $function = $explode[0];
+        $params = isset($explode[1]) ? "," . $explode[1] : null;
 
-        foreach ($matches as $result) {
-            $function_params = $result[1];
-            $explode = explode(":",$result[2]);
-            $function = $explode[0];
-            $params = isset($explode[1]) ? "," . $explode[1] : null;
-
-            $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
-        }
+        $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
 
         if (strpos($html,'|') !== false) {
             $html = $this->modifierReplace($html);
