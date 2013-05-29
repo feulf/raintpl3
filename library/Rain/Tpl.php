@@ -765,7 +765,7 @@ class Tpl {
             }
 
             // add "safe" modifier to skip html escaping
-            if(preg_match('/\|safe$/', $html) || preg_match('/\|safe\|/', $html)) {
+            if($this->config['auto_escape'] && $escape && !preg_match('/\$.*=.*/', $html) && (preg_match('/\|safe$/', $html) || preg_match('/\|safe\|/', $html))) {
                 $escape = false;
                 $html = preg_replace(array('/\|safe\|/', '/\|safe$/'), array('|', ''), $html);
             }
