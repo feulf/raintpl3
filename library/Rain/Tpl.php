@@ -121,7 +121,7 @@ class Tpl {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
-        
+
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
@@ -533,9 +533,9 @@ class Tpl {
                     //get the included template
                     $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
 
-                    // reduce the path 
+                    // reduce the path
                     $includeTemplate = Tpl::reducePath( $includeTemplate );
- 
+
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
 
@@ -695,7 +695,7 @@ class Tpl {
                 }
                 // registered tags
                 else {
- 
+
                     $found = FALSE;
                     foreach (static::$registered_tags as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
@@ -764,6 +764,12 @@ class Tpl {
                 $html = str_replace($matches[0][$i], $rep, $html);
             }
 
+            // add "safe" modifier to skip html escaping
+            if($this->config['auto_escape'] && $escape && !preg_match('/\$.*=.*/', $html) && (preg_match('/\|safe$/', $html) || preg_match('/\|safe\|/', $html))) {
+                $escape = false;
+                $html = preg_replace(array('/\|safe\|/', '/\|safe$/'), array('|', ''), $html);
+            }
+
             // update modifier
             $html = $this->modifierReplace($html);
 
@@ -790,7 +796,7 @@ class Tpl {
     }
 
     protected function modifierReplace($html) {
-        
+
         $this->blackList($html);
         if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
             preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
