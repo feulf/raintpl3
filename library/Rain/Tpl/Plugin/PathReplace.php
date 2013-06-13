@@ -6,7 +6,7 @@ require_once __DIR__ . '/../Plugin.php';
 class PathReplace extends \Rain\Tpl\Plugin
 {
 	protected $hooks = array('beforeParse');
-	private $tags = array('a', 'img', 'link', 'script', 'input');
+	private $tags = array('a', 'img', 'link', 'script', 'input', 'object');
 
 	/**
 	 * replace the path of image src, link href and a href.
@@ -65,6 +65,11 @@ class PathReplace extends \Rain\Tpl\Plugin
 		if( in_array( "input", $tags ) ){
 			$exp = array_merge( $exp , array( '/<input(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<input(.*?)src=(?:")([^"]+?)#(?:")/i', '/<input(.*?)src="(.*?)"/', '/<input(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
 			$sub = array_merge( $sub , array( '<input$1src=@$2://$3@', '<input$1src=@$2@', '<input$1src="' . $path . '$2"', '<input$1src="$2"' ) );
+		}
+
+		if( in_array( "object", $tags ) ){
+			$exp = array_merge( $exp , array( '/<object(.*?)data=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<object(.*?)data=(?:")([^"]+?)#(?:")/i', '/<object(.*?)data="(.*?)"/', '/<object(.*?)data=(?:\@)([^"]+?)(?:\@)/i' ) );
+			$sub = array_merge( $sub , array( '<object$1data=@$2://$3@', '<object$1data=@$2@' , '<object$1data="' . $path . '$2"', '<object$1data="$2"' ) );
 		}
 
 		$context->code = preg_replace( $exp, $sub, $html );
