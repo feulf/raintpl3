@@ -37,6 +37,7 @@ class Tpl {
         'base_url' => '',
         'php_enabled' => false,
         'auto_escape' => true,
+        'remove_comments' => true,
         'sandbox' => true,
         'registered_tags' => array(),
         'tags' => array(
@@ -479,6 +480,11 @@ class Tpl {
         $keys = array_keys(static::$registered_tags);
         $tagSplit += array_merge($tagSplit, $keys);
 
+
+        //Remove comments
+        if ($this->config['remove_comments']) {
+            $code = preg_replace('/<!--(.*)-->/Uis', '', $code);
+        }
 
         //split the code with the tags regexp
         $codeSplit = preg_split("/" . implode("|", $tagSplit) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
