@@ -529,9 +529,14 @@ class Tpl {
 
                     // reduce the path 
                     $includeTemplate = Tpl::reducePath( $includeTemplate );
- 
-                    //dynamic include
-                    $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
+
+                    if (strpos($matches[1], '$') !== false) {
+                        //dynamic include
+                        $parsedCode .= '<?php require $this->checkTemplate(' . $includeTemplate . ');?>';
+                    } else {
+                        //dynamic include
+                        $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
+                    }
 
                 }
 
