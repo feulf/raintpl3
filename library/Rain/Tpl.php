@@ -774,7 +774,7 @@ class Tpl {
             $html = $this->modifierReplace($html);
 
             // if does not initialize a value, e.g. {$a = 1}
-            if (!preg_match('/\$.*=.*/', $html)) {
+            if (!preg_match('/\$.*[^<>=!]=[^>].*/', $html)) {
 
                 // escape character
                 if ($this->config['auto_escape'] && $escape)
