@@ -117,13 +117,15 @@ class Tpl {
      *
      * @return void, string: depending of the $toString
      */
-    public function draw($templateFilePath, $toString = FALSE) {
+    public function draw($templateFilePath, $toString = FALSE, $isAbsolutePath=False) {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
-        
+
         ob_start();
-        require $this->checkTemplate($templateFilePath);
+        
+        require $this->checkTemplate($templateFilePath, $isAbsolutePath);
+            
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
@@ -286,14 +288,18 @@ class Tpl {
      * @throw \Rain\Tpl\NotFoundException the file doesn't exists
      * @return string: full filepath that php must use to include
      */
-    protected function checkTemplate($template) {
+    protected function checkTemplate($template, $isAbsolutePath=False) {
         // set filename
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
         $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
         $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
         $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
-
+        
+        // absolute path
+        if ($isAbsolutePath)
+            $templateFilepath = $template;
+            
         // if the template doesn't exsist throw an error
         if (!file_exists($templateFilepath)) {
             $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
