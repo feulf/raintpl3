@@ -347,6 +347,10 @@ class Parser {
 
                     // reduce the path 
                     $includeTemplate = static::reducePath( $includeTemplate );
+
+                    // if template does not exists, try to find in directory of current template
+                    if(!is_file($includeTemplate))
+                        $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
  
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
