@@ -248,6 +248,10 @@ class Tpl {
         $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
         $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
 
+        // check if its an absolute path - Damian Kęska        
+        if ($template[0] === "/")
+            $templateFilepath = $template;
+
         // if the template doesn't exsist throw an error
         if (!file_exists($templateFilepath)) {
             $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
