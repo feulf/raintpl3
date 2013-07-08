@@ -531,7 +531,11 @@ class Tpl {
                     $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
 
                     //get the included template
-                    $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                    if (strpos($matches[1], '$') !== false) {
+                        $includeTemplate = "'$actualFolder'." . $this->varReplace($matches[1], $loopLevel);
+                    } else {
+                        $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                    }
 
                     // reduce the path 
                     $includeTemplate = Tpl::reducePath( $includeTemplate );
