@@ -24,8 +24,10 @@
 
     // set variables
     $var = array(
-                                    "variable"	=> "Hello World!",
-                                    "version"	=> "3.0 Alpha",
+                                    "variable"  => "Hello World!",
+                                    "bad_variable"  => "<script>alert('evil javascript here');</script>",
+                                    "safe_variable"  => "<script>console.log('this is safe')</script>",
+                                    "version"   => "3.0 Alpha",
                                     "menu"		=> array(
                                                                                     array("name" => "Home", "link" => "index.php", "selected" => true ),
                                                                                     array("name" => "FAQ", "link" => "index.php/FAQ/", "selected" => null ),
