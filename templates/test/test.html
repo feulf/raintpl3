@@ -76,6 +76,11 @@
 
 	<h2>Custom tag 2</h2>
 	{%message to translate|english%} <br><br>
+        
+        <h2>Escape variable</h2>
+        {$bad_variable}
+        {autoescape="off"}{$safe_variable}{/autoescape}
+        
 
 </body>
 </html>
