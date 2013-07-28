@@ -276,6 +276,9 @@ class Tpl {
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
         $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
         $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
+        if (substr($templateFilepath,0,1)=='/') { //modale
+    		$templateFilepath =  $_SERVER['DOCUMENT_ROOT'].$templateFilepath;
+    	}
         $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
 
         // if the template doesn't exsist throw an error
