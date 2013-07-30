@@ -245,7 +245,7 @@ class Tpl {
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
         $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
-        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
+        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum']) . $template) . '.rtpl.php';
         
         // check if its an absolute path
         if ($template[0] === "/")
