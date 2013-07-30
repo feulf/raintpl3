@@ -338,7 +338,7 @@ class Parser {
 
                 //include tag
                 elseif (preg_match($tagMatch['include'], $html, $matches)) {
-
+                
                     //get the folder of the actual template
                     $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
 
@@ -347,7 +347,11 @@ class Parser {
 
                     // reduce the path 
                     $includeTemplate = static::reducePath( $includeTemplate );
- 
+                    
+                    // if template does not exists, try to find in directory of current template
+                    if(!is_file($includeTemplate))
+                        $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
+                        
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
 
