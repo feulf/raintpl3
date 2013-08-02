@@ -45,6 +45,8 @@ class Parser {
         'elseif' => array('({elseif.*?})', '/{elseif="([^"]*)"}/'),
         'else' => array('({else})', '/{else}/'),
         'if_close' => array('({\/if})', '/{\/if}/'),
+        'autoescape' => array('({autoescape.*?})', '/{autoescape="([^"]*)"}/'),
+        'autoescape_close' => array('({\/autoescape})', '/{\/autoescape}/'),
         'noparse' => array('({noparse})', '/{noparse}/'),
         'noparse_close' => array('({\/noparse})', '/{\/noparse}/'),
         'ignore' => array('({ignore}|{\*)', '/{ignore}|{\*/'),
@@ -297,6 +299,10 @@ class Parser {
         $keys = array_keys(static::$registered_tags);
         $tagSplit += array_merge($tagSplit, $keys);
 
+        //Remove comments
+        if ($this->config['remove_comments']) {
+            $code = preg_replace('/<!--(.*)-->/Uis', '', $code);
+        }
 
         //split the code with the tags regexp
         $codeSplit = preg_split("/" . implode("|", $tagSplit) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
@@ -343,13 +349,22 @@ class Parser {
                     $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
 
                     //get the included template
-                    $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                    if (strpos($matches[1], '$') !== false) {
+                        $includeTemplate = "'$actualFolder'." . $this->varReplace($matches[1], $loopLevel);
+                    } else {
+                        $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                    }
 
-                    // reduce the path 
-                    $includeTemplate = static::reducePath( $includeTemplate );
- 
-                    //dynamic include
-                    $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
+                    // reduce the path
+                    $includeTemplate = Tpl::reducePath( $includeTemplate );
+
+                    if (strpos($matches[1], '$') !== false) {
+                        //dynamic include
+                        $parsedCode .= '<?php require $this->checkTemplate(' . $includeTemplate . ');?>';
+                    } else {
+                        //dynamic include
+                        $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
+                    }
 
                 }
 
@@ -473,6 +488,27 @@ class Parser {
 
                     // close if code
                     $parsedCode .= '<?php } ?>';
+                }
+
+                // autoescape off
+                elseif (preg_match($tagMatch['autoescape'], $html, $matches)) {
+
+                    // get function
+                    $mode = $matches[1];
+                    $this->config['auto_escape_old'] = $this->config['auto_escape'];
+
+                    if ($mode == 'off' or $mode == 'false' or $mode == '0' or $mode == null) {
+                        $this->config['auto_escape'] = false;
+                    } else {
+                        $this->config['auto_escape'] = true;
+                    }
+
+                }
+
+                // autoescape on
+                elseif (preg_match($tagMatch['autoescape_close'], $html, $matches)) {
+                    $this->config['auto_escape'] = $this->config['auto_escape_old'];
+                    unset($this->config['auto_escape_old']);
                 }
 
                 // function
@@ -603,16 +639,20 @@ class Parser {
 
     protected function modifierReplace($html) {
 
-        if ($pos = strrpos($html, "|")) {
+        $this->blackList($html);
+        if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
+            preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
 
-            // check black list
-            $this->blackList($html);
-
-            $explode = explode(":", substr($html, $pos + 1));
+            $function_params = $result[1];
+            $explode = explode(":",$result[2]);
             $function = $explode[0];
             $params = isset($explode[1]) ? "," . $explode[1] : null;
 
-            $html = $function . "(" . $this->modifierReplace(substr($html, 0, $pos)) . "$params)";
+            $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
+
+            if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
+                $html = $this->modifierReplace($html);
+            }
         }
 
         return $html;
