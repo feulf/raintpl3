@@ -356,7 +356,7 @@ class Parser {
                     }
 
                     // reduce the path
-                    $includeTemplate = Tpl::reducePath( $includeTemplate );
+                    $includeTemplate = Parser::reducePath( $includeTemplate );
 
                     if (strpos($matches[1], '$') !== false) {
                         //dynamic include
