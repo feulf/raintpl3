@@ -58,6 +58,7 @@ class Parser {
         ),
         'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
         'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
+        'ternary' => array('({.*?\?.*?\:.*?})', '/{(.*?)\?(.*?)\:(.*?)}/'),
     );
 
     // black list of functions and variables
@@ -541,6 +542,12 @@ class Parser {
                 elseif (preg_match($tagMatch['constant'], $html, $matches)) {
                     $parsedCode .= "<?php echo " . $this->conReplace($matches[1], $loopLevel) . "; ?>";
                 }
+
+                //ternary
+                elseif (preg_match($tagMatch['ternary'], $html, $matches)) {
+                    $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = TRUE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = TRUE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = TRUE) . ')' . "; ?>";
+                }
+
                 // registered tags
                 else {
  
