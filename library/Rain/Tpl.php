@@ -249,13 +249,13 @@ class Tpl {
         
         // check if its an absolute path
         if ($template[0] === "/")
-            $templateFilepath = $template;
+            $templateFilepath = $template. "." .$this->config['tpl_ext'];
         else
-            $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
+            $templateFilepath = $templateDirectory.$templateName. '.' .$this->config['tpl_ext'];
 
         // if the template doesn't exsist throw an error
         if (!file_exists($templateFilepath)) {
-            $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
+            $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
             throw $e->templateFile($templateFilepath);
         }
 
