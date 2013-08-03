@@ -117,7 +117,7 @@ class Parser {
             $templateFilepath = $templateDirectory.$templateName;
 
         // if the template doesn't exsist throw an error
-        if (!file_exists($templateFilepath)) {
+        if (!is_file($templateFilepath)) {
             $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
             throw $e->templateFile($templateFilepath);
         }

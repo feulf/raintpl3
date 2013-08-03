@@ -254,7 +254,7 @@ class Tpl {
             $templateFilepath = $templateDirectory.$templateName. '.' .$this->config['tpl_ext'];
 
         // if the template doesn't exsist throw an error
-        if (!file_exists($templateFilepath)) {
+        if (!is_file($templateFilepath)) {
             $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
             throw $e->templateFile($templateFilepath);
         }
