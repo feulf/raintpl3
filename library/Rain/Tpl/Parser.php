@@ -56,9 +56,9 @@ class Parser {
             '({function.*?})',
             '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'
         ),
+        'ternary' => array('({.*?\?.*?\:.*?})', '/{(.*?)\?(.*?)\:(.*?)}/'),
         'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
         'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
-        'ternary' => array('({.*?\?.*?\:.*?})', '/{(.*?)\?(.*?)\:(.*?)}/'),
     );
 
     // black list of functions and variables
@@ -87,7 +87,7 @@ class Parser {
         static::$plugins = $plugins;
         static::$registered_tags = $registered_tags;
     }
-    
+
     /**
      * Returns plugin container.
      *
@@ -357,7 +357,7 @@ class Parser {
                     }
 
                     // reduce the path
-                    $includeTemplate = Tpl::reducePath( $includeTemplate );
+                    $includeTemplate = Parser::reducePath( $includeTemplate );
 
                     if (strpos($matches[1], '$') !== false) {
                         //dynamic include
@@ -531,6 +531,11 @@ class Parser {
                     $parsedCode .= "<?php echo $parsedFunction; ?>";
                 }
 
+                //ternary
+                elseif (preg_match($tagMatch['ternary'], $html, $matches)) {
+	                $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = TRUE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = TRUE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = TRUE) . ')' . "; ?>";
+                }
+
                 //variables
                 elseif (preg_match($tagMatch['variable'], $html, $matches)) {
                     //variables substitution (es. {$title})
@@ -541,11 +546,6 @@ class Parser {
                 //constants
                 elseif (preg_match($tagMatch['constant'], $html, $matches)) {
                     $parsedCode .= "<?php echo " . $this->conReplace($matches[1], $loopLevel) . "; ?>";
-                }
-
-                //ternary
-                elseif (preg_match($tagMatch['ternary'], $html, $matches)) {
-                    $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = TRUE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = TRUE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = TRUE) . ')' . "; ?>";
                 }
 
                 // registered tags
