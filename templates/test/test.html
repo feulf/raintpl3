@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Test</title>
+	<title>{$title}</title>
 	<link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 <body>
@@ -21,6 +21,9 @@
 	Scoping (array) {$week.0} <br><br>
 	Variable as key {$week[$numbers.0]} <br><br>
 	Var test {$variable} <br><br>
+
+    <h2>Ternary Operator</h2>
+    The title is: {isset($title)?"$title":'default title'}
 
 
 	<h2>Loop</h2>
