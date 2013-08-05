@@ -180,6 +180,21 @@ class Tpl {
     }
 
     /**
+     * Assign variable by reference
+     * eg.     $t->assignByRef('name', $variable);
+     *
+     * @param mixed $variable Name of template variable
+     * @param mixed $value the referenced value to assign
+     *
+     * @return \Rain\Tpl $this
+     */
+    public function assignByRef($variable, &$value) {
+        $this->var[$variable] = &$value;
+
+        return $this;
+    }
+
+    /**
      * Clean the expired files from cache
      * @param type $expireTime Set the expiration time
      */
