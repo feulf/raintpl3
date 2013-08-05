@@ -648,15 +648,19 @@ class Parser {
 
         $this->blackList($html);
         if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
-            preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
+            preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9:\(\):,\[\]"->]+)/i', $html,$result);
 
             $function_params = $result[1];
             $explode = explode(":",$result[2]);
             $function = $explode[0];
-            $params = isset($explode[1]) ? "," . $explode[1] : null;
+            if (isset($explode[1])) {
+                array_shift($explode);
+                $params = "," . @implode(',', $explode);
+            } else {
+                $params = null;
+            }
 
             $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
-
             if (strpos($html,'|') !== false && substr($html,strpos($html,'|')+1,1) != "|") {
                 $html = $this->modifierReplace($html);
             }
