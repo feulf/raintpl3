@@ -12,6 +12,7 @@
                                     "base_url"      => null,
                                     "tpl_dir"       => "templates/test/",
                                     "cache_dir"     => "cache/",
+                                    "remove_comments" => true,
                                     "debug"         => true, // set to false to improve the speed
                                );
 
