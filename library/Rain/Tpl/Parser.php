@@ -309,7 +309,7 @@ class Parser {
         $codeSplit = preg_split("/" . implode("|", $tagSplit) . "/", $code, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
         //variables initialization
-        $parsedCode = $comentIsOpen = $ignoreIsOpen = NULL;
+        $parsedCode = $commentIsOpen = $ignoreIsOpen = NULL;
         $openIf = $loopLevel = 0;
 
         // if the template is not empty
@@ -319,7 +319,7 @@ class Parser {
             foreach ($codeSplit as $html) {
 
                 //close ignore tag
-                if (!$comentIsOpen && preg_match($tagMatch['ignore_close'], $html))
+                if (!$commentIsOpen && preg_match($tagMatch['ignore_close'], $html))
                     $ignoreIsOpen = FALSE;
 
                 //code between tag ignore id deleted
@@ -329,10 +329,10 @@ class Parser {
 
                 //close no parse tag
                 elseif (preg_match($tagMatch['noparse_close'], $html))
-                    $comentIsOpen = FALSE;
+                    $commentIsOpen = FALSE;
 
                 //code between tag noparse is not compiled
-                elseif ($comentIsOpen)
+                elseif ($commentIsOpen)
                     $parsedCode .= $html;
 
                 //ignore
@@ -341,7 +341,7 @@ class Parser {
 
                 //noparse
                 elseif (preg_match($tagMatch['noparse'], $html))
-                    $comentIsOpen = TRUE;
+                    $commentIsOpen = TRUE;
 
                 //include tag
                 elseif (preg_match($tagMatch['include'], $html, $matches)) {
