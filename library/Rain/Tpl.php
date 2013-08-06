@@ -245,13 +245,29 @@ class Tpl {
         // set filename
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
-        $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
-        $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
-        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
+
+        // Set multiple TPLs. start check first one.
+        $tplDirs = $this->config['tpl_dir'];
+        if (!is_array($tplDirs)) {
+            $tplDirs = array($tplDirs);
+        }
+
+        $isFileNotExists = true;
+        foreach($tplDirs as $tplDir) {
+            $templateDirectory = $tplDir . $templateBasedir;
+            $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
+            $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
+
+            // For check templates are exists
+            if (file_exists($templateFilepath)) {
+                $isFileNotExists = false;
+                break;
+            }
+        }
 
         // if the template doesn't exsist throw an error
-        if (!file_exists($templateFilepath)) {
-            $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
+        if ($isFileNotExists === true) {
+            $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found! ('.$tplDir.'  '.$templateFilepath.')');
             throw $e->templateFile($templateFilepath);
         }
 
