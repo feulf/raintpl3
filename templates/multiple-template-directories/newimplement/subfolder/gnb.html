@@ -1,0 +1,2 @@
+{include="head"}
+New GNB
