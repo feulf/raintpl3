@@ -15,8 +15,7 @@ class Tpl {
     // variables
     public $var = array();
 
-    protected $config = array(),
-              $objectConf = array();
+    protected $config = array();
 
     /**
      * Plugin container
@@ -75,7 +74,7 @@ class Tpl {
     public function draw($templateFilePath, $toString = FALSE) {
         extract($this->var);
         // Merge local and static configurations
-        $this->config = $this->objectConf + static::$conf;
+        $this->config = static::$conf;
         
         ob_start();
         require $this->checkTemplate($templateFilePath);
@@ -106,7 +105,7 @@ class Tpl {
     public function drawString($string, $toString = false) {
         extract($this->var);
         // Merge local and static configurations
-        $this->config = $this->objectConf + static::$conf;
+        $this->config = static::$conf;
         ob_start();
         require $this->checkString($string);
         $html = ob_get_clean();
@@ -123,24 +122,6 @@ class Tpl {
             return $html;
         else
             echo $html;
-    }
-
-    /**
-     * Configure the object
-     *
-     * @param string, array $setting: name of the setting to configure
-     * or associative array type 'setting' => 'value'
-     * @param mixed $value: value of the setting to configure
-     * @return \Rain\Tpl $this
-     */
-    public function objectConfigure($setting, $value = null) {
-        if (is_array($setting))
-            foreach ($setting as $key => $value)
-                $this->objectConfigure($key, $value);
-        else if (isset(static::$conf[$setting]))
-            $this->objectConf[$setting] = $value;
-
-        return $this;
     }
 
     /**
@@ -276,7 +257,7 @@ class Tpl {
 
         // Compile the template if the original has been updated
         if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
-            $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
+            $parser = new Tpl\Parser($this->config, static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
         }
         return $parsedTemplateFilepath;
@@ -300,7 +281,7 @@ class Tpl {
 
         // Compile the template if the original has been updated
         if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {            
-            $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
+            $parser = new Tpl\Parser($this->config, static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
 

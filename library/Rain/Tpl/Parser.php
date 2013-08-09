@@ -15,9 +15,8 @@ class Parser {
     // variables
     public $var = array();
 
-    protected $templateInfo = array(),
-              $config = array(),
-              $objectConf = array();
+    protected $templateInfo = array();
+    protected $config = array();
 
     /**
      * Plugin container
@@ -80,9 +79,8 @@ class Parser {
         'syslog', 'xmlrpc_entity_decode'
     );
 
-    public function __construct($config, $objectConf, $conf, $plugins, $registered_tags) {
+    public function __construct($config, $conf, $plugins, $registered_tags) {
         $this->config = $config;
-        $this->objectConf = $objectConf;
         static::$conf = $conf;
         static::$plugins = $plugins;
         static::$registered_tags = $registered_tags;
