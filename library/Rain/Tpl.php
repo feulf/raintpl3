@@ -23,7 +23,7 @@ class Tpl {
     protected static $plugins = null;
 
     // configuration
-    protected static $conf = array(
+    protected static $config = array(
         'checksum' => array(),
         'charset' => 'UTF-8',
         'debug' => false,
@@ -79,7 +79,7 @@ class Tpl {
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
             'code' => $html,
-            'conf' => static::$conf
+            'conf' => static::$config
         ));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
@@ -110,7 +110,7 @@ class Tpl {
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
             'code' => $html,
-            'conf' => static::$conf
+            'conf' => static::$config
         ));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
@@ -132,10 +132,10 @@ class Tpl {
         if (is_array($setting))
             foreach ($setting as $key => $value)
                 static::configure($key, $value);
-        else if (isset(static::$conf[$setting])) {
-            static::$conf[$setting] = $value;
+        else if (isset(static::$config[$setting])) {
+            static::$config[$setting] = $value;
 
-            static::$conf['checksum'][$setting] = $value; // take trace of all config
+            static::$config['checksum'][$setting] = $value; // take trace of all config
         }
     }
 
@@ -162,7 +162,7 @@ class Tpl {
      * @param type $expireTime Set the expiration time
      */
     public static function clean($expireTime = 2592000) {
-        $files = glob(static::$conf['cache_dir'] . "*.rtpl.php");
+        $files = glob(static::$config['cache_dir'] . "*.rtpl.php");
         $time = time() - $expireTime;
         foreach ($files as $file)
             if ($time > filemtime($file) )
@@ -228,7 +228,7 @@ class Tpl {
         $parsedTemplateFilepath = null;
 
         // Make directories to array for multiple template directory
-        $templateDirectories = static::$conf['tpl_dir'];
+        $templateDirectories = static::$config['tpl_dir'];
         if (!is_array($templateDirectories)) {
             $templateDirectories = array($templateDirectories);
         }
@@ -236,8 +236,8 @@ class Tpl {
         $isFileNotExist = true;
         foreach($templateDirectories as $templateDirectory) {
             $templateDirectory .= $templateBasedir;
-            $templateFilepath = $templateDirectory . $templateName . '.' . static::$conf['tpl_ext'];
-            $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize(static::$conf['checksum'])) . '.rtpl.php';
+            $templateFilepath = $templateDirectory . $templateName . '.' . static::$config['tpl_ext'];
+            $parsedTemplateFilepath = static::$config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize(static::$config['checksum'])) . '.rtpl.php';
 
             // For check templates are exists
             if (file_exists($templateFilepath)) {
@@ -253,8 +253,8 @@ class Tpl {
         }
 
         // Compile the template if the original has been updated
-        if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
-            $parser = new Tpl\Parser(static::$conf, static::$plugins, static::$registered_tags);
+        if (static::$config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
+            $parser = new Tpl\Parser(static::$config, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
         }
         return $parsedTemplateFilepath;
@@ -270,15 +270,15 @@ class Tpl {
     protected function checkString($string) {
 
         // set filename
-        $templateName = md5($string . implode(static::$conf['checksum']));
-        $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . '.s.rtpl.php';
+        $templateName = md5($string . implode(static::$config['checksum']));
+        $parsedTemplateFilepath = static::$config['cache_dir'] . $templateName . '.s.rtpl.php';
         $templateFilepath = '';
         $templateBasedir = '';
 
 
         // Compile the template if the original has been updated
-        if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath)) {            
-            $parser = new Tpl\Parser(static::$conf, static::$plugins, static::$registered_tags);
+        if (static::$config['debug'] || !file_exists($parsedTemplateFilepath)) {            
+            $parser = new Tpl\Parser(static::$config, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
 
