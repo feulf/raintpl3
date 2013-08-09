@@ -15,8 +15,6 @@ class Tpl {
     // variables
     public $var = array();
 
-    protected $config = array();
-
     /**
      * Plugin container
      *
@@ -73,9 +71,7 @@ class Tpl {
      */
     public function draw($templateFilePath, $toString = FALSE) {
         extract($this->var);
-        // Merge local and static configurations
-        $this->config = static::$conf;
-        
+
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
@@ -83,7 +79,7 @@ class Tpl {
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
             'code' => $html,
-            'conf' => $this->config,
+            'conf' => static::$conf
         ));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
@@ -104,16 +100,17 @@ class Tpl {
      */
     public function drawString($string, $toString = false) {
         extract($this->var);
-        // Merge local and static configurations
-        $this->config = static::$conf;
+
         ob_start();
+
         require $this->checkString($string);
+
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
             'code' => $html,
-            'conf' => $this->config,
+            'conf' => static::$conf
         ));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
@@ -231,7 +228,7 @@ class Tpl {
         $parsedTemplateFilepath = null;
 
         // Make directories to array for multiple template directory
-        $templateDirectories = $this->config['tpl_dir'];
+        $templateDirectories = static::$conf['tpl_dir'];
         if (!is_array($templateDirectories)) {
             $templateDirectories = array($templateDirectories);
         }
@@ -239,8 +236,8 @@ class Tpl {
         $isFileNotExist = true;
         foreach($templateDirectories as $templateDirectory) {
             $templateDirectory .= $templateBasedir;
-            $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
-            $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
+            $templateFilepath = $templateDirectory . $templateName . '.' . static::$conf['tpl_ext'];
+            $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize(static::$conf['checksum'])) . '.rtpl.php';
 
             // For check templates are exists
             if (file_exists($templateFilepath)) {
@@ -256,8 +253,8 @@ class Tpl {
         }
 
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
-            $parser = new Tpl\Parser($this->config, static::$conf, static::$plugins, static::$registered_tags);
+        if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
+            $parser = new Tpl\Parser(static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
         }
         return $parsedTemplateFilepath;
@@ -273,15 +270,15 @@ class Tpl {
     protected function checkString($string) {
 
         // set filename
-        $templateName = md5($string . implode($this->config['checksum']));
-        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . '.s.rtpl.php';
+        $templateName = md5($string . implode(static::$conf['checksum']));
+        $parsedTemplateFilepath = static::$conf['cache_dir'] . $templateName . '.s.rtpl.php';
         $templateFilepath = '';
         $templateBasedir = '';
 
 
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {            
-            $parser = new Tpl\Parser($this->config, static::$conf, static::$plugins, static::$registered_tags);
+        if (static::$conf['debug'] || !file_exists($parsedTemplateFilepath)) {            
+            $parser = new Tpl\Parser(static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
 
