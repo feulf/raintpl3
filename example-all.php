@@ -44,25 +44,25 @@
                             );
 
     // add a tag
-    Tpl::registerTag(	"({@.*?@})", // preg split
-                                            "{@(.*?)@}", // preg match
-                                            function( $params ){ // function called by the tag
-                                                                                            $value = $params[1][0];
-                                                                                            return "Translate: <b>$value</b>";
-                                                                               } 
-                                     );
-
+    Tpl::registerTag(
+        "({@.*?@})", // preg split
+        "{@(.*?)@}", // preg match
+        function( $matches, $params ){ // function called by the tag
+            $value = $params[0];
+            return "Translate: <b>$value</b>";
+        }
+    );
 
     // add a tag
-    Tpl::registerTag(	"({%.*?%})", // preg split
-                                            "{%(.*?)(?:\|(.*?))%}", // preg match
-                                            function( $params ){ // function called by the tag
-                                                                                            $value = $params[1][0];
-                                            $value2 = $params[2][0];
-
-                                                                                            return "Translate: <b>$value</b> in <b>$value2</b>";
-                                                                               }
-                                     );
+    Tpl::registerTag(
+        "({%.*?%})", // preg split
+        "{%(.*?)(?:\|(.*?))%}", // preg match
+        function( $matches, $params ){ // function called by the tag
+            $value = $params[0];
+            $value2 = $params[1];
+            return "Translate: <b>$value</b> in <b>$value2</b>";
+        }
+    );
 
     // draw
     $tpl = new Tpl;

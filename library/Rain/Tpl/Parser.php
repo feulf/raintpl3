@@ -554,8 +554,15 @@ class Parser {
                     $found = FALSE;
                     foreach (static::$registered_tags as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
+
+                            $parameters = 'array(';
+                            foreach($matches[1] as $p){
+                                $parameters .= '0 => "' . $p . '",';
+                            }
+                            $parameters .= ')';
+
                             $found = true;
-                            $parsedCode .= "<?php echo call_user_func( static::\$registered_tags['$tags']['function'], " . var_export($matches, 1) . " ); ?>";
+                            $parsedCode .= "<?php echo call_user_func( static::\$registered_tags['$tags']['function'], ".var_export($matches,1).", $parameters); ?>";
                         }
                     }
 
