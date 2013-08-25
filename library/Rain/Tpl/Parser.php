@@ -538,6 +538,9 @@ class Parser {
 
                 //variables
                 elseif (preg_match($tagMatch['variable'], $html, $matches)) {
+
+                    $this->blackList($matches[1]);
+
                     //variables substitution (es. {$title})
                     $parsedCode .= "<?php " . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = TRUE) . "; ?>";
                 }
@@ -670,11 +673,14 @@ class Parser {
         if (!static::$conf['sandbox'] || !static::$black_list)
             return true;
 
-        if (empty(static::$conf['black_list_preg']))
-            static::$conf['black_list_preg'] = '#[\W\s]*' . implode('[\W\s]*|[\W\s]*', static::$black_list) . '[\W\s]*#';
+        if (empty(static::$conf['black_list_preg'])){
+            static::$conf['black_list_preg'] = '#[\s]' . implode('\s*\(|[\s]', static::$black_list) . '\s*\(#';
+        }
 
         // check if the function is in the black list (or not in white list)
         if (preg_match(static::$conf['black_list_preg'], $html, $match)) {
+
+            print_r($match);exit;
 
             // find the line of the error
             $line = 0;
