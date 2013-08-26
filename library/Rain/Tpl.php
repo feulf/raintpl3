@@ -81,11 +81,11 @@ class Tpl {
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
-        $context = $this->getPlugins()->createContext(array(
+        $context = static::getPlugins()->createContext(array(
             'code' => $html,
             'conf' => $this->config,
         ));
-        $this->getPlugins()->run('afterDraw', $context);
+        static::getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
         if ($toString)
@@ -111,11 +111,11 @@ class Tpl {
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
-        $context = $this->getPlugins()->createContext(array(
+        $context = static::getPlugins()->createContext(array(
             'code' => $html,
             'conf' => $this->config,
         ));
-        $this->getPlugins()->run('afterDraw', $context);
+        static::getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
         if ($toString)
@@ -245,12 +245,17 @@ class Tpl {
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
         $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
-        $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
-        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
+        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum']) . $template) . '.rtpl.php';
+        
+        // check if its an absolute path
+        if ($template[0] === "/")
+            $templateFilepath = $template. "." .$this->config['tpl_ext'];
+        else
+            $templateFilepath = $templateDirectory.$templateName. '.' .$this->config['tpl_ext'];
 
         // if the template doesn't exsist throw an error
-        if (!file_exists($templateFilepath)) {
-            $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
+        if (!is_file($templateFilepath)) {
+            $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
             throw $e->templateFile($templateFilepath);
         }
 

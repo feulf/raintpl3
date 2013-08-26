@@ -86,7 +86,7 @@ class Parser {
         static::$plugins = $plugins;
         static::$registered_tags = $registered_tags;
     }
-    
+
     /**
      * Returns plugin container.
      *
@@ -95,58 +95,6 @@ class Parser {
     protected static function getPlugins() {
         return static::$plugins
             ?: static::$plugins = new PluginContainer();
-    }
-
-    /**
-     * Check if the template exist and compile it if necessary
-     *
-     * @param string $template: name of the file of the template
-     *
-     * @throw \Rain\Tpl\NotFoundException the file doesn't exists
-     * @return string: full filepath that php must use to include
-     */
-    protected function checkTemplate($template) {
-        // set filename
-        $templateName = basename($template);
-        $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
-        $templateDirectory = $this->config['tpl_dir'] . $templateBasedir;
-        $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
-        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
-
-        // if the template doesn't exsist throw an error
-        if (!file_exists($templateFilepath)) {
-            $e = new NotFoundException('Template ' . $templateName . ' not found!');
-            throw $e->templateFile($templateFilepath);
-        }
-
-        // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) ))
-            $this->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
-
-        return $parsedTemplateFilepath;
-    }
-
-		/**
-     * Compile a string if necessary
-     *
-     * @param string $string: RainTpl template string to compile
-     *
-     * @return string: full filepath that php must use to include
-     */
-    protected function checkString($string) {
-
-        // set filename
-        $templateName = md5($string . implode($this->config['checksum']));
-        $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . '.s.rtpl.php';
-        $templateFilepath = '';
-        $templateBasedir = '';
-
-
-        // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath))
-            $this->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
-
-        return $parsedTemplateFilepath;
     }
 
     /**
@@ -279,14 +227,14 @@ class Parser {
     protected function compileTemplate($code, $isString, $templateBasedir, $templateDirectory, $templateFilepath) {
 
         // Execute plugins, before_parse
-        $context = $this->getPlugins()->createContext(array(
+        $context = static::getPlugins()->createContext(array(
             'code' => $code,
             'template_basedir' => $templateBasedir,
             'template_filepath' => $templateFilepath,
             'conf' => $this->config,
         ));
 
-        $this->getPlugins()->run('beforeParse', $context);
+        static::getPlugins()->run('beforeParse', $context);
         $code = $context->code;
 
         // set tags
@@ -344,7 +292,7 @@ class Parser {
 
                 //include tag
                 elseif (preg_match($tagMatch['include'], $html, $matches)) {
-
+                
                     //get the folder of the actual template
                     $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
 
@@ -356,15 +304,14 @@ class Parser {
                     }
 
                     // reduce the path
-                    $includeTemplate = Tpl::reducePath( $includeTemplate );
+                    $includeTemplate = static::reducePath( $includeTemplate );
 
-                    if (strpos($matches[1], '$') !== false) {
-                        //dynamic include
-                        $parsedCode .= '<?php require $this->checkTemplate(' . $includeTemplate . ');?>';
-                    } else {
-                        //dynamic include
-                        $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
-                    }
+                    // if template does not exists, try to find in directory of current template
+                    if(!is_file($includeTemplate))
+                        $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
+
+                    //dynamic include
+                    $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
 
                 }
 
@@ -590,7 +537,7 @@ class Parser {
 
         // Execute plugins, after_parse
         $context->code = $parsedCode;
-        $this->getPlugins()->run('afterParse', $context);
+        static::getPlugins()->run('afterParse', $context);
 
         return $context->code;
     }
