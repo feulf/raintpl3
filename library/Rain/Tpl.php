@@ -258,7 +258,7 @@ class Tpl {
 
         // Compile the template if the original has been updated
         if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
-            $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
+            $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
         }
         return $parsedTemplateFilepath;
@@ -282,7 +282,7 @@ class Tpl {
 
         // Compile the template if the original has been updated
         if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {            
-            $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
+            $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
 

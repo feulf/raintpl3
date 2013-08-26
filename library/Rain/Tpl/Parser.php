@@ -80,10 +80,8 @@ class Parser {
         'syslog', 'xmlrpc_entity_decode'
     );
 
-    public function __construct($config, $objectConf, $conf, $plugins, $registered_tags) {
+    public function __construct($config, $plugins, $registered_tags) {
         $this->config = $config;
-        $this->objectConf = $objectConf;
-        static::$conf = $conf;
         static::$plugins = $plugins;
         static::$registered_tags = $registered_tags;
     }
@@ -693,14 +691,14 @@ class Parser {
 
     protected function blackList($html) {
 
-        if (!static::$conf['sandbox'] || !static::$black_list)
+        if (!$this->config['sandbox'] || !static::$black_list)
             return true;
 
-        if (empty(static::$conf['black_list_preg']))
-            static::$conf['black_list_preg'] = '#[\W\s]*' . implode('[\W\s]*|[\W\s]*', static::$black_list) . '[\W\s]*#';
+        if (empty($this->config['black_list_preg']))
+            $this->config['black_list_preg'] = '#[\W\s]*' . implode('[\W\s]*|[\W\s]*', static::$black_list) . '[\W\s]*#';
 
         // check if the function is in the black list (or not in white list)
-        if (preg_match(static::$conf['black_list_preg'], $html, $match)) {
+        if (preg_match($this->config['black_list_preg'], $html, $match)) {
 
             // find the line of the error
             $line = 0;
