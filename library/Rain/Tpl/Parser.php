@@ -188,7 +188,7 @@ class Parser {
         $fp = fopen($templateFilepath, "r");
 
         // lock the file
-        if (flock($fp, LOCK_SH)) {
+        if (flock($fp, LOCK_EX)) {
 
             // save the filepath in the info
             $this->templateInfo['template_filepath'] = $templateFilepath;
