@@ -66,20 +66,27 @@ class Tpl {
     /**
      * Draw the template
      *
-     * @param string $templateFilePath: name of the template file
-     * @param bool $toString: if the method should return a string
+     * @param string $templateFilePath name of the template file
+     * @param bool $toString if the method should return a string
+     * @param bool $isString if input is a string, not a file path
      * or echo the output
      *
      * @return void, string: depending of the $toString
      */
-    public function draw($templateFilePath, $toString = FALSE) {
+    public function draw($templateFilePath, $toString = FALSE, $isString = FALSE) {
         extract($this->var);
         
         // Merge local and static configurations
         $this->config = array_merge(static::$conf, $this->objectConf);
         
         ob_start();
-        require $this->checkTemplate($templateFilePath);
+        
+        // parsing a string (moved from drawString method)
+        if ($isString)
+            require $this->checkString($templateFilePath);
+        else // parsing a template file
+            require $this->checkTemplate($templateFilePath);
+        
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
@@ -87,6 +94,7 @@ class Tpl {
             'code' => $html,
             'conf' => $this->config,
         ));
+
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
@@ -105,27 +113,9 @@ class Tpl {
      * @return void, string: depending of the $toString
      */
     public function drawString($string, $toString = false) {
-        extract($this->var);
-        // Merge local and static configurations
-        $this->config = static::$conf + $this->objectConf;
-        ob_start();
-        require $this->checkString($string);
-        $html = ob_get_clean();
-
-        // Execute plugins, before_parse
-        $context = $this->getPlugins()->createContext(array(
-            'code' => $html,
-            'conf' => $this->config,
-        ));
-        $this->getPlugins()->run('afterDraw', $context);
-        $html = $context->code;
-
-        if ($toString)
-            return $html;
-        else
-            echo $html;
+        return $this->draw($string, $toString, True);
     }
-
+    
     /**
      * Configure the object
      *
