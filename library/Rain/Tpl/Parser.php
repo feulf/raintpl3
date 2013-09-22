@@ -106,13 +106,7 @@ class Parser {
      * @param string $templateFilepath
      * @param string $parsedTemplateFilepath: cache file where to save the template
      */
-    public function compileFile(
-        $templateName,
-        $templateBasedir,
-        $templateDirectory,
-        $templateFilepath,
-        $parsedTemplateFilepath
-    ) {
+    public function compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath) {
 
         // open the template
         $fp = fopen($templateFilepath, "r");
@@ -156,7 +150,7 @@ class Parser {
             file_put_contents($parsedTemplateFilepath, $parsedCode);
 
             // release the file lock
-            flock($fp, LOCK_UN);
+            flock($fp, LOCK_EX);
         }
 
         // close the file
@@ -295,21 +289,51 @@ class Parser {
                 
                     //get the folder of the actual template
                     $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
-
-                    //get the included template
-                    if (strpos($matches[1], '$') !== false) {
-                        $includeTemplate = "'$actualFolder'." . $this->varReplace($matches[1], $loopLevel);
-                    } else {
-                        $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                    $includeTemplate = null; // reset variable
+                    
+                    // search for files in include_path
+                    if (strpos($matches[1], '$') === false) 
+                    {
+                        $path = pathinfo($matches[1]);
+                        
+                        if ($path['dirname'] == '.')
+                            $path['dirname'] = '';
+                            
+                        // compatibility (allow both with and without extensions)
+                        $path['basename'] = str_replace('.' .$this->config['tpl_ext'], '', $path['basename']);
+                        
+                        foreach ($this->config['include_path'] as $dir)
+                        {
+                            $searchPath = str_replace('//', '/', $dir. '/' .$path['dirname']. '/' .$path['basename']. '.' .$this->config['tpl_ext']);
+                            
+                            if (is_file($searchPath))
+                            {
+                                $includeTemplate = substr($searchPath, 0, strlen($searchPath)-(strlen($this->config['tpl_ext'])+1));
+                                $includeTemplate = static::reducePath( $includeTemplate );
+                                break;
+                            }
+                        }
                     }
-
-                    // reduce the path
-                    $includeTemplate = static::reducePath( $includeTemplate );
-
-                    // if template does not exists, try to find in directory of current template
-                    if(!is_file($includeTemplate))
-                        $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
-
+                    
+                    // if file is not in include_path but propably in tpl_dir (main templates dir for relative paths)
+                    if (!$includeTemplate)
+                    {
+                        //get the included template
+                        if (strpos($matches[1], '$') !== false) 
+                        {
+                            $includeTemplate = $this->varReplace($matches[1], $loopLevel);
+                        } else {
+                            $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                        }
+                        
+                        // reduce the path
+                        $includeTemplate = static::reducePath( $includeTemplate );
+                        
+                        // if template does not exists, try to find in directory of current template to make RainTPL more smart
+                        if(!is_file($includeTemplate))
+                            $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
+                    }
+                    
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
 

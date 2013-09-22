@@ -30,6 +30,7 @@ class Tpl {
         'checksum' => array(),
         'charset' => 'UTF-8',
         'debug' => false,
+        'include_path' => array(),
         'tpl_dir' => 'templates/',
         'cache_dir' => 'cache/',
         'tpl_ext' => 'html',
@@ -73,19 +74,20 @@ class Tpl {
      */
     public function draw($templateFilePath, $toString = FALSE) {
         extract($this->var);
+        
         // Merge local and static configurations
-        $this->config = $this->objectConf + static::$conf;
+        $this->config = array_merge(static::$conf, $this->objectConf);
         
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
-        $context = static::getPlugins()->createContext(array(
+        $context = $this->getPlugins()->createContext(array(
             'code' => $html,
             'conf' => $this->config,
         ));
-        static::getPlugins()->run('afterDraw', $context);
+        $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
         if ($toString)
@@ -105,17 +107,17 @@ class Tpl {
     public function drawString($string, $toString = false) {
         extract($this->var);
         // Merge local and static configurations
-        $this->config = $this->objectConf + static::$conf;
+        $this->config = static::$conf + $this->objectConf;
         ob_start();
         require $this->checkString($string);
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
-        $context = static::getPlugins()->createContext(array(
+        $context = $this->getPlugins()->createContext(array(
             'code' => $html,
             'conf' => $this->config,
         ));
-        static::getPlugins()->run('afterDraw', $context);
+        $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
         if ($toString)
@@ -127,35 +129,42 @@ class Tpl {
     /**
      * Configure the object
      *
-     * @param string, array $setting: name of the setting to configure
+     * @param string|array $setting name of the setting to configure
      * or associative array type 'setting' => 'value'
      * @param mixed $value: value of the setting to configure
      * @return \Rain\Tpl $this
      */
     public function objectConfigure($setting, $value = null) {
         if (is_array($setting))
+        {
+            // use this function recursive to set multiple configuration values from array
             foreach ($setting as $key => $value)
+            {
                 $this->objectConfigure($key, $value);
-        else if (isset(static::$conf[$setting]))
+            }
+        } else if (isset(static::$conf[$setting]))
             $this->objectConf[$setting] = $value;
-
+            
         return $this;
     }
 
     /**
      * Configure the template
      *
-     * @param string, array $setting: name of the setting to configure
+     * @param string|array $setting: name of the setting to configure
      * or associative array type 'setting' => 'value'
      * @param mixed $value: value of the setting to configure
      */
     public static function configure($setting, $value = null) {
         if (is_array($setting))
+        {
+            // use this function recursive to set multiple configuration values from array
             foreach ($setting as $key => $value)
+            {
                 static::configure($key, $value);
-        else if (isset(static::$conf[$setting])) {
+            }
+        } else if (isset(static::$conf[$setting])) {
             static::$conf[$setting] = $value;
-
             static::$conf['checksum'][$setting] = $value; // take trace of all config
         }
     }
