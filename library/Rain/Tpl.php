@@ -38,6 +38,8 @@ class Tpl {
         'php_enabled' => false,
         'auto_escape' => true,
         'force_compile' => false,
+        'allow_compile' => true,
+        'allow_compile_once' => true, // allow compile template only once
         'sandbox' => true,
         'registered_tags' => array(),
         'tags' => array(
@@ -156,6 +158,13 @@ class Tpl {
             }
         } else if (isset(static::$conf[$setting])) {
             static::$conf[$setting] = $value;
+            
+            // the checksum must match template with any bool value or it wont work as the template file names will be diffirent
+            if ($setting == 'allow_compile' or $setting == 'allow_compile_once')
+            {
+                $value = True;
+            }
+            
             static::$conf['checksum'][$setting] = $value; // take trace of all config
         }
     }
@@ -259,10 +268,24 @@ class Tpl {
             throw $e->templateFile($templateFilepath);
         }
         
-        // Compile the template if the original has been updated
-        if ($this->config['debug'] or !file_exists($parsedTemplateFilepath) or ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) or $this->config['force_compile'] )) {
+        if (!$this->config['allow_compile'])
+        {
+            // check if there is a compiled version
+            if (!is_file($parsedTemplateFilepath))
+            {
+                // allow first compilation of file
+                if (!$this->config['allow_compile_once'])
+                    throw new \Exception('Template cache file "' .$parsedTemplateFilepath. '" is missing and "allow_compile", "allow_compile_once" are disabled in configuration');
+                    
+            } else
+                return $parsedTemplateFilepath;
+        }
+        
+        // Compile the template if the original has been updated or if force compilation is enabled, remember to set allow_compile to True
+        if ( $this->config['debug'] or !file_exists($parsedTemplateFilepath) or ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) ) ) {
             $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
+            
         }
         return $parsedTemplateFilepath;
     }
