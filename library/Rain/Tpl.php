@@ -37,6 +37,7 @@ class Tpl {
         'base_url' => '',
         'php_enabled' => false,
         'auto_escape' => true,
+        'force_compile' => false,
         'sandbox' => true,
         'registered_tags' => array(),
         'tags' => array(
@@ -257,9 +258,9 @@ class Tpl {
             $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
             throw $e->templateFile($templateFilepath);
         }
-
+        
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
+        if ($this->config['debug'] or !file_exists($parsedTemplateFilepath) or ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) or $this->config['force_compile'] )) {
             $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
         }

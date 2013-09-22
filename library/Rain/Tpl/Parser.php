@@ -219,7 +219,6 @@ class Parser {
      * @param string $code: code to compile
      */
     protected function compileTemplate($code, $isString, $templateBasedir, $templateDirectory, $templateFilepath) {
-
         // Execute plugins, before_parse
         $context = static::getPlugins()->createContext(array(
             'code' => $code,
