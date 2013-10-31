@@ -1,36 +1,36 @@
 <?php
 
-    // include
-    require "library/Rain/autoload.php";
-    
-    // namespace
-    use Rain\Tpl;
+// include
+require "library/Rain/autoload.php";
 
-    // config
-    $config = array(
-                                    "tpl_dir"       => "templates/simple/",
-                                    "cache_dir"     => "cache/",
-                                    "debug"         => true, // set to false to improve the speed
-                               );
+// namespace
+use Rain\Tpl;
 
-    Tpl::configure( $config );
+// config
+$config = array(
+    "tpl_dir"       => "templates/simple/",
+    "cache_dir"     => "cache/",
+    "debug"         => true, // set to false to improve the speed
+);
 
-
-    // Add PathReplace plugin (necessary to load the CSS with path replace)
-    Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
+Tpl::configure( $config );
 
 
-    // create the Tpl object
-    $tpl = new Tpl;
+// Add PathReplace plugin (necessary to load the CSS with path replace)
+Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
 
-    // assign a variable
-    $tpl->assign( "name", "Obi Wan Kenoby" );
 
-    // assign an array
-    $tpl->assign( "week", array( "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ) );
+// create the Tpl object
+$tpl = new Tpl;
 
-    // draw the template
-    $tpl->draw( "simple_template" );
+// assign a variable
+$tpl->assign( "name", "Obi Wan Kenoby" );
 
-        
+// assign an array
+$tpl->assign( "week", array( "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" ) );
+
+// draw the template
+$tpl->draw( "simple_template" );
+
+
 ?>

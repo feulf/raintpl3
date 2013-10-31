@@ -16,7 +16,7 @@ class Tpl {
     public $var = array();
 
     protected $config = array(),
-              $objectConf = array();
+        $objectConf = array();
 
     /**
      * Plugin container
@@ -58,16 +58,16 @@ class Tpl {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
-        
+
         ob_start();
         require $this->checkTemplate($templateFilePath);
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
-            'code' => $html,
-            'conf' => $this->config,
-        ));
+                'code' => $html,
+                'conf' => $this->config,
+            ));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
@@ -95,9 +95,9 @@ class Tpl {
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
-            'code' => $html,
-            'conf' => $this->config,
-        ));
+                'code' => $html,
+                'conf' => $this->config,
+            ));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
@@ -281,7 +281,7 @@ class Tpl {
 
 
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {            
+        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {
             $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
