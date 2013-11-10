@@ -10,13 +10,13 @@ h3{color:#333;font-size:17px;font-weight:normal;}
 #msg span{color:#ac0}
 #msg a:hover{color:#ac0}
 
-section, header, nav, footer {width:900px;margin:0 auto;}
+section, header, nav, footer {width:900px;margin:0 auto;clear:both;}
 header {height:100px;margin-top:50px}
 nav a{margin-right:30px}
 section{margin-top:50px;}
 
-footer{font-size:11px;clear:both;}
-footer a{margin-right:10px}
+footer {margin-bottom:50px;font-size:11px;}
+footer a{margin-right:10px;}
 
 #slogan{background:red;float:left;clear:both;height:300px;width:900px;background:red;list-style:none;padding:0px;margin:0px;overflow:auto;}
 #slogan li{float:left;clear:both;padding:0px;margin:0px;background:red;float:left;clear:both;height:300px;width:900px;background:red;list-style:none;overflow:auto;}
