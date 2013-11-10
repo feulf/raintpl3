@@ -726,6 +726,8 @@ class Parser {
         while( preg_match( '#\.\./#', $path ) ){
             $path = preg_replace('#\w+/\.\./#', '', $path );
         }
+        $path = str_replace("/", DIRECTORY_SEPARATOR, $path);
+
         return $path;
     }
 }
