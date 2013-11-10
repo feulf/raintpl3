@@ -365,11 +365,17 @@ class Parser {
 
                     //get the folder of the actual template
                     $actualFolder = $templateDirectory;
-                    foreach($this->config['tpl_dir'] as $tpl) {
-                        if (substr($actualFolder, 0, strlen($tpl)) == $tpl) {
-                            $actualFolder = substr($actualFolder, strlen($tpl));
+
+                    if (is_array($this->config['tpl_dir'])) {
+                        foreach($this->config['tpl_dir'] as $tpl) {
+                            if (substr($actualFolder, 0, strlen($tpl)) == $tpl) {
+                                $actualFolder = substr($actualFolder, strlen($tpl));
+                            }
                         }
+                    } elseif (substr($actualFolder, 0, strlen($this->config['tpl_dir'])) == $this->config['tpl_dir']) {
+                            $actualFolder = substr($actualFolder, strlen($this->config['tpl_dir']));
                     }
+
 
                     //get the included template
                     if (strpos($matches[1], '$') !== false) {
