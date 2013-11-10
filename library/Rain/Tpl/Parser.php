@@ -188,7 +188,7 @@ class Parser {
         $fp = fopen($templateFilepath, "r");
 
         // lock the file
-        if (flock($fp, LOCK_SH)) {
+        if (flock($fp, LOCK_EX)) {
 
             // save the filepath in the info
             $this->templateInfo['template_filepath'] = $templateFilepath;
@@ -726,6 +726,8 @@ class Parser {
         while( preg_match( '#\.\./#', $path ) ){
             $path = preg_replace('#\w+/\.\./#', '', $path );
         }
+        $path = str_replace("/", DIRECTORY_SEPARATOR, $path);
+
         return $path;
     }
 }
