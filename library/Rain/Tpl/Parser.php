@@ -16,8 +16,8 @@ class Parser {
     public $var = array();
 
     protected $templateInfo = array(),
-              $config = array(),
-              $objectConf = array();
+        $config = array(),
+        $objectConf = array();
 
     /**
      * Plugin container
@@ -144,7 +144,7 @@ class Parser {
         return $parsedTemplateFilepath;
     }
 
-		/**
+    /**
      * Compile a string if necessary
      *
      * @param string $string: RainTpl template string to compile
@@ -205,8 +205,8 @@ class Parser {
 
             // xml re-substitution
             $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                    }, $code);
+                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                }, $code);
 
             $parsedCode = $this->compileTemplate($code, $isString = false, $templateBasedir, $templateDirectory, $templateFilepath);
             $parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsedCode;
@@ -259,8 +259,8 @@ class Parser {
 
             // xml re-substitution
             $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                    }, $code);
+                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                }, $code);
 
             $parsedCode = $this->compileTemplate($code, $isString = true, $templateBasedir, $templateDirectory = null, $templateFilepath);
 
@@ -298,11 +298,11 @@ class Parser {
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
-            'code' => $code,
-            'template_basedir' => $templateBasedir,
-            'template_filepath' => $templateFilepath,
-            'conf' => $this->config,
-        ));
+                'code' => $code,
+                'template_basedir' => $templateBasedir,
+                'template_filepath' => $templateFilepath,
+                'conf' => $this->config,
+            ));
 
         $this->getPlugins()->run('beforeParse', $context);
         $code = $context->code;
@@ -332,7 +332,7 @@ class Parser {
         // if the template is not empty
         if ($codeSplit)
 
-        //read all parsed code
+            //read all parsed code
             foreach ($codeSplit as $html) {
 
                 //close ignore tag
@@ -555,7 +555,7 @@ class Parser {
 
                 //ternary
                 elseif (preg_match($tagMatch['ternary'], $html, $matches)) {
-	                $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = FALSE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = FALSE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = FALSE) . ')' . "; ?>";
+                    $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = FALSE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = FALSE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = FALSE) . ')' . "; ?>";
                 }
 
                 //variables
@@ -572,7 +572,7 @@ class Parser {
 
                 // registered tags
                 else {
- 
+
                     $found = FALSE;
                     foreach (static::$registered_tags as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
@@ -651,7 +651,7 @@ class Parser {
 
                 // escape character
                 if ($this->config['auto_escape'] && $escape)
-                //$html = "htmlspecialchars( $html )";
+                    //$html = "htmlspecialchars( $html )";
                     $html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
 
                 // if is an assignment it doesn't add echo
@@ -709,8 +709,8 @@ class Parser {
             // stop the execution of the script
             $e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->templateInfo['template_filepath'] . ' at line ' . $line);
             throw $e->templateFile($this->templateInfo['template_filepath'])
-                    ->tag($match[0])
-                    ->templateLine($line);
+                ->tag($match[0])
+                ->templateLine($line);
 
             return false;
         }

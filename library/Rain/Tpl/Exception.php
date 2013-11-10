@@ -17,7 +17,7 @@ class Exception extends \Exception {
      *
      * @param string | null $templateFile
      * @return \Rain\Tpl_Exception | string
-     */  	
+     */
     public function templateFile($templateFile){
         if(is_null($templateFile))
             return $this->templateFile;
