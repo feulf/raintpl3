@@ -235,9 +235,10 @@ class Tpl {
      * @return string: full filepath that php must use to include
      */
     protected function checkTemplate($template) {
+
         // set filename
         $templateName = basename($template);
-        $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
+        $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) !== false ? dirname($template) . DIRECTORY_SEPARATOR : null;
         $templateDirectory = null;
         $templateFilepath = null;
         $parsedTemplateFilepath = null;
@@ -249,15 +250,27 @@ class Tpl {
         }
 
         $isFileNotExist = true;
-        foreach($templateDirectories as $templateDirectory) {
-            $templateDirectory .= $templateBasedir;
+
+        // absolute path
+        if ($template[0] == '/') {
+            $templateDirectory = $templateBasedir;
             $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
             $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
-
             // For check templates are exists
             if (file_exists($templateFilepath)) {
                 $isFileNotExist = false;
-                break;
+            }
+        } else {
+            foreach($templateDirectories as $templateDirectory) {
+                $templateDirectory .= $templateBasedir;
+                $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
+                $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
+
+                // For check templates are exists
+                if (file_exists($templateFilepath)) {
+                    $isFileNotExist = false;
+                    break;
+                }
             }
         }
 
