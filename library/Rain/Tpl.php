@@ -108,7 +108,7 @@ class Tpl {
     }
 
     /**
-     * Configure the object
+     * Object specific configuration
      *
      * @param string, array $setting: name of the setting to configure
      * or associative array type 'setting' => 'value'
@@ -119,14 +119,24 @@ class Tpl {
         if (is_array($setting))
             foreach ($setting as $key => $value)
                 $this->objectConfigure($key, $value);
-        else if (isset(static::$conf[$setting]))
+        else if (isset(static::$conf[$setting])) {
+
+            // add ending slash if missing
+            if ($setting == 'tpl_dir') {
+                if ( is_array($value) ) {
+                    $value = array_map( array('self', 'addTrailingSlash'), $value);
+                } elseif (substr($value,-1) !== '/') {
+                    $value = self::addTrailingSlash($value);
+                }
+            }
             $this->objectConf[$setting] = $value;
+        }
 
         return $this;
     }
 
     /**
-     * Configure the template
+     * Global configurations
      *
      * @param string, array $setting: name of the setting to configure
      * or associative array type 'setting' => 'value'
@@ -137,8 +147,15 @@ class Tpl {
             foreach ($setting as $key => $value)
                 static::configure($key, $value);
         else if (isset(static::$conf[$setting])) {
-            static::$conf[$setting] = $value;
 
+            // add ending slash if missing
+            if (is_array($value)) {
+                $value = array_map(array('self', 'addTrailingSlash'), $value);
+            } elseif (substr($value,-1) !== '/') {
+                $value = self::addTrailingSlash($value);
+            }
+
+            static::$conf[$setting] = $value;
             static::$conf['checksum'][$setting] = $value; // take trace of all config
         }
     }
@@ -287,6 +304,10 @@ class Tpl {
         }
 
         return $parsedTemplateFilepath;
+    }
+
+    private static function addTrailingSlash($folder) {
+        return substr($folder, -1) == '/' ? $folder : $folder . '/';
     }
 
 }
