@@ -122,8 +122,12 @@ class Tpl {
         else if (isset(static::$conf[$setting])) {
 
             // add ending slash if missing
-            if ($setting == 'tpl_dir' && substr($value,-1) !== '/') {
-                $value .= '/';
+            if ($setting == 'tpl_dir') {
+                if ( is_array($value) ) {
+                    $value = array_map( array('self', 'addTrailingSlash'), $value);
+                } elseif (substr($value,-1) !== '/') {
+                    $value = self::addTrailingSlash($value);
+                }
             }
             $this->objectConf[$setting] = $value;
         }
@@ -145,9 +149,12 @@ class Tpl {
         else if (isset(static::$conf[$setting])) {
 
             // add ending slash if missing
-            if ($setting == 'tpl_dir' && substr($value,-1) !== '/') {
-                $value .= '/';
+            if (is_array($value)) {
+                $value = array_map(array('self', 'addTrailingSlash'), $value);
+            } elseif (substr($value,-1) !== '/') {
+                $value = self::addTrailingSlash($value);
             }
+
             static::$conf[$setting] = $value;
             static::$conf['checksum'][$setting] = $value; // take trace of all config
         }
@@ -297,6 +304,10 @@ class Tpl {
         }
 
         return $parsedTemplateFilepath;
+    }
+
+    private static function addTrailingSlash($folder) {
+        return substr($folder, -1) == '/' ? $folder : $folder . '/';
     }
 
 }
