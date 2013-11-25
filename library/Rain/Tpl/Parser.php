@@ -373,9 +373,8 @@ class Parser {
                             }
                         }
                     } elseif (substr($actualFolder, 0, strlen($this->config['tpl_dir'])) == $this->config['tpl_dir']) {
-                            $actualFolder = substr($actualFolder, strlen($this->config['tpl_dir']));
+                        $actualFolder = substr($actualFolder, strlen($this->config['tpl_dir']));
                     }
-
 
                     //get the included template
                     if (strpos($matches[1], '$') !== false) {
@@ -390,6 +389,7 @@ class Parser {
                     if (strpos($matches[1], '$') !== false) {
                         //dynamic include
                         $parsedCode .= '<?php require $this->checkTemplate(' . $includeTemplate . ');?>';
+
                     } else {
                         //dynamic include
                         $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
@@ -728,8 +728,7 @@ class Parser {
         $path = preg_replace( "#(/+)#", "/", $path );
         $path = preg_replace( "#(/\./+)#", "/", $path );
         $path = str_replace( "@not_replace@", "://", $path );
-
-        while( preg_match( '#\.\./#', $path ) ){
+        while( preg_match('#\w+\.\./#', $path) ) {
             $path = preg_replace('#\w+/\.\./#', '', $path );
         }
         $path = str_replace("/", DIRECTORY_SEPARATOR, $path);
