@@ -122,7 +122,7 @@ class Tpl {
         else if (isset(static::$conf[$setting])) {
 
             // add ending slash if missing
-            if ($setting == 'tpl_dir') {
+            if ($setting == "tpl_dir" || $setting == "cache_dir") {
                 $value = self::addTrailingSlash($value);
             }
             $this->objectConf[$setting] = $value;
@@ -145,7 +145,7 @@ class Tpl {
         else if (isset(static::$conf[$setting])) {
 
             // add ending slash if missing
-            if ($setting == 'tpl_dir') {
+            if ($setting == "tpl_dir" || $setting == "cache_dir") {
                 $value = self::addTrailingSlash($value);
             }
 
