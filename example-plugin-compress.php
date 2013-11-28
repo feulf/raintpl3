@@ -18,7 +18,12 @@ $config = array(
 
 Tpl::configure( $config );
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace );
-Tpl::registerPlugin( new Tpl\Plugin\Compress );
+
+$compress = new Tpl\Plugin\Compress;
+$compress->configure('css', array('status'=>true));
+$compress->configure('html', array('status'=>true));
+$compress->configure('javascript', array('status'=>true, 'position' => 'bottom'));
+Tpl::registerPlugin($compress);
 
 
 global $global_variable;
