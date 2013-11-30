@@ -6,7 +6,6 @@ namespace Rain\Tpl;
  * Basic Rain tpl exception.
  */
 class Exception extends \Exception {
-
     /**
      * Path of template file with error.
      */
@@ -26,5 +25,3 @@ class Exception extends \Exception {
         return $this;
     }
 }
-
-// -- end

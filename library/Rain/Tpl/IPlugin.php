@@ -18,8 +18,7 @@ namespace Rain\Tpl;
  *
  * Method can modify some properties. No return value is expected.
  */
-interface IPlugin
-{
+interface IPlugin {
     /**
      * Returns a list of hooks that are implemented by the plugin.
      * This should be an array containing:

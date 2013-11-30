@@ -1,5 +1,4 @@
 <?php
-
 namespace Rain;
 
 /**
@@ -11,12 +10,10 @@ namespace Rain;
  *  @version 3.0 Alpha milestone: https://github.com/rainphp/raintpl3/issues/milestones?with_issues=no
  */
 class Tpl {
-
     // variables
     public $var = array();
 
-    protected $config = array(),
-        $objectConf = array();
+    protected $config = array(), $objectConf = array();
 
     /**
      * Plugin container
@@ -44,7 +41,6 @@ class Tpl {
     // tags registered by the developers
     protected static $registered_tags = array();
 
-
     /**
      * Draw the template
      *
@@ -54,7 +50,7 @@ class Tpl {
      *
      * @return void, string: depending of the $toString
      */
-    public function draw($templateFilePath, $toString = FALSE) {
+    public function draw($templateFilePath, $toString = false) {
         extract($this->var);
         // Merge local and static configurations
         $this->config = $this->objectConf + static::$conf;
@@ -65,13 +61,13 @@ class Tpl {
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
-                'code' => $html,
-                'conf' => $this->config,
-            ));
+			'code' => $html,
+			'conf' => $this->config,
+		));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
-        if ($toString)
+        if($toString)
             return $html;
         else
             echo $html;
@@ -95,13 +91,13 @@ class Tpl {
 
         // Execute plugins, before_parse
         $context = $this->getPlugins()->createContext(array(
-                'code' => $html,
-                'conf' => $this->config,
-            ));
+			'code' => $html,
+			'conf' => $this->config,
+		));
         $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
-        if ($toString)
+        if($toString)
             return $html;
         else
             echo $html;
@@ -116,13 +112,12 @@ class Tpl {
      * @return \Rain\Tpl $this
      */
     public function objectConfigure($setting, $value = null) {
-        if (is_array($setting))
+        if(is_array($setting))
             foreach ($setting as $key => $value)
                 $this->objectConfigure($key, $value);
-        else if (isset(static::$conf[$setting])) {
-
+        else if(isset(static::$conf[$setting])) {
             // add ending slash if missing
-            if ($setting == "tpl_dir" || $setting == "cache_dir") {
+            if($setting == "tpl_dir" || $setting == "cache_dir") {
                 $value = self::addTrailingSlash($value);
             }
             $this->objectConf[$setting] = $value;
@@ -139,13 +134,12 @@ class Tpl {
      * @param mixed $value: value of the setting to configure
      */
     public static function configure($setting, $value = null) {
-        if (is_array($setting))
+        if(is_array($setting))
             foreach ($setting as $key => $value)
                 static::configure($key, $value);
         else if (isset(static::$conf[$setting])) {
-
             // add ending slash if missing
-            if ($setting == "tpl_dir" || $setting == "cache_dir") {
+            if($setting == "tpl_dir" || $setting == "cache_dir") {
                 $value = self::addTrailingSlash($value);
             }
 
@@ -164,7 +158,7 @@ class Tpl {
      * @return \Rain\Tpl $this
      */
     public function assign($variable, $value = null) {
-        if (is_array($variable))
+        if(is_array($variable))
             $this->var = $variable + $this->var;
         else
             $this->var[$variable] = $value;
@@ -179,9 +173,10 @@ class Tpl {
     public static function clean($expireTime = 2592000) {
         $files = glob(static::$conf['cache_dir'] . "*.rtpl.php");
         $time = time() - $expireTime;
-        foreach ($files as $file)
-            if ($time > filemtime($file) )
+        foreach ($files as $file) {
+            if ($time > filemtime($file))
                 unlink($file);
+		}
     }
 
     /**
@@ -222,8 +217,7 @@ class Tpl {
      * @return \Rain\Tpl\PluginContainer
      */
     protected static function getPlugins() {
-        return static::$plugins
-            ?: static::$plugins = new Tpl\PluginContainer();
+        return static::$plugins ?: static::$plugins = new Tpl\PluginContainer();
     }
 
     /**
@@ -235,7 +229,6 @@ class Tpl {
      * @return string: full filepath that php must use to include
      */
     protected function checkTemplate($template) {
-
         // set filename
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) !== false ? dirname($template) . DIRECTORY_SEPARATOR : null;
@@ -245,7 +238,7 @@ class Tpl {
 
         // Make directories to array for multiple template directory
         $templateDirectories = $this->config['tpl_dir'];
-        if (!is_array($templateDirectories)) {
+        if(!is_array($templateDirectories)) {
             $templateDirectories = array($templateDirectories);
         }
 
@@ -257,7 +250,7 @@ class Tpl {
             $templateFilepath = $templateDirectory . $templateName . '.' . $this->config['tpl_ext'];
             $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
             // For check templates are exists
-            if (file_exists($templateFilepath)) {
+            if(file_exists($templateFilepath)) {
                 $isFileNotExist = false;
             }
         } else {
@@ -267,7 +260,7 @@ class Tpl {
                 $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . "." . md5($templateDirectory . serialize($this->config['checksum'])) . '.rtpl.php';
 
                 // For check templates are exists
-                if (file_exists($templateFilepath)) {
+                if(file_exists($templateFilepath)) {
                     $isFileNotExist = false;
                     break;
                 }
@@ -275,13 +268,13 @@ class Tpl {
         }
 
         // if the template doesn't exsist throw an error
-        if ($isFileNotExist === true) {
+        if($isFileNotExist === true) {
             $e = new Tpl\NotFoundException('Template ' . $templateName . ' not found!');
             throw $e->templateFile($templateFilepath);
         }
 
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
+        if($this->config['debug'] || !file_exists($parsedTemplateFilepath) || (filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
             $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
         }
@@ -296,34 +289,28 @@ class Tpl {
      * @return string: full filepath that php must use to include
      */
     protected function checkString($string) {
-
         // set filename
         $templateName = md5($string . implode($this->config['checksum']));
         $parsedTemplateFilepath = $this->config['cache_dir'] . $templateName . '.s.rtpl.php';
         $templateFilepath = '';
         $templateBasedir = '';
 
-
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {
+        if($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {
             $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
-
         return $parsedTemplateFilepath;
     }
 
     private static function addTrailingSlash($folder) {
-
-        if (is_array($folder)) {
+        if(is_array($folder)) {
             foreach($folder as &$f) {
                 $f = self::addTrailingSlash($f);
             }
-        } elseif ( strlen($folder) > 0 && $folder[0] != '/' ) {
+        } elseif( strlen($folder) > 0 && $folder[0] != '/' ) {
             $folder = $folder . "/";
         }
         return $folder;
-
     }
-
 }

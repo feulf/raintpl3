@@ -1,23 +1,23 @@
 <?php
-
 namespace Rain\Tpl\Plugin;
 
 require_once __DIR__ . '/../Plugin.php';
 
 class Compress extends \Rain\Tpl\Plugin {
+    protected $hooks = array('afterDraw'), $cache_dir, $conf;
 
-    protected $hooks = array('afterDraw'),
-              $cache_dir, 
-              $conf;
-
-    protected static $configure = array('html'      =>array('status'=>true),
-                                        'css'       =>array('status'=>true),
-                                        'javascript'=>array('status'=>true, 'position'=>'bottom'),
-                                       );
+    protected static $configure = array(
+		'html'		=> array('status' => true),
+		'css'       => array('status' => true),
+		'javascript'=> array(
+			'status' 	=> 	true,
+			'position'	=>	'bottom'
+		)
+	);
     /**
      * Initialize the local configuration
      */
-    public function __construct(){
+    public function __construct() {
         $this->conf = self::$configure;
     }
     
@@ -26,18 +26,17 @@ class Compress extends \Rain\Tpl\Plugin {
      * @param \ArrayAccess $context 
      */
     public function afterDraw(\ArrayAccess $context) {
-
         // get the cache directory
-        $this->cache_dir  = $context->conf['cache_dir'];
+        $this->cache_dir = $context->conf['cache_dir'];
 
         $html = $context->code;
-        if( $this->conf['css']['status'] )
-            $html = $this->compressCSS( $html );
+        if($this->conf['css']['status'] )
+            $html = $this->compressCSS($html);
 
-        if( $this->conf['javascript']['status'] )
-            $html = self::compressJavascript( $html );
+        if($this->conf['javascript']['status'] )
+            $html = self::compressJavascript($html);
 
-        if( $this->conf['html']['status'] )
+        if($this->conf['html']['status'])
             $html = $this->compressHTML($html);
 
         // save the compressed code
@@ -50,7 +49,6 @@ class Compress extends \Rain\Tpl\Plugin {
      * @return type 
      */
     protected function compressHTML($html) {
-
         // Set PCRE recursion limit to sane value = STACKSIZE / 500
         // ini_set("pcre.recursion_limit", "524"); // 256KB stack. Win32 Apache
         ini_set("pcre.recursion_limit", "16777");  // 8MB stack. *nix
@@ -79,16 +77,13 @@ class Compress extends \Rain\Tpl\Plugin {
         return $html;
     }
 
-
-
     /**
      * Compress the CSS
      * @param type $html
      * @return type 
      */
     protected function compressCSS($html) {
-
-        // search for all stylesheet
+        // search for all stylesheets
         if (!preg_match_all("/<link.*href=\"(.*?\.css)\".*>/", $html, $matches))
             return $html; // return the HTML if doesn't find any
 
@@ -99,7 +94,7 @@ class Compress extends \Rain\Tpl\Plugin {
 
         $cssFiles = $matches[1];
         $md5Name = "";
-        foreach( $cssFiles as $file ){
+        foreach($cssFiles as $file) {
             $md5Name .= basename($file);
         }
 
@@ -107,14 +102,11 @@ class Compress extends \Rain\Tpl\Plugin {
         $cacheFolder = $this->cache_dir . "compress/css/"; // css cache folder
         $cachedFilepath = $cacheFolder . $cachedFilename . ".css";
 
-        if( !file_exists($cachedFilepath) ){
-
+        if(!file_exists($cachedFilepath)) {
             // read all the CSS found
-            foreach ($cssFiles as $url) {
-
+            foreach($cssFiles as $url) {
                 // if a CSS is repeat it takes only the first
                 if (empty($urlArray[$url])) {
-
                     $urlArray[$url] = 1;
 
                     // parse the URL
@@ -124,8 +116,8 @@ class Compress extends \Rain\Tpl\Plugin {
                     $stylesheetFile = file_get_contents($url);
 
                     // optimize image URL
-                    if (preg_match_all("/url\({0,1}(.*?)\)/", $stylesheetFile, $matches)) {
-                        foreach ($matches[1] as $imageUrl) {
+                    if(preg_match_all("/url\({0,1}(.*?)\)/", $stylesheetFile, $matches)) {
+                        foreach($matches[1] as $imageUrl) {
                             $imageUrl = preg_replace("/'|\"/", "", $imageUrl);
                             dirname($url) . "/" . $imageUrl;
                             $real_path = reduce_path("../../../" . dirname($url) . "/" . $imageUrl);
@@ -148,7 +140,6 @@ class Compress extends \Rain\Tpl\Plugin {
 
             // save the stylesheet
             file_put_contents($cachedFilepath, $css);
-
         }
 
         // remove all the old stylesheet from the page
@@ -164,42 +155,38 @@ class Compress extends \Rain\Tpl\Plugin {
         return $html;
     }
     
-    
-    
     /**
-     * Compress the CSS
+     * Compress the JavaScript
      * @param type $html
      * @return type 
      */
     protected function compressJavascript($html) {
-
         $htmlToCheck = preg_replace("<!--.*?-->", "", $html);
 
-        // search for javascript
+        // search for javascripts
         preg_match_all("/<script.*src=\"(.*?\.js)\".*>/", $htmlToCheck, $matches);
         $externalUrl = array();
         $javascript = "";
 
         $javascriptFiles = $matches[1];
         $md5Name = "";
-        foreach( $javascriptFiles as $file ){
+        foreach($javascriptFiles as $file) {
             $md5Name .= basename($file);
         }
 
         $cachedFilename = md5($md5Name);
-        $cacheFolder = $this->cache_dir . "compress/js/"; // css cache folder
+        $cacheFolder = $this->cache_dir . "compress/js/"; // js cache folder
         $cachedFilepath = $cacheFolder . $cachedFilename . ".js";
         
 
-        if( !file_exists($cachedFilepath) ){
-            foreach ($matches[1] as $url) {
-
+        if(!file_exists($cachedFilepath)) {
+            foreach($matches[1] as $url) {
                 // if a JS is repeat it takes only the first
-                if (empty($urlArray[$url])) {
+                if(empty($urlArray[$url])) {
                     $urlArray[$url] = $url;
 
                     // reduce the path
-                    $url = \Rain\Tpl::reducePath( $url );
+                    $url = \Rain\Tpl::reducePath($url);
 
                     $javascriptFile = file_get_contents($url);
 
@@ -208,7 +195,6 @@ class Compress extends \Rain\Tpl\Plugin {
                     $javascriptFile = preg_replace("#\n+|\t+| +#", " ", $javascriptFile);
 
                     $javascript .= "/*---\n Javascript compressed in Rain \n {$url} \n---*/\n\n" . $javascriptFile . "\n\n";
-                    
                 }
             }
             
@@ -217,28 +203,24 @@ class Compress extends \Rain\Tpl\Plugin {
 
             // save the stylesheet
             file_put_contents($cachedFilepath, $javascript);
-
         }
 
         $html = preg_replace("/<script.*src=\"(.*?\.js)\".*>/", "", $html);
         $tag = '<script src="' . $cachedFilepath . '"></script>';
 
-        if( $this->conf['javascript']['position'] == 'bottom' ){
+        if($this->conf['javascript']['position'] == 'bottom') {
             $html = preg_replace("/<\/body>/", $tag . "</body>", $html);
-        }
-        else{
+        }else {
             $html = preg_replace("/<head>/", "<head>\n".$tag, $html);
         }
-
         return $html;
     }
     
-    public function configure( $setting, $value ){
+    public function configure($setting, $value){
         $this->conf[$setting] = self::$configure[$setting] = $value;
     }
 
-    public function configureLocal( $setting, $value ){
+    public function configureLocal($setting, $value){
         $this->conf[$setting] = $value;
     }
-
 }

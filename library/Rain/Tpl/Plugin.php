@@ -10,8 +10,7 @@ require_once __DIR__ . '/IPlugin.php';
  *   When a setter set_{optionname}() exists it is used to store the option value.
  *   Otherwise \InvalidArgumentException is thrown.
  */
-class Plugin implements IPlugin
-{
+class Plugin implements IPlugin {
     /**
      * This should be an array containing:
      * - a key/value pair where key is hook name and value is implementing method,
@@ -21,8 +20,7 @@ class Plugin implements IPlugin
      */
     protected $hooks = array();
 
-    public function  __construct($options = array())
-    {
+    public function  __construct($options = array()) {
         $this->setOptions($options);
     }
     /**
