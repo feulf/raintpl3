@@ -1,27 +1,27 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
 
-
 // extends Rain to add getter and setter
-class MyRainTPL extends Tpl{
-
+class MyRainTPL extends Tpl
+{
     // get function
-    function __get( $key = null ){
+    public function __get($key = null)
+    {
         return $key ? $this->var[$key] : $this->var;
     }
 
     // set function
-    function __set( $key, $value ){
+    public function __set($key, $value)
+    {
         $this->var[$key] = $value;
     }
 
 }
-
 
 // conf
 $config = array(
@@ -35,14 +35,11 @@ $config = array(
 //use Rain;
 MyRainTPL::configure( $config );
 
-
 // Add PathReplace plugin
 MyRainTPL::registerPlugin( new Tpl\Plugin\PathReplace() );
 
-
 global $global_variable;
 $global_variable = "I'm Global";
-
 
 // draw
 $tpl = new MyRainTPL;
@@ -57,7 +54,3 @@ $tpl->title = "Rain TPL 3 - Easy and Fast template engine";
 $tpl->copyright = "Copyright 2006 - 2012 Rain TPL<br>Project By Rain Team";
 
 $tpl->draw( 'page' );
-
-
-
-

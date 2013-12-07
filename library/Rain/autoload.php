@@ -6,9 +6,10 @@ if(!defined("BASE_DIR"))
 spl_autoload_register( "RainTplAutoloader" );
 
 // autoloader
-function RainTplAutoloader($class){
+function RainTplAutoloader($class)
+{
     // it only autoloads class into the Rain scope
-    if (strpos($class, 'Rain\\Tpl') !== false){
+    if (strpos($class, 'Rain\\Tpl') !== false) {
         // transform the namespace in path
         $path = str_replace("\\", DIRECTORY_SEPARATOR, $class );
 

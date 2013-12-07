@@ -1,10 +1,9 @@
 <?php
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
-
 
 // config
 $config = array(
@@ -16,11 +15,8 @@ $config = array(
 
 Tpl::configure( $config );
 
-
 // Add PathReplace plugin
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
-
-
 
 $user = array(
     array(
@@ -56,16 +52,15 @@ $user = array(
     )
 );
 
-
 // draw
 $tpl = new Tpl;
 $tpl->assign( "user", $user );
 echo $tpl->draw( "test" );
 
-
-
-class Test{
-    static public function method( $variable ){
+class Test
+{
+    public static function method($variable)
+    {
         echo "Hi I am a static method, and this is the parameter passed to me: $variable!";
     }
 }

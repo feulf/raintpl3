@@ -1,7 +1,7 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
@@ -15,10 +15,8 @@ $config = array(
 
 Tpl::configure( $config );
 
-
 // Add PathReplace plugin (necessary to load the CSS with path replace)
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
-
 
 // create the Tpl object
 $tpl = new Tpl;
@@ -31,6 +29,3 @@ $tpl->assign( "week", array( "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
 
 // draw the template
 $tpl->draw( "simple_template" );
-
-
-?>

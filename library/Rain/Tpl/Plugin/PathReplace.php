@@ -16,14 +16,13 @@ class PathReplace extends \Rain\Tpl\Plugin
      *
      * @param \ArrayAccess $context
      */
-    public function beforeParse(\ArrayAccess $context){
-
+    public function beforeParse(\ArrayAccess $context)
+    {
         // set variables
         $html = $context->code;
         $template_basedir = $context->template_basedir;
         $tags = $this->tags;
         $basecode = "<?php echo static::\$conf['base_url']; ?>";
-
 
         // get the template base directory
         $template_directory = $basecode . $context->conf['tpl_dir'] . $context->template_basedir;
@@ -34,45 +33,43 @@ class PathReplace extends \Rain\Tpl\Plugin
         $path = preg_replace( "#(/\./+)#", "/", $path );
         $path = str_replace( "@not_replace@", "://", $path );
 
-        while( preg_match( '#\.\./#', $path ) ){
+        while ( preg_match( '#\.\./#', $path ) ) {
             $path = preg_replace('#\w+/\.\./#', '', $path );
         }
 
-
-
         $exp = $sub = array();
 
-        if( in_array( "img", $tags ) ){
+        if ( in_array( "img", $tags ) ) {
             $exp = array( '/<img(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<img(.*?)src=(?:")([^"]+?)#(?:")/i', '/<img(.*?)src="(.*?)"/', '/<img(.*?)src=(?:\@)([^"]+?)(?:\@)/i' );
             $sub = array( '<img$1src=@$2://$3@', '<img$1src=@$2@', '<img$1src="' . $path . '$2"', '<img$1src="$2"' );
         }
 
-        if( in_array( "script", $tags ) ){
+        if ( in_array( "script", $tags ) ) {
             $exp = array_merge( $exp , array( '/<script(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<script(.*?)src=(?:")([^"]+?)#(?:")/i', '/<script(.*?)src="(.*?)"/', '/<script(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
             $sub = array_merge( $sub , array( '<script$1src=@$2://$3@', '<script$1src=@$2@', '<script$1src="' . $path . '$2"', '<script$1src="$2"' ) );
         }
 
-        if( in_array( "link", $tags ) ){
+        if ( in_array( "link", $tags ) ) {
             $exp = array_merge( $exp , array( '/<link(.*?)href=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<link(.*?)href=(?:")([^"]+?)#(?:")/i', '/<link(.*?)href="(.*?)"/', '/<link(.*?)href=(?:\@)([^"]+?)(?:\@)/i' ) );
             $sub = array_merge( $sub , array( '<link$1href=@$2://$3@', '<link$1href=@$2@' , '<link$1href="' . $path . '$2"', '<link$1href="$2"' ) );
         }
 
-        if( in_array( "a", $tags ) ){
+        if ( in_array( "a", $tags ) ) {
             $exp = array_merge( $exp , array( '/<a(.*?)href=(?:")(http:\/\/|https:\/\/|javascript:|mailto:|\/|{)([^"]+?)(?:")/i','/<a(.*?)href="(.*?)"/', '/<a(.*?)href=(?:\@)([^"]+?)(?:\@)/i'));
             $sub = array_merge( $sub , array( '<a$1href=@$2$3@', '<a$1href="' . $basecode . '$2"', '<a$1href="$2"' ) );
         }
 
-        if( in_array( "input", $tags ) ){
+        if ( in_array( "input", $tags ) ) {
             $exp = array_merge( $exp , array( '/<input(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<input(.*?)src=(?:")([^"]+?)#(?:")/i', '/<input(.*?)src="(.*?)"/', '/<input(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
             $sub = array_merge( $sub , array( '<input$1src=@$2://$3@', '<input$1src=@$2@', '<input$1src="' . $path . '$2"', '<input$1src="$2"' ) );
         }
 
-        if( in_array( "object", $tags ) ){
+        if ( in_array( "object", $tags ) ) {
             $exp = array_merge( $exp , array( '/<object(.*?)data=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<object(.*?)data=(?:")([^"]+?)#(?:")/i', '/<object(.*?)data="(.*?)"/', '/<object(.*?)data=(?:\@)([^"]+?)(?:\@)/i' ) );
             $sub = array_merge( $sub , array( '<object$1data=@$2://$3@', '<object$1data=@$2@' , '<object$1data="' . $path . '$2"', '<object$1data="$2"' ) );
         }
 
-        if( in_array( "embed", $tags ) ){
+        if ( in_array( "embed", $tags ) ) {
             $exp = array_merge( $exp , array( '/<embed(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<embed(.*?)src=(?:")([^"]+?)#(?:")/i', '/<embed(.*?)src="(.*?)"/', '/<embed(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
             $sub = array_merge( $sub , array( '<embed$1src=@$2://$3@', '<embed$1src=@$2@', '<embed$1src="' . $path . '$2"', '<embed$1src="$2"' ) );
         }
@@ -80,10 +77,10 @@ class PathReplace extends \Rain\Tpl\Plugin
         $context->code = preg_replace( $exp, $sub, $html );
     }
 
-
-
-    public function setTags($tags) {
+    public function setTags($tags)
+    {
         $this->tags = (array) $tags;
+
         return $this;
     }
 
