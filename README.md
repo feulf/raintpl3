@@ -38,3 +38,11 @@ Installation / Usage
 Documentation
 -------------
 The [documentation](https://github.com/rainphp/raintpl3/wiki/Documentation) of RainTPL is divided in [documentation for web designers](https://github.com/rainphp/raintpl3/wiki/Documentation-for-web-designers) and [documentation for PHP developers](https://github.com/rainphp/raintpl3/wiki/Documentation-for-PHP-developers).
+
+
+Bitcoin Donation
+----------------
+support this project
+15zdeaEEVH5TNCoCXGdA1M41rBC13ZKo9x https://github.com/rainphp/raintpl3/blob/master/templates/test/15zdeaEEVH5TNCoCXGdA1M41rBC13ZKo9x.jpeg?raw=true
+
+
