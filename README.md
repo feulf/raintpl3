@@ -43,6 +43,6 @@ The [documentation](https://github.com/rainphp/raintpl3/wiki/Documentation) of R
 Bitcoin Donation
 ----------------
 support this project
-15zdeaEEVH5TNCoCXGdA1M41rBC13ZKo9x https://github.com/rainphp/raintpl3/blob/master/templates/test/15zdeaEEVH5TNCoCXGdA1M41rBC13ZKo9x.jpeg?raw=true
+15zdeaEEVH5TNCoCXGdA1M41rBC13ZKo9x https://github.com/rainphp/raintpl3/blob/master/templates/test/15zdeaEEVH5TNCoCXGdA1M41rBC13ZKo9x.png?raw=true
 
 
