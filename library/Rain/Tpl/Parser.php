@@ -626,7 +626,7 @@ class Parser
                      * var replace
                     */
                     if (isset($matches[2])) {
-                        $parsedFunction = $function . $this->varReplace($matches[2], $loopLevel, $escape = false, $echo = true);
+                        $parsedFunction = $function . $this->varReplace($matches[2], $loopLevel, $escape = false, $echo = false);
                     } else {
                         $parsedFunction = $function . "()";
                     }
@@ -650,7 +650,7 @@ class Parser
                      * variables
                      * variables substitution (es. {$title})
                     */
-                    $parsedCode .= "<?php " . $this->varReplace($matches[1], $loopLevel, $escape = true, $echo = false) . "; ?>";
+                    $parsedCode .= "<?php " . $this->varReplace($matches[1], $loopLevel, $escape = true, $echo = true) . "; ?>";
                 } elseif (preg_match($tagMatch['constant'], $html, $matches)) {
                     /**
                      * constants
