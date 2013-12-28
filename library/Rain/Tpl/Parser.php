@@ -806,9 +806,14 @@ class Parser
             preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html, $result);
 
             $function_params = $result[1];
-            $explode = explode(":", $result[2]);
-            $function = $explode[0];
-            $params = isset($explode[1]) ? "," . $explode[1] : null;
+            if (strpos($result[2], "::") !== false) {
+                $function = $result[2];
+                $params = null;
+            } else {
+                $explode = explode(":", $result[2]);
+                $function = $explode[0];
+                $params = isset($explode[1]) ? "," . $explode[1] : null;
+            }
 
             $html = str_replace($result[0], $function . "(" . $function_params . "$params)", $html);
 
