@@ -1,7 +1,7 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
@@ -17,7 +17,6 @@ Tpl::configure( $config );
 
 // Add PathReplace plugin
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
-
 
 global $global_variable;
 $global_variable = "I'm Global";
@@ -43,14 +42,14 @@ $var = array(
 
 );
 
-function test( $params ){
+function test($params)
+{
     $value = $params[0];
+
     return "Translate: <b>$value</b>";
 };
 // add a function
 Tpl::registerTag( "({@.*?@})", "{@(.*?)@}", "test" );
-
-
 
 // draw
 $tpl = new Tpl;

@@ -1,7 +1,7 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
@@ -14,7 +14,6 @@ $config = array(
     "debug"     => true // set to false to improve the speed
 );
 Tpl::configure( $config );
-
 
 // Add PathReplace plugin (necessary to load the CSS with path replace)
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
@@ -46,14 +45,13 @@ $var = array(
 
 );
 
-$test = function( $params ){
+$test = function ($params) {
     $value = $params[0];
+
     return "Translate: <b>$value</b>";
 };
 // add a function
 Tpl::registerTag( "({@.*?@})", "{@(.*?)@}", $test );
-
-
 
 // draw
 $tpl = new Tpl;

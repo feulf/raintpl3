@@ -1,11 +1,10 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
-
 
 // configure
 $config = array(
@@ -16,11 +15,8 @@ $config = array(
 );
 Tpl::configure( $config );
 
-
 // Add PathReplace plugin
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
-
-
 
 // set variables
 $var = array(
@@ -44,8 +40,9 @@ $var = array(
 // add a function
 Tpl::registerTag(	"({@.*?@})", // preg split
     "{@(.*?)@}", // preg match
-    function( $params ){ // function called by the tag
+    function ($params) { // function called by the tag
         $value = $params[0];
+
         return "Translate: <b>$value</b>";
     }
 );
@@ -54,6 +51,5 @@ Tpl::registerTag(	"({@.*?@})", // preg split
 $tpl = new Tpl;
 $tpl->assign( $var );
 echo $tpl->draw( "bootstrap/hero" );
-
 
 // end

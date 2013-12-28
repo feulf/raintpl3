@@ -1,12 +1,11 @@
 <?php
-
 namespace Rain\Tpl;
 
 /**
  * Exception thrown when syntax error occurs.
  */
-class SyntaxException extends Exception {
-
+class SyntaxException extends Exception
+{
     /**
      * Line in template file where error has occured.
      *
@@ -29,11 +28,14 @@ class SyntaxException extends Exception {
      *
      * @return \Rain\Tpl\SyntaxException | int | null
      */
-    public function templateLine($line){
+    public function templateLine($line)
+    {
         if(is_null($line))
+
             return $this->templateLine;
 
         $this->templateLine = (int) $line;
+
         return $this;
     }
 
@@ -44,13 +46,14 @@ class SyntaxException extends Exception {
      *
      * @return \Rain\Tpl_SyntaxException | string | null
      */
-    public function tag($tag=null){
+    public function tag($tag = null)
+    {
         if(is_null($tag))
+
             return $this->tag;
 
         $this->tag = (string) $tag;
+
         return $this;
     }
 }
-
-// -- end

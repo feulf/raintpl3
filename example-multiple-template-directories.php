@@ -1,7 +1,7 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
@@ -18,13 +18,9 @@ $config = array(
 
 Tpl::configure($config);
 
-
 // Add PathReplace plugin (necessary to load the CSS with path replace)
 Tpl::registerPlugin(new Tpl\Plugin\PathReplace());
-
 
 // create the Tpl object
 $tpl = new Tpl;
 $tpl->draw("subfolder/index");
-
-?>

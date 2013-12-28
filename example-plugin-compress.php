@@ -3,7 +3,7 @@
 ini_set("display_errors", true);
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
@@ -24,7 +24,6 @@ $compress->configure('css', array('status'=>true));
 $compress->configure('html', array('status'=>true));
 $compress->configure('javascript', array('status'=>true, 'position' => 'bottom'));
 Tpl::registerPlugin($compress);
-
 
 global $global_variable;
 $global_variable = "I'm Global";

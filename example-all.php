@@ -1,11 +1,10 @@
 <?php
 
 // include
-require "library/Rain/autoload.php";
+require 'library/Rain/autoload.php';
 
 // namespace
 use Rain\Tpl;
-
 
 // config
 $config = array(
@@ -18,10 +17,8 @@ $config = array(
 
 Tpl::configure( $config );
 
-
 // Add PathReplace plugin (necessary to load the CSS with path replace)
 Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
-
 
 // set variables
 $var = array(
@@ -47,17 +44,17 @@ $var = array(
 // add a tag
 Tpl::registerTag(	"({@.*?@})", // preg split
     "{@(.*?)@}", // preg match
-    function( $params ){ // function called by the tag
+    function ($params) { // function called by the tag
         $value = $params[1][0];
+
         return "Translate: <b>$value</b>";
     }
 );
 
-
 // add a tag
 Tpl::registerTag(	"({%.*?%})", // preg split
     "{%(.*?)(?:\|(.*?))%}", // preg match
-    function( $params ){ // function called by the tag
+    function ($params) { // function called by the tag
         $value = $params[1][0];
         $value2 = $params[2][0];
 
@@ -70,10 +67,10 @@ $tpl = new Tpl;
 $tpl->assign( $var );
 echo $tpl->draw( "test" );
 
-
-
-class Test{
-    static public function method( $variable ){
+class Test
+{
+    public static function method($variable)
+    {
         echo "Hi I am a static method, and this is the parameter passed to me: $variable!";
     }
 }
