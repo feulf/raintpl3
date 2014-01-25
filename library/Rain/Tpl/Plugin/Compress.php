@@ -199,7 +199,7 @@ class Compress extends \Rain\Tpl\Plugin {
                     $urlArray[$url] = $url;
 
                     // reduce the path
-                    $url = \Rain\Tpl::reducePath( $url );
+                    $url = \Rain\Tpl\Parser::reducePath( $url );
 
                     $javascriptFile = file_get_contents($url);
 
