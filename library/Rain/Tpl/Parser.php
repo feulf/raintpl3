@@ -80,6 +80,8 @@ class Parser {
         'syslog', 'xmlrpc_entity_decode'
     );
 
+    private $SECURITY_CHECK = "<?php if(!class_exists('Rain\Tpl')){exit;}?>";
+
     public function __construct($config, $plugins, $registered_tags) {
         $this->config = $config;
         static::$plugins = $plugins;
@@ -123,7 +125,11 @@ class Parser {
             $this->templateInfo['template_filepath'] = $templateFilepath;
 
             // read the file
-            $this->templateInfo['code'] = $code = fread($fp, filesize($templateFilepath));
+            $filesize = filesize($templateFilepath);
+            if (!$filesize) {
+                $parsedCode = self::$SECURITY_CHECK;
+            } else {
+                $this->templateInfo['code'] = $code = fread($fp, $filesize) : "";
 
             // xml substitution
             $code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
