@@ -6,7 +6,7 @@ require_once __DIR__ . '/../Plugin.php';
 class PathReplace extends \Rain\Tpl\Plugin
 {
     protected $hooks = array('beforeParse');
-    private $tags = array('a', 'img', 'link', 'script', 'input', 'object', 'embed');
+    private $tags = array('a', 'img', 'link', 'script', 'form', 'input', 'object', 'embed');
 
     /**
      * replace the path of image src, link href and a href.
@@ -76,6 +76,11 @@ class PathReplace extends \Rain\Tpl\Plugin
             $exp = array_merge( $exp , array( '/<embed(.*?)src=(?:")(http|https)\:\/\/([^"]+?)(?:")/i', '/<embed(.*?)src=(?:")([^"]+?)#(?:")/i', '/<embed(.*?)src="(.*?)"/', '/<embed(.*?)src=(?:\@)([^"]+?)(?:\@)/i' ) );
             $sub = array_merge( $sub , array( '<embed$1src=@$2://$3@', '<embed$1src=@$2@', '<embed$1src="' . $path . '$2"', '<embed$1src="$2"' ) );
         }
+        
+	    if( in_array( "form", $tags ) ){
+		    $exp = array_merge( $exp , array( '/<form(.*?)action="(.*?)"/' ) );
+		    $sub = array_merge( $sub , array( '<form$1action="' . $basecode . '$2"' ) );
+	    }
 
         $context->code = preg_replace( $exp, $sub, $html );
     }
