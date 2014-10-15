@@ -5,7 +5,7 @@ require_once __DIR__ . '/../Plugin.php';
 
 class PathReplace extends \Rain\Tpl\Plugin
 {
-    protected $hooks = array('beforeParse');
+    protected $hooks = array('afterParse');
     private $tags = array('a', 'img', 'link', 'script', 'form', 'input', 'object', 'embed');
 
     /**
@@ -16,7 +16,7 @@ class PathReplace extends \Rain\Tpl\Plugin
      *
      * @param \ArrayAccess $context
      */
-    public function beforeParse(\ArrayAccess $context){
+    public function afterParse(\ArrayAccess $context){
 
         // set variables
         $html = $context->code;
