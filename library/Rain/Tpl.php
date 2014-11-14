@@ -238,7 +238,7 @@ class Tpl {
 
         // set filename
         $templateName = basename($template);
-        $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) !== false ? dirname($template) . DIRECTORY_SEPARATOR : null;
+        $templateBasedir = strpos($template, '/') !== false ? dirname($template) . '/' : null;
         $templateDirectory = null;
         $templateFilepath = null;
         $parsedTemplateFilepath = null;
