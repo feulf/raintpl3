@@ -610,8 +610,9 @@ class Parser {
             preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->\s]+)/i', $html,$result);
 
             $function_params = $result[1];
+            $result[2] = str_replace("::", "@double_dot@", $result[2] );
             $explode = explode(":",$result[2]);
-            $function = $explode[0];
+            $function = str_replace('@double_dot@', '::', $explode[0]);
             $params = isset($explode[1]) ? "," . $explode[1] : null;
 
             $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
