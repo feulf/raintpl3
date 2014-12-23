@@ -50,7 +50,7 @@ class TplTest extends PHPUnit_Framework_TestCase
 		}
 
 		// register plugin and draw template
-		Rain\Tpl::register_plugin($plugin);
+		Rain\Tpl::registerPlugin($plugin);
 		$this->engine->draw('template', true);
 	}
 }
