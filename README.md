@@ -1,5 +1,6 @@
 RainTPL 3
 =========
+[![Build Status](https://travis-ci.org/aspyatkin/raintpl3.svg)](https://travis-ci.org/aspyatkin/raintpl3)
 
 By Federico Ulfo and a lot [awesome contributors](https://github.com/rainphp/raintpl3/network)!
 
