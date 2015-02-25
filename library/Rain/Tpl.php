@@ -41,6 +41,7 @@ class Tpl {
         'allow_compile' => true,
         'allow_compile_once' => true, // allow compile template only once
         'sandbox' => true,
+        'remove_comments' => false,
         'registered_tags' => array(),
         'tags' => array(
             'loop' => array('({loop.*?})', '/{loop="(?P<variable>\${0,1}[^"]*)"(?: as (?P<key>\$.*?)(?: => (?P<value>\$.*?)){0,1}){0,1}}/'),
@@ -120,7 +121,7 @@ class Tpl {
     }
     
     /**
-     * Configure the object
+     * Object specific configuration
      *
      * @param string|array $setting name of the setting to configure
      * or associative array type 'setting' => 'value'
@@ -250,6 +251,7 @@ class Tpl {
      * @return string: full filepath that php must use to include
      */
     protected function checkTemplate($template) {
+
         // set filename
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
@@ -307,12 +309,25 @@ class Tpl {
 
 
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {            
-            $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
+        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {
+            $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
 
         return $parsedTemplateFilepath;
+    }
+
+    private static function addTrailingSlash($folder) {
+
+        if (is_array($folder)) {
+            foreach($folder as &$f) {
+                $f = self::addTrailingSlash($f);
+            }
+        } elseif ( strlen($folder) > 0 && $folder[0] != '/' ) {
+            $folder = $folder . "/";
+        }
+        return $folder;
+
     }
 
 }

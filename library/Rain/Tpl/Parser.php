@@ -56,6 +56,7 @@ class Parser {
             '({function.*?})',
             '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'
         ),
+        'ternary' => array('({.[^{?]*?\?.*?\:.*?})', '/{(.[^{?]*?)\?(.*?)\:(.*?)}/'),
         'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
         'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
     );
@@ -81,8 +82,6 @@ class Parser {
 
     public function __construct($config, $objectConf, $conf, $plugins, $registered_tags) {
         $this->config = $config;
-        $this->objectConf = $objectConf;
-        static::$conf = $conf;
         static::$plugins = $plugins;
         static::$registered_tags = $registered_tags;
     }
@@ -129,8 +128,8 @@ class Parser {
 
             // xml re-substitution
             $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                    }, $code);
+                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                }, $code);
 
             $parsedCode = $this->compileTemplate($code, $isString = false, $templateBasedir, $templateDirectory, $templateFilepath);
             $parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsedCode;
@@ -183,8 +182,8 @@ class Parser {
 
             // xml re-substitution
             $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                    }, $code);
+                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                }, $code);
 
             $parsedCode = $this->compileTemplate($code, $isString = true, $templateBasedir, $templateDirectory = null, $templateFilepath);
 
@@ -255,7 +254,7 @@ class Parser {
         // if the template is not empty
         if ($codeSplit)
 
-        //read all parsed code
+            //read all parsed code
             foreach ($codeSplit as $html) {
 
                 //close ignore tag
@@ -500,6 +499,11 @@ class Parser {
                     $parsedCode .= "<?php echo $parsedFunction; ?>";
                 }
 
+                //ternary
+                elseif (preg_match($tagMatch['ternary'], $html, $matches)) {
+                    $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = FALSE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = FALSE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = FALSE) . ')' . "; ?>";
+                }
+
                 //variables
                 elseif (preg_match($tagMatch['variable'], $html, $matches)) {
                     //variables substitution (es. {$title})
@@ -511,9 +515,10 @@ class Parser {
                 elseif (preg_match($tagMatch['constant'], $html, $matches)) {
                     $parsedCode .= "<?php echo " . $this->conReplace($matches[1], $loopLevel) . "; ?>";
                 }
+
                 // registered tags
                 else {
- 
+
                     $found = FALSE;
                     foreach (static::$registered_tags as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
@@ -558,6 +563,8 @@ class Parser {
             }
         }
 
+        $html = str_replace('?><?php', ' ', $parsedCode);
+
         // Execute plugins, after_parse
         $context->code = $parsedCode;
         static::getPlugins()->run('afterParse', $context);
@@ -590,7 +597,7 @@ class Parser {
 
                 // escape character
                 if ($this->config['auto_escape'] && $escape)
-                //$html = "htmlspecialchars( $html )";
+                    //$html = "htmlspecialchars( $html )";
                     $html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
 
                 // if is an assignment it doesn't add echo
@@ -614,8 +621,9 @@ class Parser {
             preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
 
             $function_params = $result[1];
+            $result[2] = str_replace("::", "@double_dot@", $result[2] );
             $explode = explode(":",$result[2]);
-            $function = $explode[0];
+            $function = str_replace('@double_dot@', '::', $explode[0]);
             $params = isset($explode[1]) ? "," . $explode[1] : null;
 
             $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
@@ -648,8 +656,8 @@ class Parser {
             // stop the execution of the script
             $e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->templateInfo['template_filepath'] . ' at line ' . $line);
             throw $e->templateFile($this->templateInfo['template_filepath'])
-                    ->tag($match[0])
-                    ->templateLine($line);
+                ->tag($match[0])
+                ->templateLine($line);
 
             return false;
         }
@@ -665,6 +673,7 @@ class Parser {
         while( preg_match( '#\.\./#', $path ) ){
             $path = preg_replace('#\w+/\.\./#', '', $path );
         }
+
         return $path;
     }
 }

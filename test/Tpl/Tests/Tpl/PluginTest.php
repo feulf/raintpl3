@@ -7,27 +7,27 @@ class PluginTest extends PHPUnit_Framework_TestCase
 	{
 		$plugin = new PluginTestPlugin();
 		$plugin->set_hooks(array('before_parse'));
-		$this->assertEquals(array('before_parse'), $plugin->declare_hooks());
+		$this->assertEquals(array('before_parse'), $plugin->declareHooks());
 	}
 
 	public function testSetOption()
 	{
-		$plugin = $this->getMock('Rain\Tpl\Plugin', array('set_param'));
+		$plugin = $this->getMock('Rain\Tpl\Plugin', array('setParam'));
 		$plugin->expects($this->once())
-			->method('set_param')
+			->method('setParam')
 			->with($this->equalTo('value'));
-		$plugin->set_option('param', 'value');
+		$plugin->setOption('param', 'value');
 		$this->setExpectedException('InvalidArgumentException');
-		$plugin->set_option('unknown_param', 'value');
+		$plugin->setOption('unknown_param', 'value');
 	}
 
 	public function testSetOptions()
 	{
-		$plugin = $this->getMock('Rain\Tpl\Plugin', array('set_param'));
+		$plugin = $this->getMock('Rain\Tpl\Plugin', array('setParam'));
 		$plugin->expects($this->once())
-			->method('set_param')
+			->method('setParam')
 			->with($this->equalTo('value'));
-		$plugin->set_options(array('param' => 'value'));
+		$plugin->setOptions(array('param' => 'value'));
 	}
 }
 

@@ -24,9 +24,9 @@ class SyntaxException extends Exception {
     /**
      * Handles the line in template file
      * where error has occured
-     * 
+     *
      * @param int | null $line
-     *  	
+     *
      * @return \Rain\Tpl\SyntaxException | int | null
      */
     public function templateLine($line){
@@ -36,21 +36,21 @@ class SyntaxException extends Exception {
         $this->templateLine = (int) $line;
         return $this;
     }
-  	
+
     /**
      * Handles the tag which caused an error.
      *
      * @param string | null $tag
      *
      * @return \Rain\Tpl_SyntaxException | string | null
-     */	  	
+     */
     public function tag($tag=null){
         if(is_null($tag))
             return $this->tag;
 
         $this->tag = (string) $tag;
         return $this;
-     }
+    }
 }
 
 // -- end
