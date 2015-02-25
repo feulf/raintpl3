@@ -30,13 +30,18 @@ class Tpl {
         'checksum' => array(),
         'charset' => 'UTF-8',
         'debug' => false,
+        'include_path' => array(),
         'tpl_dir' => 'templates/',
         'cache_dir' => 'cache/',
         'tpl_ext' => 'html',
         'base_url' => '',
         'php_enabled' => false,
         'auto_escape' => true,
+        'force_compile' => false,
+        'allow_compile' => true,
+        'allow_compile_once' => true, // allow compile template only once
         'sandbox' => true,
+        'remove_comments' => false,
         'registered_tags' => array(),
         'tags' => array(
             'loop' => array('({loop.*?})', '/{loop="(?P<variable>\${0,1}[^"]*)"(?: as (?P<key>\$.*?)(?: => (?P<value>\$.*?)){0,1}){0,1}}/'),
@@ -65,27 +70,36 @@ class Tpl {
     /**
      * Draw the template
      *
-     * @param string $templateFilePath: name of the template file
-     * @param bool $toString: if the method should return a string
+     * @param string $templateFilePath name of the template file
+     * @param bool $toString if the method should return a string
+     * @param bool $isString if input is a string, not a file path
      * or echo the output
      *
      * @return void, string: depending of the $toString
      */
-    public function draw($templateFilePath, $toString = FALSE) {
+    public function draw($templateFilePath, $toString = FALSE, $isString = FALSE) {
         extract($this->var);
+        
         // Merge local and static configurations
-        $this->config = $this->objectConf + static::$conf;
+        $this->config = array_merge(static::$conf, $this->objectConf);
         
         ob_start();
-        require $this->checkTemplate($templateFilePath);
+        
+        // parsing a string (moved from drawString method)
+        if ($isString)
+            require $this->checkString($templateFilePath);
+        else // parsing a template file
+            require $this->checkTemplate($templateFilePath);
+        
         $html = ob_get_clean();
 
         // Execute plugins, before_parse
-        $context = static::getPlugins()->createContext(array(
+        $context = $this->getPlugins()->createContext(array(
             'code' => $html,
             'conf' => $this->config,
         ));
-        static::getPlugins()->run('afterDraw', $context);
+
+        $this->getPlugins()->run('afterDraw', $context);
         $html = $context->code;
 
         if ($toString)
@@ -103,59 +117,55 @@ class Tpl {
      * @return void, string: depending of the $toString
      */
     public function drawString($string, $toString = false) {
-        extract($this->var);
-        // Merge local and static configurations
-        $this->config = $this->objectConf + static::$conf;
-        ob_start();
-        require $this->checkString($string);
-        $html = ob_get_clean();
-
-        // Execute plugins, before_parse
-        $context = static::getPlugins()->createContext(array(
-            'code' => $html,
-            'conf' => $this->config,
-        ));
-        static::getPlugins()->run('afterDraw', $context);
-        $html = $context->code;
-
-        if ($toString)
-            return $html;
-        else
-            echo $html;
+        return $this->draw($string, $toString, True);
     }
-
+    
     /**
-     * Configure the object
+     * Object specific configuration
      *
-     * @param string, array $setting: name of the setting to configure
+     * @param string|array $setting name of the setting to configure
      * or associative array type 'setting' => 'value'
      * @param mixed $value: value of the setting to configure
      * @return \Rain\Tpl $this
      */
     public function objectConfigure($setting, $value = null) {
         if (is_array($setting))
+        {
+            // use this function recursive to set multiple configuration values from array
             foreach ($setting as $key => $value)
+            {
                 $this->objectConfigure($key, $value);
-        else if (isset(static::$conf[$setting]))
+            }
+        } else if (isset(static::$conf[$setting]))
             $this->objectConf[$setting] = $value;
-
+            
         return $this;
     }
 
     /**
      * Configure the template
      *
-     * @param string, array $setting: name of the setting to configure
+     * @param string|array $setting: name of the setting to configure
      * or associative array type 'setting' => 'value'
      * @param mixed $value: value of the setting to configure
      */
     public static function configure($setting, $value = null) {
         if (is_array($setting))
+        {
+            // use this function recursive to set multiple configuration values from array
             foreach ($setting as $key => $value)
+            {
                 static::configure($key, $value);
-        else if (isset(static::$conf[$setting])) {
+            }
+        } else if (isset(static::$conf[$setting])) {
             static::$conf[$setting] = $value;
-
+            
+            // the checksum must match template with any bool value or it wont work as the template file names will be diffirent
+            if ($setting == 'allow_compile' or $setting == 'allow_compile_once')
+            {
+                $value = True;
+            }
+            
             static::$conf['checksum'][$setting] = $value; // take trace of all config
         }
     }
@@ -241,6 +251,7 @@ class Tpl {
      * @return string: full filepath that php must use to include
      */
     protected function checkTemplate($template) {
+
         // set filename
         $templateName = basename($template);
         $templateBasedir = strpos($template, DIRECTORY_SEPARATOR) ? dirname($template) . DIRECTORY_SEPARATOR : null;
@@ -258,11 +269,25 @@ class Tpl {
             $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
             throw $e->templateFile($templateFilepath);
         }
-
-        // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath) || ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) )) {
+        
+        if (!$this->config['allow_compile'])
+        {
+            // check if there is a compiled version
+            if (!is_file($parsedTemplateFilepath))
+            {
+                // allow first compilation of file
+                if (!$this->config['allow_compile_once'])
+                    throw new \Exception('Template cache file "' .$parsedTemplateFilepath. '" is missing and "allow_compile", "allow_compile_once" are disabled in configuration');
+                    
+            } else
+                return $parsedTemplateFilepath;
+        }
+        
+        // Compile the template if the original has been updated or if force compilation is enabled, remember to set allow_compile to True
+        if ( $this->config['debug'] or !file_exists($parsedTemplateFilepath) or ( filemtime($parsedTemplateFilepath) < filemtime($templateFilepath) ) ) {
             $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
             $parser->compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath);
+            
         }
         return $parsedTemplateFilepath;
     }
@@ -284,12 +309,25 @@ class Tpl {
 
 
         // Compile the template if the original has been updated
-        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {            
-            $parser = new Tpl\Parser($this->config, $this->objectConf, static::$conf, static::$plugins, static::$registered_tags);
+        if ($this->config['debug'] || !file_exists($parsedTemplateFilepath)) {
+            $parser = new Tpl\Parser($this->config, static::$plugins, static::$registered_tags);
             $parser->compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $string);
         }
 
         return $parsedTemplateFilepath;
+    }
+
+    private static function addTrailingSlash($folder) {
+
+        if (is_array($folder)) {
+            foreach($folder as &$f) {
+                $f = self::addTrailingSlash($f);
+            }
+        } elseif ( strlen($folder) > 0 && $folder[0] != '/' ) {
+            $folder = $folder . "/";
+        }
+        return $folder;
+
     }
 
 }

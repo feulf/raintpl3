@@ -56,6 +56,7 @@ class Parser {
             '({function.*?})',
             '/{function="([a-zA-Z_][a-zA-Z_0-9\:]*)(\(.*\)){0,1}"}/'
         ),
+        'ternary' => array('({.[^{?]*?\?.*?\:.*?})', '/{(.[^{?]*?)\?(.*?)\:(.*?)}/'),
         'variable' => array('({\$.*?})', '/{(\$.*?)}/'),
         'constant' => array('({#.*?})', '/{#(.*?)#{0,1}}/'),
     );
@@ -81,8 +82,6 @@ class Parser {
 
     public function __construct($config, $objectConf, $conf, $plugins, $registered_tags) {
         $this->config = $config;
-        $this->objectConf = $objectConf;
-        static::$conf = $conf;
         static::$plugins = $plugins;
         static::$registered_tags = $registered_tags;
     }
@@ -106,13 +105,7 @@ class Parser {
      * @param string $templateFilepath
      * @param string $parsedTemplateFilepath: cache file where to save the template
      */
-    public function compileFile(
-        $templateName,
-        $templateBasedir,
-        $templateDirectory,
-        $templateFilepath,
-        $parsedTemplateFilepath
-    ) {
+    public function compileFile($templateName, $templateBasedir, $templateDirectory, $templateFilepath, $parsedTemplateFilepath) {
 
         // open the template
         $fp = fopen($templateFilepath, "r");
@@ -135,8 +128,8 @@ class Parser {
 
             // xml re-substitution
             $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                    }, $code);
+                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                }, $code);
 
             $parsedCode = $this->compileTemplate($code, $isString = false, $templateBasedir, $templateDirectory, $templateFilepath);
             $parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsedCode;
@@ -156,7 +149,7 @@ class Parser {
             file_put_contents($parsedTemplateFilepath, $parsedCode);
 
             // release the file lock
-            flock($fp, LOCK_UN);
+            flock($fp, LOCK_EX);
         }
 
         // close the file
@@ -189,8 +182,8 @@ class Parser {
 
             // xml re-substitution
             $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                    }, $code);
+                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                }, $code);
 
             $parsedCode = $this->compileTemplate($code, $isString = true, $templateBasedir, $templateDirectory = null, $templateFilepath);
 
@@ -225,7 +218,6 @@ class Parser {
      * @param string $code: code to compile
      */
     protected function compileTemplate($code, $isString, $templateBasedir, $templateDirectory, $templateFilepath) {
-
         // Execute plugins, before_parse
         $context = static::getPlugins()->createContext(array(
             'code' => $code,
@@ -262,7 +254,7 @@ class Parser {
         // if the template is not empty
         if ($codeSplit)
 
-        //read all parsed code
+            //read all parsed code
             foreach ($codeSplit as $html) {
 
                 //close ignore tag
@@ -295,21 +287,51 @@ class Parser {
                 
                     //get the folder of the actual template
                     $actualFolder = substr($templateDirectory, strlen($this->config['tpl_dir']));
-
-                    //get the included template
-                    if (strpos($matches[1], '$') !== false) {
-                        $includeTemplate = "'$actualFolder'." . $this->varReplace($matches[1], $loopLevel);
-                    } else {
-                        $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                    $includeTemplate = null; // reset variable
+                    
+                    // search for files in include_path
+                    if (strpos($matches[1], '$') === false) 
+                    {
+                        $path = pathinfo($matches[1]);
+                        
+                        if ($path['dirname'] == '.')
+                            $path['dirname'] = '';
+                            
+                        // compatibility (allow both with and without extensions)
+                        $path['basename'] = str_replace('.' .$this->config['tpl_ext'], '', $path['basename']);
+                        
+                        foreach ($this->config['include_path'] as $dir)
+                        {
+                            $searchPath = str_replace('//', '/', $dir. '/' .$path['dirname']. '/' .$path['basename']. '.' .$this->config['tpl_ext']);
+                            
+                            if (is_file($searchPath))
+                            {
+                                $includeTemplate = substr($searchPath, 0, strlen($searchPath)-(strlen($this->config['tpl_ext'])+1));
+                                $includeTemplate = static::reducePath( $includeTemplate );
+                                break;
+                            }
+                        }
                     }
-
-                    // reduce the path
-                    $includeTemplate = static::reducePath( $includeTemplate );
-
-                    // if template does not exists, try to find in directory of current template
-                    if(!is_file($includeTemplate))
-                        $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
-
+                    
+                    // if file is not in include_path but propably in tpl_dir (main templates dir for relative paths)
+                    if (!$includeTemplate)
+                    {
+                        //get the included template
+                        if (strpos($matches[1], '$') !== false) 
+                        {
+                            $includeTemplate = $this->varReplace($matches[1], $loopLevel);
+                        } else {
+                            $includeTemplate = $actualFolder . $this->varReplace($matches[1], $loopLevel);
+                        }
+                        
+                        // reduce the path
+                        $includeTemplate = static::reducePath( $includeTemplate );
+                        
+                        // if template does not exists, try to find in directory of current template to make RainTPL more smart
+                        if(!is_file($includeTemplate))
+                            $includeTemplate = dirname($templateFilepath). '/' .$includeTemplate;
+                    }
+                    
                     //dynamic include
                     $parsedCode .= '<?php require $this->checkTemplate("' . $includeTemplate . '");?>';
 
@@ -477,6 +499,11 @@ class Parser {
                     $parsedCode .= "<?php echo $parsedFunction; ?>";
                 }
 
+                //ternary
+                elseif (preg_match($tagMatch['ternary'], $html, $matches)) {
+                    $parsedCode .= "<?php echo " . '(' . $this->varReplace($matches[1], $loopLevel, $escape = TRUE, $echo = FALSE) . '?' . $this->varReplace($matches[2], $loopLevel, $escape = TRUE, $echo = FALSE) . ':' . $this->varReplace($matches[3], $loopLevel, $escape = TRUE, $echo = FALSE) . ')' . "; ?>";
+                }
+
                 //variables
                 elseif (preg_match($tagMatch['variable'], $html, $matches)) {
                     //variables substitution (es. {$title})
@@ -488,9 +515,10 @@ class Parser {
                 elseif (preg_match($tagMatch['constant'], $html, $matches)) {
                     $parsedCode .= "<?php echo " . $this->conReplace($matches[1], $loopLevel) . "; ?>";
                 }
+
                 // registered tags
                 else {
- 
+
                     $found = FALSE;
                     foreach (static::$registered_tags as $tags => $array) {
                         if (preg_match_all('/' . $array['parse'] . '/', $html, $matches)) {
@@ -535,6 +563,8 @@ class Parser {
             }
         }
 
+        $html = str_replace('?><?php', ' ', $parsedCode);
+
         // Execute plugins, after_parse
         $context->code = $parsedCode;
         static::getPlugins()->run('afterParse', $context);
@@ -567,7 +597,7 @@ class Parser {
 
                 // escape character
                 if ($this->config['auto_escape'] && $escape)
-                //$html = "htmlspecialchars( $html )";
+                    //$html = "htmlspecialchars( $html )";
                     $html = "htmlspecialchars( $html, ENT_COMPAT, '" . $this->config['charset'] . "', FALSE )";
 
                 // if is an assignment it doesn't add echo
@@ -591,8 +621,9 @@ class Parser {
             preg_match('/([\$a-z_A-Z0-9\(\),\[\]"->]+)\|([\$a-z_A-Z0-9\(\):,\[\]"->]+)/i', $html,$result);
 
             $function_params = $result[1];
+            $result[2] = str_replace("::", "@double_dot@", $result[2] );
             $explode = explode(":",$result[2]);
-            $function = $explode[0];
+            $function = str_replace('@double_dot@', '::', $explode[0]);
             $params = isset($explode[1]) ? "," . $explode[1] : null;
 
             $html = str_replace($result[0],$function . "(" . $function_params . "$params)",$html);
@@ -625,8 +656,8 @@ class Parser {
             // stop the execution of the script
             $e = new SyntaxException('Syntax ' . $match[0] . ' not allowed in template: ' . $this->templateInfo['template_filepath'] . ' at line ' . $line);
             throw $e->templateFile($this->templateInfo['template_filepath'])
-                    ->tag($match[0])
-                    ->templateLine($line);
+                ->tag($match[0])
+                ->templateLine($line);
 
             return false;
         }
@@ -642,6 +673,7 @@ class Parser {
         while( preg_match( '#\.\./#', $path ) ){
             $path = preg_replace('#\w+/\.\./#', '', $path );
         }
+
         return $path;
     }
 }
