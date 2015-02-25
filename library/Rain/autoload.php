@@ -26,9 +26,9 @@ function RainTplAutoloader( $class ){
             echo $abs_path;
             echo "<br><br>";
         }
-            
+
         // require the file
         require_once $abs_path;
     }
-    
+
 }

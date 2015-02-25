@@ -1,2 +1,4 @@
 .DS_Store
 nbproject
+vendor/*
+test/cache/*

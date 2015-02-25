@@ -1,5 +1,7 @@
 <?php
 
+ini_set("display_errors", true);
+
 // include
 require "library/Rain/autoload.php";
 
@@ -9,18 +11,20 @@ use Rain\Tpl;
 // conf
 $config = array(
     "base_url"	=> null,
-    "tpl_dir"	=> "templates/image_resize/",
+    "tpl_dir"	=> "templates/compress/",
     "cache_dir"	=> "cache/",
-    "debug"     => true // set to false to improve the speed
+    "debug"         => true // set to false to improve the speed
 );
+
 Tpl::configure( $config );
+Tpl::registerPlugin( new Tpl\Plugin\PathReplace );
 
+$compress = new Tpl\Plugin\Compress;
+$compress->configure('css', array('status'=>true));
+$compress->configure('html', array('status'=>true));
+$compress->configure('javascript', array('status'=>true, 'position' => 'bottom'));
+Tpl::registerPlugin($compress);
 
-// Add PathReplace plugin (necessary to load the CSS with path replace)
-Tpl::registerPlugin( new Tpl\Plugin\PathReplace() );
-
-$plugin_options = array( 'quality' => 100, 'crop' => true );
-Tpl::registerPlugin( new Tpl\Plugin\ImageResize( $plugin_options ) );
 
 global $global_variable;
 $global_variable = "I'm Global";
@@ -46,18 +50,7 @@ $var = array(
 
 );
 
-$test = function( $params ){
-    $value = $params[0];
-    return "Translate: <b>$value</b>";
-};
-// add a function
-Tpl::registerTag( "({@.*?@})", "{@(.*?)@}", $test );
-
-
-
 // draw
 $tpl = new Tpl;
 $tpl->assign( $var );
-$tpl->draw( "page" );
-
-// end
+$tpl->draw( "test_compress" );
