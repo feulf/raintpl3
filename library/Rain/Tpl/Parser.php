@@ -123,25 +123,30 @@ class Parser {
             $this->templateInfo['template_filepath'] = $templateFilepath;
 
             // read the file
-            $this->templateInfo['code'] = $code = fread($fp, filesize($templateFilepath));
-
-            // xml substitution
-            $code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
-
-            // disable php tag
-            if (!$this->config['php_enabled'])
-                $code = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $code);
-
-            // xml re-substitution
-            $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
-                    return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
-                }, $code);
-
-            $parsedCode = $this->compileTemplate($code, $isString = false, $templateBasedir, $templateDirectory, $templateFilepath);
-            $parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsedCode;
-
-            // fix the php-eating-newline-after-closing-tag-problem
-            $parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
+            $filesize = filesize($templateFilepath);
+            $this->templateInfo['code'] = $code = $filesize > 0 ? fread($fp, $filesize) : '';
+            
+            if (!empty($code)) {
+                // xml substitution
+                $code = preg_replace("/<\?xml(.*?)\?>/s", /*<?*/ "##XML\\1XML##", $code);
+    
+                // disable php tag
+                if (!$this->config['php_enabled'])
+                    $code = str_replace(array("<?", "?>"), array("&lt;?", "?&gt;"), $code);
+    
+                // xml re-substitution
+                $code = preg_replace_callback("/##XML(.*?)XML##/s", function( $match ) {
+                        return "<?php echo '<?xml " . stripslashes($match[1]) . " ?>'; ?>";
+                    }, $code);
+    
+                $parsedCode = $this->compileTemplate($code, $isString = false, $templateBasedir, $templateDirectory, $templateFilepath);
+                $parsedCode = "<?php if(!class_exists('Rain\Tpl')){exit;}?>" . $parsedCode;
+    
+                // fix the php-eating-newline-after-closing-tag-problem
+                $parsedCode = str_replace("?>\n", "?>\n\n", $parsedCode);
+            } else {
+                $parsedCode = '';
+            }
 
             // create directories
             if (!is_dir($this->config['cache_dir']))
