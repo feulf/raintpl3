@@ -42,7 +42,7 @@ $var = array(
     "title"		=> "Rain TPL 3 - Easy and Fast template engine",
     "user"		=> array(
         array("name" => "Fede", "color" => "blue" ),
-        array("name" => "Sheska", "color" => "red" ),
+        array("name" => "Laura", "color" => "red" ),
         array("name" => "Who", "color" => "yellow" ),
     ),
     "empty_array" => array(),
