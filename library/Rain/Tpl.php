@@ -253,6 +253,10 @@ class Tpl {
         else
             $templateFilepath = $templateDirectory.$templateName. '.' .$this->config['tpl_ext'];
 
+        // check if its an absolute path - Damian Kęska        
+        if ($template[0] === "/")
+            $templateFilepath = $template;
+
         // if the template doesn't exsist throw an error
         if (!is_file($templateFilepath)) {
             $e = new Tpl\NotFoundException('Template ' . $templateFilepath . ' not found!');
