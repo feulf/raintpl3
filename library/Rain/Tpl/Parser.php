@@ -135,6 +135,15 @@ class Parser {
         $parsedTemplateFilepath
     ) {
 
+		//Copy on TMP file used for NFS
+		if ($this->config['nfs'])
+		{
+			$tmpFile = uniqid();
+			copy($templateFilepath, '/tmp/'.$tmpFile);
+			$templateFilepath = '/tmp/'.$tmpFile;
+        }
+        
+        
         // open the template
         $fp = fopen($templateFilepath, "r");
 
@@ -182,6 +191,10 @@ class Parser {
 
         // close the file
         fclose($fp);
+        
+        //Delete TMP file
+        if ($this->config['nfs'])
+			unlink($templateFilepath);
     }
 
     /**
@@ -195,6 +208,14 @@ class Parser {
      */
     public function compileString($templateName, $templateBasedir, $templateFilepath, $parsedTemplateFilepath, $code) {
 
+		//Copy on TMP file used for NFS
+		if ($this->config['nfs'])
+		{
+			$tmpFile = uniqid();
+			copy($templateFilepath, '/tmp/'.$tmpFile);
+			$templateFilepath = '/tmp/'.$tmpFile;
+        }
+        
         // open the template
         $fp = fopen($parsedTemplateFilepath, "w");
 
@@ -237,6 +258,10 @@ class Parser {
 
         // close the file
         fclose($fp);
+        
+        //Delete TMP file
+        if ($this->config['nfs'])
+			unlink($templateFilepath);
     }
 
     /**

@@ -61,6 +61,7 @@ class Tpl {
         'sandbox' => true,
         'remove_comments' => false,
         'registered_tags' => array(),
+        'nfs' => false, 
     );
 
     // tags registered by the developers
