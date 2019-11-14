@@ -361,6 +361,9 @@ class Parser {
                         $assignNewVar = "$newvar=$var;";
                     } else {
                         $newvar = $var;
+                        if(strpos($newvar, '$') === false) {
+                            $newvar = '$'.$newvar;
+                        }
                         $assignNewVar = null;
                     }
 
