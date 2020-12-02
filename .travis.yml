@@ -1,3 +1,7 @@
+os: linux
+arch:
+ - amd64
+ - ppc64le
 language: php
 
 php:
@@ -5,3 +9,8 @@ php:
   - 5.4
   - 5.5
   - 5.6
+matrix:
+  exclude:
+  - php: 5.3
+  - php: 5.4
+  - php: 5.5
