@@ -74,7 +74,7 @@ class Tpl {
      * @param bool $toString: if the method should return a string
      * or echo the output
      *
-     * @return void, string: depending of the $toString
+     * @return void|string depending of the $toString
      */
     public function draw($templateFilePath, $toString = FALSE) {
         extract($this->var);
@@ -105,7 +105,7 @@ class Tpl {
      * @param string $string: string in RainTpl format
      * @param bool $toString: if the param
      *
-     * @return void, string: depending of the $toString
+     * @return void|string depending of the $toString
      */
     public function drawString($string, $toString = false) {
         extract($this->var);
